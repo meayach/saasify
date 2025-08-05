@@ -1,0 +1,1970 @@
+<div class="dashboard-container">
+  <!-- Section Paramètres Organisation -->
+  <div *ngIf="activeSettingsSection === 'organization'" class="settings-section">
+    <div style="margin-bottom: 20px">
+      <button
+        (click)="backToDashboard()"
+        style="
+          background: #e2e8f0;
+          color: #4a5568;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          margin-bottom: 15px;
+        ">
+        ← Retour au Dashboard
+      </button>
+      <h2 style="color: #2d3748; margin: 0">Paramètres de l'Organisation</h2>
+    </div>
+
+    <div
+      style="
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      ">
+      <form (ngSubmit)="saveOrganizationSettings()">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+              >Nom de l'entreprise</label
+            >
+            <input
+              [(ngModel)]="organizationSettings.companyName"
+              name="companyName"
+              type="text"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+              " />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+              >Email</label
+            >
+            <input
+              [(ngModel)]="organizationSettings.email"
+              name="email"
+              type="email"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+              " />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+              >Téléphone</label
+            >
+            <input
+              [(ngModel)]="organizationSettings.phone"
+              name="phone"
+              type="tel"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+              " />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+              >Site web</label
+            >
+            <input
+              [(ngModel)]="organizationSettings.website"
+              name="website"
+              type="url"
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+              " />
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px">
+          <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+            >Description</label
+          >
+          <textarea
+            [(ngModel)]="organizationSettings.description"
+            name="description"
+            rows="3"
+            style="
+              width: 100%;
+              padding: 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              font-size: 14px;
+              resize: vertical;
+            "></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px">
+          <button
+            type="submit"
+            style="
+              background: #3b82f6;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+            ">
+            Sauvegarder
+          </button>
+          <button
+            type="button"
+            (click)="changeOrganizationLogo()"
+            style="
+              background: #6b7280;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+            ">
+            Changer le logo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Section Sécurité -->
+  <div *ngIf="activeSettingsSection === 'security'" class="settings-section">
+    <div style="margin-bottom: 20px">
+      <button
+        (click)="backToDashboard()"
+        style="
+          background: #e2e8f0;
+          color: #4a5568;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          margin-bottom: 15px;
+        ">
+        ← Retour au Dashboard
+      </button>
+      <h2 style="color: #2d3748; margin: 0">Paramètres de Sécurité</h2>
+    </div>
+
+    <div
+      style="
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      ">
+      <form (ngSubmit)="saveSecuritySettings()">
+        <div style="margin-bottom: 20px">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+            <input
+              type="checkbox"
+              [(ngModel)]="securitySettings.twoFactorEnabled"
+              name="twoFactorEnabled" />
+            <span style="font-weight: 500; color: #374151"
+              >Authentification à deux facteurs (2FA)</span
+            >
+          </label>
+        </div>
+
+        <div style="margin-bottom: 20px">
+          <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+            >Timeout de session (minutes)</label
+          >
+          <input
+            [(ngModel)]="securitySettings.sessionTimeout"
+            name="sessionTimeout"
+            type="number"
+            min="5"
+            max="480"
+            style="
+              width: 200px;
+              padding: 10px;
+              border: 1px solid #d1d5db;
+              border-radius: 6px;
+              font-size: 14px;
+            " />
+        </div>
+
+        <div style="margin-bottom: 20px">
+          <h4 style="color: #374151; margin-bottom: 10px">Politique de mot de passe</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="securitySettings.passwordPolicy.requireUppercase"
+                name="requireUppercase" />
+              <span>Majuscules requises</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="securitySettings.passwordPolicy.requireLowercase"
+                name="requireLowercase" />
+              <span>Minuscules requises</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="securitySettings.passwordPolicy.requireNumbers"
+                name="requireNumbers" />
+              <span>Chiffres requis</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer">
+              <input
+                type="checkbox"
+                [(ngModel)]="securitySettings.passwordPolicy.requireSpecialChars"
+                name="requireSpecialChars" />
+              <span>Caractères spéciaux requis</span>
+            </label>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          style="
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+          ">
+          Sauvegarder les paramètres de sécurité
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Section Facturation -->
+  <div *ngIf="activeSettingsSection === 'billing'" class="settings-section">
+    <div style="margin-bottom: 20px">
+      <button
+        (click)="backToDashboard()"
+        style="
+          background: #e2e8f0;
+          color: #4a5568;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          margin-bottom: 15px;
+        ">
+        ← Retour au Dashboard
+      </button>
+      <h2 style="color: #2d3748; margin: 0">Paramètres de Facturation</h2>
+    </div>
+
+    <div style="display: grid; gap: 20px">
+      <!-- Paramètres de facturation -->
+      <div
+        style="
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        ">
+        <h3 style="color: #374151; margin-bottom: 15px">Configuration générale</h3>
+        <form (ngSubmit)="saveBillingSettings()">
+          <div
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+                >Devise par défaut</label
+              >
+              <select
+                [(ngModel)]="billingSettings.defaultCurrency"
+                name="defaultCurrency"
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  font-size: 14px;
+                ">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #374151"
+                >Taux de TVA (%)</label
+              >
+              <input
+                [(ngModel)]="billingSettings.taxRate"
+                name="taxRate"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  font-size: 14px;
+                " />
+            </div>
+          </div>
+          <button
+            type="submit"
+            style="
+              background: #f59e0b;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+            ">
+            Sauvegarder la configuration
+          </button>
+        </form>
+      </div>
+
+      <!-- Gestion des plans -->
+      <div
+        style="
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        ">
+        <h3 style="color: #374151; margin-bottom: 15px">Plans d'abonnement</h3>
+
+        <!-- Créer un nouveau plan -->
+        <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px">
+          <h4 style="margin-bottom: 15px; color: #374151">Créer un nouveau plan</h4>
+          <form (ngSubmit)="createPlan()">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 15px;
+              ">
+              <input
+                [(ngModel)]="newPlan.name"
+                name="planName"
+                placeholder="Nom du plan"
+                required
+                style="
+                  padding: 8px 12px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  font-size: 14px;
+                " />
+              <input
+                [(ngModel)]="newPlan.price"
+                name="planPrice"
+                type="number"
+                placeholder="Prix"
+                required
+                style="
+                  padding: 8px 12px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  font-size: 14px;
+                " />
+              <select
+                [(ngModel)]="newPlan.interval"
+                name="planInterval"
+                style="
+                  padding: 8px 12px;
+                  border: 1px solid #d1d5db;
+                  border-radius: 6px;
+                  font-size: 14px;
+                ">
+                <option value="month">Mensuel</option>
+                <option value="year">Annuel</option>
+              </select>
+            </div>
+            <textarea
+              [(ngModel)]="newPlan.description"
+              name="planDescription"
+              placeholder="Description du plan"
+              rows="2"
+              style="
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                font-size: 14px;
+                margin-bottom: 15px;
+                resize: vertical;
+              "></textarea>
+            <button
+              type="submit"
+              style="
+                background: #3b82f6;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+              ">
+              Créer le plan
+            </button>
+          </form>
+        </div>
+
+        <!-- Liste des plans existants -->
+        <div *ngIf="plans.length > 0">
+          <h4 style="margin-bottom: 15px; color: #374151">Plans existants</h4>
+          <div style="display: grid; gap: 10px">
+            <div
+              *ngFor="let plan of plans"
+              style="
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                padding: 15px;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+              ">
+              <div style="flex: 1">
+                <h5 style="margin: 0 0 5px 0; color: #374151">{{ plan.name }}</h5>
+                <p style="margin: 0; color: #6b7280; font-size: 14px">{{ plan.description }}</p>
+                <span style="color: #059669; font-weight: 500"
+                  >{{ plan.price }}€ / {{ plan.interval === 'month' ? 'mois' : 'an' }}</span
+                >
+              </div>
+              <button
+                (click)="deletePlan(plan._id!)"
+                style="
+                  background: #ef4444;
+                  color: white;
+                  border: none;
+                  padding: 6px 12px;
+                  border-radius: 4px;
+                  cursor: pointer;
+                  font-size: 12px;
+                ">
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard principal -->
+  <div *ngIf="!activeSettingsSection" class="dashboard-main">
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="header-left">
+          <div
+            *ngIf="currentRoute !== '/dashboard' && !currentRoute.includes('dashboard')"
+            style="margin-bottom: 12px">
+            <button
+              (click)="router.navigate(['/dashboard'])"
+              style="
+                background: #e2e8f0;
+                color: #4a5568;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+              ">
+              ← Retour au Dashboard
+            </button>
+          </div>
+          <h1>{{ getPageTitle() }}</h1>
+          <p>{{ getPageDescription() }}</p>
+        </div>
+        <div class="header-right">
+          <!-- User Profile Dropdown - ULTRA SIMPLE -->
+          <div style="position: relative">
+            <button
+              (click)="toggleDropdown()"
+              style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 12px 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transition: all 0.3s ease;
+              "
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.6)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'">
+              <div
+                style="
+                  width: 32px;
+                  height: 32px;
+                  background: rgba(255, 255, 255, 0.2);
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  position: relative;
+                ">
+                <span style="color: white; font-weight: bold; font-size: 18px">U</span>
+                <div
+                  style="
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    width: 10px;
+                    height: 10px;
+                    background: #4ade80;
+                    border-radius: 50%;
+                    border: 2px solid white;
+                  "></div>
+              </div>
+              <div>
+                <div style="font-size: 13px; line-height: 1.2">{{ userName || 'Utilisateur' }}</div>
+                <div style="font-size: 11px; opacity: 0.8">{{ userRole }}</div>
+              </div>
+              <span
+                style="margin-left: 8px; transition: transform 0.3s ease"
+                [style.transform]="isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'">
+                ▼
+              </span>
+            </button>
+
+            <div
+              *ngIf="isDropdownOpen"
+              style="
+                position: absolute;
+                top: calc(100% + 8px);
+                right: 0;
+                width: 280px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+                z-index: 1000;
+              ">
+              <!-- Header -->
+              <div
+                style="
+                  padding: 20px;
+                  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                ">
+                <div style="display: flex; align-items: center; gap: 15px">
+                  <div
+                    style="
+                      width: 50px;
+                      height: 50px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      color: white;
+                      font-size: 20px;
+                    ">
+                    <span style="font-weight: bold">U</span>
+                  </div>
+                  <div>
+                    <h4 style="margin: 0; font-size: 16px; color: #2d3748">
+                      {{ userName || 'Utilisateur' }}
+                    </h4>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #718096">
+                      {{ userEmail || 'email@example.com' }}
+                    </p>
+                    <span
+                      style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-weight: 500;
+                      "
+                      >{{ userRole }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Menu Items -->
+              <div style="padding: 8px 0">
+                <button
+                  (click)="editProfile()"
+                  style="
+                    width: 100%;
+                    border: none;
+                    background: none;
+                    padding: 12px 20px;
+                    text-align: left;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: background-color 0.2s ease;
+                  "
+                  onmouseover="this.style.backgroundColor='#f7fafc'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+                  <span
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      background: #e2e8f0;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 14px;
+                    "
+                    >Edit</span
+                  >
+                  <div>
+                    <div style="font-weight: 500; color: #2d3748; font-size: 14px">
+                      Modifier le profil
+                    </div>
+                    <div style="color: #718096; font-size: 12px">Gérer vos informations</div>
+                  </div>
+                  <span style="margin-left: auto; color: #cbd5e0">›</span>
+                </button>
+
+                <button
+                  (click)="changePassword()"
+                  style="
+                    width: 100%;
+                    border: none;
+                    background: none;
+                    padding: 12px 20px;
+                    text-align: left;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: background-color 0.2s ease;
+                  "
+                  onmouseover="this.style.backgroundColor='#f7fafc'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+                  <span
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      background: #e2e8f0;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 14px;
+                    "
+                    >Pwd</span
+                  >
+                  <div>
+                    <div style="font-weight: 500; color: #2d3748; font-size: 14px">
+                      Changer le mot de passe
+                    </div>
+                    <div style="color: #718096; font-size: 12px">Sécurisez votre compte</div>
+                  </div>
+                  <span style="margin-left: auto; color: #cbd5e0">›</span>
+                </button>
+
+                <button
+                  (click)="viewNotifications()"
+                  style="
+                    width: 100%;
+                    border: none;
+                    background: none;
+                    padding: 12px 20px;
+                    text-align: left;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: background-color 0.2s ease;
+                    position: relative;
+                  "
+                  onmouseover="this.style.backgroundColor='#f7fafc'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+                  <span
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      background: #e2e8f0;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 14px;
+                      position: relative;
+                    ">
+                    🔔
+                    <span
+                      style="
+                        position: absolute;
+                        top: -2px;
+                        right: -2px;
+                        background: #ef4444;
+                        color: white;
+                        border-radius: 50%;
+                        width: 16px;
+                        height: 16px;
+                        font-size: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                      >3</span
+                    >
+                  </span>
+                  <div>
+                    <div style="font-weight: 500; color: #2d3748; font-size: 14px">
+                      Notifications
+                    </div>
+                    <div style="color: #718096; font-size: 12px">Voir les mises à jour</div>
+                  </div>
+                  <span style="margin-left: auto; color: #cbd5e0">›</span>
+                </button>
+
+                <div style="height: 1px; background: #e2e8f0; margin: 8px 0"></div>
+
+                <button
+                  (click)="logout()"
+                  style="
+                    width: 100%;
+                    border: none;
+                    background: none;
+                    padding: 12px 20px;
+                    text-align: left;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: background-color 0.2s ease;
+                  "
+                  onmouseover="this.style.backgroundColor='#fef2f2'"
+                  onmouseout="this.style.backgroundColor='transparent'">
+                  <span
+                    style="
+                      width: 32px;
+                      height: 32px;
+                      background: #fee2e2;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 14px;
+                    "
+                    >🚪</span
+                  >
+                  <div>
+                    <div style="font-weight: 500; color: #dc2626; font-size: 14px">
+                      Se déconnecter
+                    </div>
+                    <div style="color: #ef4444; font-size: 12px">Fermer la session</div>
+                  </div>
+                  <span style="margin-left: auto; color: #fca5a5">›</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu spécifique selon la page -->
+    <div
+      *ngIf="currentRoute === '/applications'"
+      style="
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      ">
+      <h2 style="color: #2d3748; margin-bottom: 16px">Gestion des Applications</h2>
+      <p style="color: #718096; margin-bottom: 20px">
+        Créez, gérez et surveillez vos applications SaaS
+      </p>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        ">
+        <div
+          style="
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Applications Actives</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #4299e1">
+            {{ applicationStats.activeApplications }}
+          </p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Déploiements Today</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #48bb78">
+            {{ applicationStats.deploymentsToday }}
+          </p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #fffaf0;
+            border-radius: 8px;
+            border-left: 4px solid #ed8936;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">En Maintenance</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #ed8936">
+            {{ applicationStats.maintenanceApplications }}
+          </p>
+        </div>
+      </div>
+
+      <button
+        style="
+          background: #4299e1;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 500;
+        "
+        (click)="createNewApplication()">
+        + Nouvelle Application
+      </button>
+    </div>
+
+    <div
+      *ngIf="currentRoute === '/subscriptions'"
+      style="
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      ">
+      <h2 style="color: #2d3748; margin-bottom: 16px">Gestion des Abonnements</h2>
+      <p style="color: #718096; margin-bottom: 20px">Suivez vos abonnements et la facturation</p>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        ">
+        <div
+          style="
+            padding: 16px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Abonnements Actifs</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #48bb78">45</p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Revenus Mensuels</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #4299e1">€2,450</p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #fffaf0;
+            border-radius: 8px;
+            border-left: 4px solid #ed8936;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">En Attente</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #ed8936">3</p>
+        </div>
+      </div>
+
+      <button
+        (click)="generateMonthlyReport()"
+        style="
+          background: #48bb78;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background 0.2s ease;
+        "
+        onmouseover="this.style.background='#38a169'"
+        onmouseout="this.style.background='#48bb78'">
+        Rapport Mensuel
+      </button>
+    </div>
+
+    <div
+      *ngIf="currentRoute === '/analytics'"
+      style="
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      ">
+      <h2 style="color: #2d3748; margin-bottom: 16px">Analyses et Statistiques</h2>
+      <p style="color: #718096; margin-bottom: 20px">Consultez vos métriques de performance</p>
+
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        ">
+        <div
+          style="
+            padding: 16px;
+            background: #edf2f7;
+            border-radius: 8px;
+            border-left: 4px solid #805ad5;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Visiteurs Today</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #805ad5">1,234</p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Conversions</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #48bb78">8.5%</p>
+        </div>
+        <div
+          style="
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Temps Moyen</h4>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #4299e1">5m 32s</p>
+        </div>
+      </div>
+
+      <button
+        style="
+          background: #805ad5;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 500;
+        ">
+        📋 Export des Données
+      </button>
+    </div>
+
+    <div
+      *ngIf="currentRoute === '/settings'"
+      style="
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      ">
+      <h2 style="color: #2d3748; margin-bottom: 16px">Paramètres</h2>
+      <p style="color: #718096; margin-bottom: 20px">Configurez votre plateforme SaaS</p>
+
+      <!-- Navigation des sections si aucune section spécifique n'est sélectionnée -->
+      <div
+        *ngIf="!activeSettingsSection"
+        style="display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px">
+        <div
+          style="
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #718096;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Paramètres de l'Organisation</h4>
+          <p style="margin: 0 0 12px 0; color: #718096; font-size: 14px">
+            Nom, logo, informations de contact
+          </p>
+          <button
+            (click)="modifyOrganizationSettings()"
+            style="
+              background: #718096;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#4a5568'"
+            onmouseout="this.style.backgroundColor='#718096'">
+            Modifier
+          </button>
+        </div>
+
+        <div
+          style="
+            padding: 16px;
+            background: #f0fff4;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Sécurité</h4>
+          <p style="margin: 0 0 12px 0; color: #718096; font-size: 14px">
+            Authentification, permissions, audit
+          </p>
+          <button
+            (click)="configureSecurity()"
+            style="
+              background: #48bb78;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#38a169'"
+            onmouseout="this.style.backgroundColor='#48bb78'">
+            Configurer
+          </button>
+        </div>
+
+        <div
+          style="
+            padding: 16px;
+            background: #fffaf0;
+            border-radius: 8px;
+            border-left: 4px solid #ed8936;
+          ">
+          <h4 style="margin: 0 0 8px 0; color: #2d3748">Facturation</h4>
+          <p style="margin: 0 0 12px 0; color: #718096; font-size: 14px">
+            Plans, tarifs, modes de paiement
+          </p>
+          <button
+            (click)="manageBilling()"
+            style="
+              background: #ed8936;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 14px;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#dd6b20'"
+            onmouseout="this.style.backgroundColor='#ed8936'">
+            Gérer
+          </button>
+        </div>
+      </div>
+
+      <!-- Section Organisation -->
+      <div *ngIf="activeSettingsSection === 'organization'" style="padding: 20px">
+        <div style="display: flex; align-items: center; margin-bottom: 20px">
+          <button
+            (click)="router.navigate(['/settings'])"
+            style="
+              background: #e2e8f0;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 6px;
+              margin-right: 16px;
+              cursor: pointer;
+            ">
+            ← Retour
+          </button>
+          <h3 style="margin: 0; color: #2d3748">Paramètres de l'Organisation</h3>
+        </div>
+
+        <div style="display: grid; gap: 20px">
+          <div style="background: #f7fafc; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Informations Générales</h4>
+            <div style="display: grid; gap: 12px">
+              <input
+                type="text"
+                placeholder="Nom de l'organisation"
+                style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px"
+                [(ngModel)]="organizationSettings.companyName" />
+              <input
+                type="email"
+                placeholder="Email de contact"
+                style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px"
+                [(ngModel)]="organizationSettings.email" />
+              <input
+                type="tel"
+                placeholder="Téléphone"
+                style="padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 6px"
+                [(ngModel)]="organizationSettings.phone" />
+              <textarea
+                placeholder="Description"
+                style="
+                  padding: 8px 12px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 6px;
+                  resize: vertical;
+                "
+                rows="3"
+                [(ngModel)]="organizationSettings.description">
+              </textarea>
+            </div>
+          </div>
+
+          <div style="background: #f7fafc; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Logo et Branding</h4>
+            <div style="display: flex; align-items: center; gap: 16px">
+              <div
+                style="
+                  width: 60px;
+                  height: 60px;
+                  background: #667eea;
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  color: white;
+                  font-weight: bold;
+                ">
+                LOGO
+              </div>
+              <button
+                (click)="changeOrganizationLogo()"
+                style="
+                  background: #667eea;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                "
+                onmouseover="this.style.background='#5a67d8'; this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'">
+                Changer le logo
+              </button>
+            </div>
+          </div>
+
+          <div style="text-align: right">
+            <button
+              (click)="saveOrganizationSettings()"
+              style="
+                background: #48bb78;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+                transition: all 0.2s ease;
+              "
+              onmouseover="this.style.background='#38a169'; this.style.transform='translateY(-1px)'"
+              onmouseout="this.style.background='#48bb78'; this.style.transform='translateY(0)'">
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Sécurité -->
+      <div *ngIf="activeSettingsSection === 'security'" style="padding: 20px">
+        <div style="display: flex; align-items: center; margin-bottom: 20px">
+          <button
+            (click)="router.navigate(['/settings'])"
+            style="
+              background: #e2e8f0;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 6px;
+              margin-right: 16px;
+              cursor: pointer;
+            ">
+            ← Retour
+          </button>
+          <h3 style="margin: 0; color: #2d3748">Paramètres de Sécurité</h3>
+        </div>
+
+        <div style="display: grid; gap: 20px">
+          <div style="background: #f0fff4; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Authentification</h4>
+            <div style="display: grid; gap: 12px">
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" checked /> Authentification à deux facteurs (2FA)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" /> Connexion SSO obligatoire
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" checked /> Session automatique après 30 min d'inactivité
+              </label>
+            </div>
+          </div>
+
+          <div style="background: #f0fff4; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Permissions et Rôles</h4>
+            <div style="display: grid; gap: 8px">
+              <div
+                style="
+                  padding: 8px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 4px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                ">
+                <span>Super Admin</span>
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >Actif</span
+                >
+              </div>
+              <div
+                style="
+                  padding: 8px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 4px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                ">
+                <span>Manager</span>
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >Actif</span
+                >
+              </div>
+              <div
+                style="
+                  padding: 8px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 4px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                ">
+                <span>Customer</span>
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >Actif</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: right">
+            <button
+              (click)="updateSecuritySettings()"
+              style="
+                background: #48bb78;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+              ">
+              Mettre à jour
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Facturation -->
+      <div *ngIf="activeSettingsSection === 'billing'" style="padding: 20px">
+        <div style="display: flex; align-items: center; margin-bottom: 20px">
+          <button
+            (click)="router.navigate(['/settings'])"
+            style="
+              background: #e2e8f0;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 6px;
+              margin-right: 16px;
+              cursor: pointer;
+            ">
+            ← Retour
+          </button>
+          <h3 style="margin: 0; color: #2d3748">Paramètres de Facturation</h3>
+        </div>
+
+        <div style="display: grid; gap: 20px">
+          <div style="background: #fffaf0; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Plans Disponibles</h4>
+            <div style="display: grid; gap: 12px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 12px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 6px;
+                ">
+                <div>
+                  <h5 style="margin: 0; color: #2d3748">Plan Starter</h5>
+                  <p style="margin: 0; color: #718096; font-size: 14px">
+                    €19/mois - Jusqu'à 5 utilisateurs
+                  </p>
+                </div>
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >Actif</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 12px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 6px;
+                ">
+                <div>
+                  <h5 style="margin: 0; color: #2d3748">Plan Pro</h5>
+                  <p style="margin: 0; color: #718096; font-size: 14px">
+                    €49/mois - Jusqu'à 25 utilisateurs
+                  </p>
+                </div>
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >Actif</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 12px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 6px;
+                ">
+                <div>
+                  <h5 style="margin: 0; color: #2d3748">Plan Enterprise</h5>
+                  <p style="margin: 0; color: #718096; font-size: 14px">
+                    €99/mois - Utilisateurs illimités
+                  </p>
+                </div>
+                <span
+                  style="
+                    background: #ed8936;
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                  "
+                  >En attente</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #fffaf0; padding: 16px; border-radius: 8px">
+            <h4 style="margin: 0 0 12px 0; color: #2d3748">Méthodes de Paiement</h4>
+            <div style="display: grid; gap: 8px">
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" checked /> Carte de crédit/débit
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" checked /> PayPal
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" /> Virement bancaire
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px">
+                <input type="checkbox" /> Crypto-monnaie
+              </label>
+            </div>
+          </div>
+
+          <div style="text-align: right">
+            <button
+              (click)="manageBillingPlans()"
+              style="
+                background: #ed8936;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-weight: 500;
+              ">
+              Gérer Plans
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Gestion Détaillée des Plans -->
+      <div
+        *ngIf="activeSettingsSection === 'billing' && activeSettingsSubsection === 'plans'"
+        style="padding: 20px">
+        <div style="display: flex; align-items: center; margin-bottom: 20px">
+          <button
+            (click)="router.navigate(['/settings'], { queryParams: { section: 'billing' } })"
+            style="
+              background: #e2e8f0;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 6px;
+              margin-right: 16px;
+              cursor: pointer;
+            ">
+            ← Retour à la Facturation
+          </button>
+          <h3 style="margin: 0; color: #2d3748">Gestion des Plans d'Abonnement</h3>
+        </div>
+
+        <div style="display: grid; gap: 20px">
+          <!-- Plan Starter -->
+          <div
+            style="
+              background: #f7fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 12px;
+              padding: 20px;
+            ">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              ">
+              <h4 style="margin: 0; color: #2d3748; display: flex; align-items: center; gap: 8px">
+                Plan Starter
+                <span
+                  style="
+                    background: #48bb78;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: normal;
+                  "
+                  >Actif</span
+                >
+              </h4>
+              <button
+                style="
+                  background: #4299e1;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                ">
+                Modifier
+              </button>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 16px;
+              ">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Prix mensuel</label
+                >
+                <input
+                  type="text"
+                  value="€19"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Utilisateurs max</label
+                >
+                <input
+                  type="number"
+                  value="5"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Abonnés actuels</label
+                >
+                <span style="padding: 8px; background: #edf2f7; border-radius: 4px; display: block"
+                  >127 clients</span
+                >
+              </div>
+            </div>
+            <div style="margin-bottom: 16px">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #4a5568"
+                >Fonctionnalités incluses</label
+              >
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> 5 applications max</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Support email</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Analytics de base</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" /> API access</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan Pro -->
+          <div
+            style="
+              background: #f7fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 12px;
+              padding: 20px;
+            ">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              ">
+              <h4 style="margin: 0; color: #2d3748; display: flex; align-items: center; gap: 8px">
+                Plan Pro
+                <span
+                  style="
+                    background: #667eea;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: normal;
+                  "
+                  >Populaire</span
+                >
+              </h4>
+              <button
+                style="
+                  background: #4299e1;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                ">
+                Modifier
+              </button>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 16px;
+              ">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Prix mensuel</label
+                >
+                <input
+                  type="text"
+                  value="€49"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Utilisateurs max</label
+                >
+                <input
+                  type="number"
+                  value="25"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Abonnés actuels</label
+                >
+                <span style="padding: 8px; background: #edf2f7; border-radius: 4px; display: block"
+                  >89 clients</span
+                >
+              </div>
+            </div>
+            <div style="margin-bottom: 16px">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #4a5568"
+                >Fonctionnalités incluses</label
+              >
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> 25 applications max</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Support prioritaire</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Analytics avancées</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> API accès complet</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Intégrations tierces</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" /> White-label</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan Enterprise -->
+          <div
+            style="
+              background: #f7fafc;
+              border: 1px solid #e2e8f0;
+              border-radius: 12px;
+              padding: 20px;
+            ">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              ">
+              <h4 style="margin: 0; color: #2d3748; display: flex; align-items: center; gap: 8px">
+                Plan Enterprise
+                <span
+                  style="
+                    background: #ed8936;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: normal;
+                  "
+                  >Premium</span
+                >
+              </h4>
+              <button
+                style="
+                  background: #4299e1;
+                  color: white;
+                  border: none;
+                  padding: 8px 16px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                ">
+                Modifier
+              </button>
+            </div>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 16px;
+              ">
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Prix mensuel</label
+                >
+                <input
+                  type="text"
+                  value="€149"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Utilisateurs max</label
+                >
+                <input
+                  type="text"
+                  value="Illimité"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    border: 1px solid #cbd5e0;
+                    border-radius: 4px;
+                  " />
+              </div>
+              <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 4px; color: #4a5568"
+                  >Abonnés actuels</label
+                >
+                <span style="padding: 8px; background: #edf2f7; border-radius: 4px; display: block"
+                  >23 clients</span
+                >
+              </div>
+            </div>
+            <div style="margin-bottom: 16px">
+              <label style="display: block; font-weight: 500; margin-bottom: 8px; color: #4a5568"
+                >Fonctionnalités incluses</label
+              >
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Applications illimitées</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Support 24/7</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Analytics enterprise</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> API illimitée</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> White-label complet</label
+                >
+                <label style="display: flex; align-items: center; gap: 8px"
+                  ><input type="checkbox" checked /> Déploiement on-premise</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions globales -->
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 20px;
+              background: #edf2f7;
+              border-radius: 8px;
+            ">
+            <div>
+              <h4 style="margin: 0 0 4px 0; color: #2d3748">Actions Globales</h4>
+              <p style="margin: 0; color: #718096; font-size: 14px">
+                Gérer tous vos plans d'abonnement
+              </p>
+            </div>
+            <div style="display: flex; gap: 12px">
+              <button
+                (click)="saveAllPlansSettings()"
+                style="
+                  background: #48bb78;
+                  color: white;
+                  border: none;
+                  padding: 12px 24px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                "
+                onmouseover="this.style.background='#38a169'; this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='#48bb78'; this.style.transform='translateY(0)'">
+                Sauvegarder Tout
+              </button>
+              <button
+                (click)="createNewPlan()"
+                style="
+                  background: #667eea;
+                  color: white;
+                  border: none;
+                  padding: 12px 24px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  font-weight: 500;
+                  transition: all 0.2s ease;
+                "
+                onmouseover="this.style.background='#5a67d8'; this.style.transform='translateY(-1px)'"
+                onmouseout="this.style.background='#667eea'; this.style.transform='translateY(0)'">
+                Créer Nouveau Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards (Dashboard par défaut seulement) -->
+    <div
+      *ngIf="
+        currentRoute === '/dashboard' || currentRoute === '/' || currentRoute.includes('dashboard')
+      "
+      class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-icon">
+          <i [class]="stat.icon"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ stat.value }}</h3>
+          <p>{{ stat.title }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions (Dashboard par défaut seulement) -->
+    <div
+      *ngIf="
+        currentRoute === '/dashboard' || currentRoute === '/' || currentRoute.includes('dashboard')
+      "
+      class="quick-actions">
+      <h2>Actions Rapides</h2>
+      <div class="actions-grid">
+        <button class="action-btn" (click)="navigateToApplications()">
+          <i class="pi pi-desktop"></i>
+          <span>Gérer Applications</span>
+        </button>
+
+        <button class="action-btn" (click)="navigateToSubscriptions()">
+          <i class="pi pi-users"></i>
+          <span>Abonnements</span>
+        </button>
+
+        <button class="action-btn" (click)="navigateToAnalytics()">
+          <i class="pi pi-chart-bar"></i>
+          <span>Analyses</span>
+        </button>
+
+        <button class="action-btn" (click)="navigateToSettings()">
+          <i class="pi pi-cog"></i>
+          <span>Paramètres</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="recent-activities">
+      <h2>Activités Récentes</h2>
+      <div class="activities-list">
+        <div
+          class="activity-item"
+          *ngFor="let activity of recentActivities"
+          [ngClass]="'activity-' + activity.type">
+          <div class="activity-content">
+            <p class="activity-action">{{ activity.action }}</p>
+            <span class="activity-time">{{ activity.time }}</span>
+          </div>
+          <div class="activity-indicator"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Platform Status -->
+    <div class="platform-status">
+      <h2>État de la Plateforme</h2>
+      <div class="status-items">
+        <div class="status-item">
+          <span class="status-label">API</span>
+          <span class="status-value online">En ligne</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Base de données</span>
+          <span class="status-value online">Opérationnelle</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Paiements</span>
+          <span class="status-value online">Actifs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Composant de notification -->
+<app-notification></app-notification>

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true
+  },
+  "paths": {
+    "@app/*": ["src/app/*"],
+    "@Controllers/*": ["src/controllers/*"],
+    "@Services/*": ["src/services/*"],
+    "@Data/*": ["src/data/*"]
+  }
+}

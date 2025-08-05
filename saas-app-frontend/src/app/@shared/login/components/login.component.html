@@ -1,0 +1,64 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Se connecter</h2>
+    <p class="subtitle">Accédez à votre tableau de bord SaaS</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Entrez votre email"
+          [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+        <small
+          class="error-message"
+          *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Email valide requis
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Entrez votre mot de passe"
+          [class.error]="
+            loginForm.get('password')?.invalid && loginForm.get('password')?.touched
+          " />
+        <small
+          class="error-message"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Mot de passe requis
+        </small>
+      </div>
+
+      <div class="error-message" *ngIf="error">{{ error }}</div>
+
+      <button type="submit" class="login-btn" [disabled]="loginForm.invalid || loading">
+        <span *ngIf="loading">Connexion...</span>
+        <span *ngIf="!loading">Se connecter</span>
+      </button>
+    </form>
+
+    <div class="demo-info">
+      <h4>Comptes de démonstration :</h4>
+      <ul>
+        <li><strong>Admin :</strong> admin@demo.com</li>
+        <li><strong>Manager :</strong> manager@demo.com</li>
+        <li><strong>Développeur :</strong> dev@demo.com</li>
+      </ul>
+      <p><em>Mot de passe : demo123</em></p>
+    </div>
+
+    <div class="signup-link">
+      <p>
+        Pas encore de compte ?
+        <a (click)="goToSignup()" class="link">Créer un compte</a>
+      </p>
+    </div>
+  </div>
+</div>

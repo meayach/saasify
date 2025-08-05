@@ -1,0 +1,28 @@
+<div class="modal-backdrop" *ngIf="isVisible" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 class="modal-title">{{ modalData.title }}</h3>
+      <button class="close-button" (click)="onCancel()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-icon" [ngClass]="'icon-' + modalData.type">
+        <i *ngIf="modalData.type === 'danger'" class="pi pi-exclamation-triangle"></i>
+        <i *ngIf="modalData.type === 'warning'" class="pi pi-exclamation-circle"></i>
+        <i *ngIf="modalData.type === 'info'" class="pi pi-info-circle"></i>
+      </div>
+      <p class="modal-message">{{ modalData.message }}</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onCancel()">
+        {{ modalData.cancelText }}
+      </button>
+      <button class="btn" [ngClass]="'btn-' + modalData.type" (click)="onConfirm()">
+        {{ modalData.confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

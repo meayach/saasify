@@ -1,0 +1,156 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <h2>Créer un compte</h2>
+    <p class="subtitle">Rejoignez notre plateforme SaaS</p>
+
+    <!-- Messages de notification -->
+    <div class="notification-container">
+      <!-- Message de succès -->
+      <div class="notification notification-success" *ngIf="showSuccessMessage">
+        <div class="notification-content">
+          <div class="notification-header">
+            <span class="notification-title">Bienvenue !</span>
+          </div>
+          <div class="notification-message">
+            Votre compte a été créé avec succès ! Redirection en cours...
+          </div>
+        </div>
+        <div class="notification-progress progress-success"></div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div class="notification notification-error" *ngIf="showErrorMessage">
+        <div class="notification-content">
+          <div class="notification-header">
+            <span class="notification-title">🚫 Oops, quelque chose s'est mal passé !</span>
+            <button class="notification-close" (click)="showErrorMessage = false">×</button>
+          </div>
+          <div class="notification-message">{{ errorMessage }}</div>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="myForm" (ngSubmit)="onFormSubmit(myForm)" *ngIf="!showSuccessMessage">
+      <div class="form-group">
+        <label for="role">Rôle</label>
+        <select id="role" formControlName="role" [class.error]="invalidFields['role']">
+          <option value="">Sélectionnez votre rôle</option>
+          <option value="customer">Customer</option>
+          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+        </select>
+        <small class="error-message" *ngIf="invalidFields['role']">
+          Veuillez sélectionner un rôle
+        </small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="firstname">Prénom</label>
+          <input
+            type="text"
+            id="firstname"
+            formControlName="firstname"
+            placeholder="Entrez votre prénom"
+            [class.error]="invalidFields['firstname']" />
+          <small class="error-message" *ngIf="invalidFields['firstname']"> Prénom requis </small>
+        </div>
+
+        <div class="form-group half">
+          <label for="lastname">Nom</label>
+          <input
+            type="text"
+            id="lastname"
+            formControlName="lastname"
+            placeholder="Entrez votre nom"
+            [class.error]="invalidFields['lastname']" />
+          <small class="error-message" *ngIf="invalidFields['lastname']"> Nom requis </small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="Entrez votre email"
+          [class.error]="invalidFields['email']" />
+        <small class="error-message" *ngIf="invalidFields['email']"> Email valide requis </small>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Téléphone</label>
+        <input
+          type="tel"
+          id="phone"
+          formControlName="phone"
+          placeholder="(000) 000-000"
+          [class.error]="invalidFields['phone']" />
+        <small class="error-message" *ngIf="invalidFields['phone']">
+          Numéro de téléphone requis
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Entrez votre mot de passe"
+          [class.error]="invalidFields['password']" />
+        <small class="error-message" *ngIf="invalidFields['password']">
+          Mot de passe requis (minimum 6 caractères)
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="streetAddr">Adresse</label>
+        <input
+          type="text"
+          id="streetAddr"
+          formControlName="streetAddr"
+          placeholder="Entrez votre adresse"
+          [class.error]="invalidFields['streetAddr']" />
+        <small class="error-message" *ngIf="invalidFields['streetAddr']"> Adresse requise </small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label for="city">Ville</label>
+          <input
+            type="text"
+            id="city"
+            formControlName="city"
+            placeholder="Entrez votre ville"
+            [class.error]="invalidFields['city']" />
+          <small class="error-message" *ngIf="invalidFields['city']"> Ville requise </small>
+        </div>
+
+        <div class="form-group half">
+          <label for="zipCode">Code postal</label>
+          <input
+            type="text"
+            id="zipCode"
+            formControlName="zipCode"
+            placeholder="00000"
+            [class.error]="invalidFields['zipCode']" />
+          <small class="error-message" *ngIf="invalidFields['zipCode']"> Code postal requis </small>
+        </div>
+      </div>
+
+      <button type="submit" class="signup-btn" [disabled]="loading">
+        <span *ngIf="loading">Création du compte...</span>
+        <span *ngIf="!loading">Créer le compte</span>
+      </button>
+    </form>
+
+    <div class="login-link" *ngIf="!showSuccessMessage">
+      <p>
+        Déjà un compte ?
+        <a (click)="goToLogin()" class="link">Se connecter</a>
+      </p>
+    </div>
+  </div>
+</div>

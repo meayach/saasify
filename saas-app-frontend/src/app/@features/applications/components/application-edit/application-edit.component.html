@@ -1,0 +1,95 @@
+<div class="application-edit-container">
+  <div class="header-section">
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" (click)="router.navigate(['/applications'])">Applications</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">Modifier Application</span>
+    </div>
+
+    <h1>
+      <i class="icon">✏️</i>
+      Modifier l'application
+    </h1>
+    <p class="subtitle">Modifiez les paramètres de votre application SaaS</p>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <i class="pi pi-spinner pi-spin"></i>
+      <p>Chargement de l'application...</p>
+    </div>
+  </div>
+
+  <div class="form-container" *ngIf="!isLoading">
+    <form (ngSubmit)="onSubmit()" class="application-form">
+      <div class="form-group">
+        <label for="name" class="form-label">
+          <i class="icon">📱</i>
+          Nom de l'application *
+        </label>
+        <input
+          type="text"
+          id="name"
+          [(ngModel)]="applicationForm.name"
+          name="name"
+          class="form-input"
+          placeholder="Ex: Mon Application SaaS"
+          required
+          [disabled]="isSubmitting" />
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">
+          <i class="icon">📝</i>
+          Description
+        </label>
+        <textarea
+          id="description"
+          [(ngModel)]="applicationForm.description"
+          name="description"
+          class="form-textarea"
+          placeholder="Décrivez votre application..."
+          rows="4"
+          [disabled]="isSubmitting"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="status" class="form-label">
+          <i class="icon">⚙️</i>
+          Statut
+        </label>
+        <select
+          id="status"
+          [(ngModel)]="applicationForm.status"
+          name="status"
+          class="form-select"
+          [disabled]="isSubmitting">
+          <option value="active">🟢 Active</option>
+          <option value="maintenance">🟡 En maintenance</option>
+          <option value="inactive">🔴 Inactive</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onCancel()"
+          [disabled]="isSubmitting">
+          <i class="icon">❌</i>
+          Annuler
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isSubmitting || !applicationForm.name.trim()">
+          <i class="icon" *ngIf="!isSubmitting">✅</i>
+          <i class="icon spinning" *ngIf="isSubmitting">⏳</i>
+          {{ isSubmitting ? 'Modification...' : 'Sauvegarder les modifications' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
