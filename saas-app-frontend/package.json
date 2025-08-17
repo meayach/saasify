@@ -54,6 +54,4 @@
       "pre-commit": "pretty-quick --staged"
     }
   }
-  ,
-  "preinstall": "node ../scripts/disable-npm-ci.js $npm_config_argv || true"
 }

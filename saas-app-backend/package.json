@@ -103,6 +103,5 @@
       }
     }
   }
-  ,
-  "preinstall": "node ../scripts/disable-npm-ci.js $npm_config_argv || true"
+}
 }
