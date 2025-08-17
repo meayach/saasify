@@ -11,7 +11,6 @@ import { NotificationService } from '../../../../@shared/services/notification.s
 export class ApplicationCreateComponent implements OnInit {
   applicationForm = {
     name: '',
-    description: '',
     status: 'active' as 'active' | 'maintenance' | 'inactive',
   };
 

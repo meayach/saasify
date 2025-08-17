@@ -13,31 +13,30 @@
   <!-- Statistiques -->
   <div class="stats-row">
     <div class="stat-card">
-      <div class="stat-icon">STATS</div>
+      <div class="stat-icon">
+        <i class="pi pi-th-large"></i>
+      </div>
       <div class="stat-content">
         <h3>{{ applicationStats.totalApplications }}</h3>
         <p>Total Applications</p>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">✅</div>
+      <div class="stat-icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
       <div class="stat-content">
         <h3>{{ applicationStats.activeApplications }}</h3>
         <p>Applications Actives</p>
       </div>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">APP</div>
+      <div class="stat-icon">
+        <i class="pi pi-upload"></i>
+      </div>
       <div class="stat-content">
         <h3>{{ applicationStats.deploymentsToday }}</h3>
         <p>Déploiements Aujourd'hui</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">⚠️</div>
-      <div class="stat-content">
-        <h3>{{ applicationStats.maintenanceApplications }}</h3>
-        <p>En Maintenance</p>
       </div>
     </div>
   </div>
@@ -48,24 +47,57 @@
       <i class="pi pi-plus"></i>
       Nouvelle Application
     </button>
-    <button class="btn-secondary" (click)="loadApplications()">
-      <i class="pi pi-refresh"></i>
-      Actualiser
+    <button class="btn-secondary" (click)="refreshData()" [disabled]="loading">
+      <i class="pi pi-refresh" [class.pi-spin]="loading"></i>
+      {{ loading ? 'Actualisation...' : 'Actualiser' }}
     </button>
   </div>
 
   <!-- Liste des applications -->
   <div class="applications-grid" *ngIf="!loading">
-    <div class="application-card" *ngFor="let app of applications">
+    <div
+      class="application-card"
+      *ngFor="let app of applications; trackBy: trackByFn; let i = index">
       <div class="card-header">
-        <h3>{{ app.name }}</h3>
-        <div class="status-badge" [style.background-color]="getStatusColor(app.status)">
-          {{ getStatusText(app.status) }}
+        <div class="app-info">
+          <h3>{{ app.name }}</h3>
+        </div>
+        <div class="app-toggle">
+          <div class="toggle-switch">
+            <div
+              class="manual-toggle"
+              [class.active]="applications[i].isActive"
+              (click)="simpleToggle(i)"
+              [style.background]="applications[i].isActive ? '#4CAF50' : '#ccc'"
+              style="
+                width: 50px;
+                height: 25px;
+                border-radius: 25px;
+                position: relative;
+                cursor: pointer;
+                transition: all 0.3s;
+              ">
+              <div
+                class="toggle-circle"
+                [style.left]="applications[i].isActive ? '27px' : '2px'"
+                style="
+                  width: 21px;
+                  height: 21px;
+                  background: white;
+                  border-radius: 50%;
+                  position: absolute;
+                  top: 2px;
+                  transition: all 0.3s;
+                "></div>
+            </div>
+          </div>
+          <span class="toggle-label">
+            {{ applications[i].isActive ? 'Actif' : 'Inactif' }}
+          </span>
         </div>
       </div>
 
       <div class="card-content">
-        <p class="description">{{ app.description }}</p>
         <div class="metadata">
           <span class="created-date">
             <i class="pi pi-calendar"></i>
@@ -75,13 +107,14 @@
       </div>
 
       <div class="card-actions">
-        <button class="btn-edit" (click)="editApplication(app._id!)">
-          <i class="pi pi-pencil"></i>
-          Modifier
+        <button class="btn-configure" (click)="configureApplication(app._id!)">
+          <i class="pi pi-cog"></i>
+          Configurer
         </button>
         <button class="btn-delete" (click)="deleteApplication(app._id!)">
-          <i class="pi pi-trash"></i>
-          Supprimer
+          <div class="trash-icon">
+            <i class="pi pi-trash"></i>
+          </div>
         </button>
       </div>
     </div>
@@ -97,7 +130,7 @@
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!loading && applications.length === 0">
-    <div class="empty-icon">📱</div>
+    <div class="empty-icon"><i class="pi pi-mobile"></i></div>
     <h3>Aucune application trouvée</h3>
     <p>Commencez par créer votre première application</p>
     <button class="btn-primary" (click)="createNewApplication()">

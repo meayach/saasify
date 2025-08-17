@@ -40,6 +40,21 @@ export class User extends Document {
   phone: string;
 
   @Prop()
+  password: string;
+
+  @Prop()
+  phoneNumber: string;
+
+  @Prop()
+  streetAddress: string;
+
+  @Prop()
+  city: string;
+
+  @Prop()
+  zipCode: string;
+
+  @Prop()
   avatar: string;
 
   @Prop({ type: Date })

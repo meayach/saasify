@@ -23,4 +23,42 @@ export class SaasCustomerAdminRepository {
       throw new HttpException('Creating user failed: ' + e.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  async findByEmail(email: string): Promise<SaasCustomerAdminDocument | null> {
+    try {
+      return await this.saasCustomerAdminmodel.findOne({ email });
+    } catch (e) {
+      console.error('Error finding user by email:', e);
+      return null;
+    }
+  }
+
+  async findAll(): Promise<SaasCustomerAdminDocument[]> {
+    try {
+      return await this.saasCustomerAdminmodel.find().exec();
+    } catch (e) {
+      console.error('Error finding all users:', e);
+      return [];
+    }
+  }
+
+  async findById(id: string): Promise<SaasCustomerAdminDocument | null> {
+    try {
+      return await this.saasCustomerAdminmodel.findById(id).exec();
+    } catch (e) {
+      console.error('Error finding user by ID:', e);
+      return null;
+    }
+  }
+
+  async updateById(id: string, updateData: any): Promise<SaasCustomerAdminDocument | null> {
+    try {
+      return await this.saasCustomerAdminmodel
+        .findByIdAndUpdate(id, updateData, { new: true })
+        .exec();
+    } catch (e) {
+      console.error('Error updating user:', e);
+      return null;
+    }
+  }
 }

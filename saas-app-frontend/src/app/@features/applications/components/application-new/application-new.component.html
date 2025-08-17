@@ -1,0 +1,190 @@
+<div class="application-configure-container">
+  <div class="header-section">
+    <div class="breadcrumb">
+      <span class="breadcrumb-item" (click)="router.navigate(['/applications'])">Applications</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">Nouvelle Application</span>
+    </div>
+
+    <h1>Créer une nouvelle application</h1>
+    <p class="subtitle">Configurez votre nouvelle application SaaS en quelques étapes simples</p>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <i class="pi pi-spinner pi-spin"></i>
+      <p>Préparation de la nouvelle application...</p>
+    </div>
+  </div>
+
+  <div class="form-container" *ngIf="!isLoading">
+    <form (ngSubmit)="onSubmit()" class="application-form">
+      <!-- Section: Activation/Désactivation -->
+      <div class="form-section">
+        <div class="toggle-section">
+          <div class="toggle-group">
+            <label class="toggle-label">Statut de l'application</label>
+            <div class="toggle-switch">
+              <input
+                type="checkbox"
+                id="applicationActive"
+                [(ngModel)]="configurationForm.isActive"
+                name="applicationActive"
+                class="toggle-input"
+                [disabled]="isSubmitting" />
+              <label for="applicationActive" class="toggle-slider">
+                <span class="toggle-button"></span>
+              </label>
+              <span class="toggle-text">
+                {{ configurationForm.isActive ? 'Application Active' : 'Application Désactivée' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Informations de base -->
+      <div class="form-section">
+        <h3 class="section-title">Informations de base</h3>
+
+        <div class="form-group">
+          <label for="applicationName" class="form-label">Nom de l'application *</label>
+          <input
+            type="text"
+            id="applicationName"
+            [(ngModel)]="configurationForm.applicationName"
+            (input)="onApplicationNameChange()"
+            name="applicationName"
+            class="form-input"
+            placeholder="Ex: Mon Application SaaS"
+            required
+            [disabled]="isSubmitting" />
+          <small class="form-help"
+            >Le nom de votre nouvelle application (minimum 3 caractères)</small
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="domainName" class="form-label">Nom de domaine *</label>
+          <input
+            type="text"
+            id="domainName"
+            [(ngModel)]="configurationForm.domainName"
+            name="domainName"
+            class="form-input"
+            placeholder="mon-application.saasify.com"
+            required
+            [disabled]="isSubmitting" />
+          <small class="form-help">Généré automatiquement à partir du nom de l'application</small>
+        </div>
+
+        <div class="form-group">
+          <label for="logo" class="form-label">Logo (optionnel)</label>
+          <div class="logo-upload-section">
+            <input
+              type="file"
+              id="logo"
+              (change)="onLogoSelected($event)"
+              accept="image/*"
+              class="file-input"
+              [disabled]="isSubmitting"
+              #logoInput />
+            <div class="upload-area" (click)="logoInput.click()">
+              <div class="logo-preview" *ngIf="logoPreview">
+                <img [src]="logoPreview" alt="Logo prévisualisé" />
+              </div>
+              <div class="upload-placeholder" *ngIf="!logoPreview">
+                <i class="pi pi-upload"></i>
+                <span>Cliquez pour importer un logo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Méthodes de paiement -->
+      <div class="form-section">
+        <h3 class="section-title">Méthodes de paiement *</h3>
+        <p class="section-description">
+          Sélectionnez les méthodes de paiement acceptées par votre application
+        </p>
+
+        <div class="payment-methods-grid">
+          <div class="payment-card" [class.selected]="configurationForm.paymentMethods.paypal">
+            <input
+              type="checkbox"
+              id="paypal"
+              [(ngModel)]="configurationForm.paymentMethods.paypal"
+              name="paypal"
+              class="payment-checkbox"
+              [disabled]="isSubmitting" />
+            <label for="paypal" class="payment-label">
+              <div class="payment-icon">
+                <img
+                  src="https://cdn.brandfetch.io/id-Wd4a4TS/theme/dark/idCerXwXCa.svg?c=1bxid64Mup7aczewSAYMX&t=1727787911932"
+                  alt="PayPal" />
+              </div>
+              <div class="payment-name">PayPal</div>
+              <div class="payment-description">Paiements sécurisés via PayPal</div>
+              <!-- payment-status removed as requested -->
+            </label>
+          </div>
+
+          <div class="payment-card" [class.selected]="configurationForm.paymentMethods.wize">
+            <input
+              type="checkbox"
+              id="wize"
+              [(ngModel)]="configurationForm.paymentMethods.wize"
+              name="wize"
+              class="payment-checkbox"
+              [disabled]="isSubmitting" />
+            <label for="wize" class="payment-label">
+              <div class="payment-icon">
+                <img
+                  src="https://cdn.brandfetch.io/idk6fxo1w1/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1714558173511"
+                  alt="Wize" />
+              </div>
+              <div class="payment-name">Wize</div>
+              <div class="payment-description">Transferts bancaires instantanés</div>
+            </label>
+          </div>
+
+          <div class="payment-card" [class.selected]="configurationForm.paymentMethods.payonner">
+            <input
+              type="checkbox"
+              id="payonner"
+              [(ngModel)]="configurationForm.paymentMethods.payonner"
+              name="payonner"
+              class="payment-checkbox"
+              [disabled]="isSubmitting" />
+            <label for="payonner" class="payment-label">
+              <div class="payment-icon">
+                <img
+                  src="https://cdn.brandfetch.io/idVmyDyyyZ/theme/light/id3dQEWV2h.svg?c=1bxid64Mup7aczewSAYMX&t=1684253479844"
+                  alt="Payoneer" />
+              </div>
+              <div class="payment-name">Payonner</div>
+              <div class="payment-description">Solutions de paiement flexibles</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onCancel()"
+          [disabled]="isSubmitting">
+          Annuler
+        </button>
+
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Création en cours...' : "Créer l'application" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

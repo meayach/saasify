@@ -1,0 +1,146 @@
+<div class="plans-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="breadcrumbs">
+      <span class="breadcrumb-item" (click)="router.navigate(['/dashboard'])">Dashboard</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">Gestion des plans</span>
+    </div>
+    <div class="header-content">
+      <div class="header-info">
+        <h1>Gestion des plans d'abonnement</h1>
+        <p class="subtitle">Créez et gérez vos offres d'abonnement</p>
+      </div>
+      <button class="btn-primary" (click)="onCreatePlan()">
+        <i class="pi pi-plus"></i>
+        Créer un plan
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-list"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.totalPlans }}</div>
+        <div class="stat-label">Plans totaux</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon active">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.activePlans }}</div>
+        <div class="stat-label">Plans actifs</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon subscriptions">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.subscriptions }}</div>
+        <div class="stat-label">Abonnements</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon revenue">
+        <i class="pi pi-euro"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.revenue }}€</div>
+        <div class="stat-label">Revenus mensuels</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Liste des plans -->
+  <div class="plans-grid" *ngIf="!loading">
+    <div class="plan-card" *ngFor="let plan of plans" [class.popular]="plan.isPopular">
+      <!-- Badge populaire -->
+      <div class="popular-badge" *ngIf="plan.isPopular">
+        <i class="pi pi-star"></i>
+        Populaire
+      </div>
+
+      <!-- Header du plan -->
+      <div class="plan-header">
+        <h3 class="plan-name">{{ plan.name }}</h3>
+        <div class="plan-price">{{ getPriceDisplay(plan) }}</div>
+        <p class="plan-description">{{ plan.description }}</p>
+      </div>
+
+      <!-- Fonctionnalités -->
+      <div class="plan-features">
+        <div class="feature-item" *ngFor="let feature of plan.features">
+          <i class="pi pi-check"></i>
+          <span>{{ feature }}</span>
+        </div>
+      </div>
+
+      <!-- Limites -->
+      <div class="plan-limits">
+        <div class="limit-item">
+          <span class="limit-label">Utilisateurs max:</span>
+          <span class="limit-value">{{ getMaxUsersDisplay(plan.maxUsers) }}</span>
+        </div>
+        <div class="limit-item">
+          <span class="limit-label">Applications max:</span>
+          <span class="limit-value">{{ getMaxAppsDisplay(plan.maxApps) }}</span>
+        </div>
+      </div>
+
+      <!-- Statut -->
+      <div class="plan-status">
+        <span class="status-badge" [class]="getStatusClass(plan.status)">
+          {{ plan.status === 'active' ? 'Actif' : 'Inactif' }}
+        </span>
+        <span class="plan-date">Créé le {{ plan.createdDate | date : 'dd/MM/yyyy' }}</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="plan-actions">
+        <button class="btn-action btn-edit" (click)="onEditPlan(plan)" title="Modifier">
+          <i class="pi pi-pencil"></i>
+        </button>
+        <button
+          class="btn-action btn-toggle"
+          [class.active]="plan.status === 'active'"
+          (click)="onToggleStatus(plan)"
+          [title]="plan.status === 'active' ? 'Désactiver' : 'Activer'">
+          <i class="pi" [class]="plan.status === 'active' ? 'pi-eye-slash' : 'pi-eye'"></i>
+        </button>
+        <button
+          class="btn-action btn-subscribers"
+          (click)="onViewSubscriptions(plan)"
+          title="Voir les abonnés">
+          <i class="pi pi-users"></i>
+        </button>
+        <button class="btn-action btn-delete" (click)="onDeletePlan(plan)" title="Supprimer">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div class="loading-container" *ngIf="loading">
+    <i class="pi pi-spinner pi-spin"></i>
+    <p>Chargement des plans...</p>
+  </div>
+
+  <!-- Aucun plan -->
+  <div class="empty-state" *ngIf="!loading && plans.length === 0">
+    <i class="pi pi-inbox"></i>
+    <h3>Aucun plan d'abonnement</h3>
+    <p>Commencez par créer votre premier plan d'abonnement</p>
+    <button class="btn-primary" (click)="onCreatePlan()">
+      <i class="pi pi-plus"></i>
+      Créer un plan
+    </button>
+  </div>
+</div>

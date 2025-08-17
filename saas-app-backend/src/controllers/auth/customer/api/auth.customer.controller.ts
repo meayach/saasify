@@ -18,4 +18,18 @@ export class AuthCustomerController {
     );
     throw new HttpException('success', HttpStatus.OK);
   }
+
+  @Post(AUTH_CUSTOMER_API_PATHS.LOGIN_PATH)
+  async loginCustomer(@Body() loginData: { email: string; password: string }) {
+    try {
+      const user = await this.authCustomerService.login(loginData.email, loginData.password);
+      return {
+        success: true,
+        message: 'Connexion réussie',
+        user: user,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+    }
+  }
 }

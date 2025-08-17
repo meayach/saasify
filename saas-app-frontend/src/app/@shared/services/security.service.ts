@@ -101,28 +101,28 @@ export class SecurityService {
 
   // Mettre à jour les paramètres de sécurité
   updateSecuritySettings(settings: Partial<SecuritySettings>): Observable<SecuritySettings> {
-    console.log('🔄 SecurityService: Démarrage de la mise à jour...');
-    console.log('🎯 SecurityService: URL cible:', `${this.baseUrl}/settings`);
-    console.log('📦 SecurityService: Données reçues:', settings);
+    console.log('SecurityService: Démarrage de la mise à jour...');
+    console.log('SecurityService: URL cible:', `${this.baseUrl}/settings`);
+    console.log('SecurityService: Données reçues:', settings);
 
     // Validation côté client
     const validationError = this.validateSecuritySettings(settings);
     if (validationError) {
-      console.error('❌ SecurityService: Erreur de validation:', validationError);
+      console.error('SecurityService: Erreur de validation:', validationError);
       return throwError(() => new Error(validationError));
     }
 
-    console.log('✅ SecurityService: Validation réussie');
-    console.log('🚀 SecurityService: Envoi de la requête HTTP PUT...');
+    console.log('SecurityService: Validation réussie');
+    console.log('SecurityService: Envoi de la requête HTTP PUT...');
 
     return this.http.put<ApiResponse<SecuritySettings>>(`${this.baseUrl}/settings`, settings).pipe(
       map((response) => {
-        console.log('📨 SecurityService: Réponse HTTP reçue:', response);
+        console.log('SecurityService: Réponse HTTP reçue:', response);
         if (response.success) {
-          console.log('✅ SecurityService: Succès - données extraites:', response.data);
+          console.log('SecurityService: Succès - données extraites:', response.data);
           return response.data;
         } else {
-          console.error('❌ SecurityService: Échec selon la réponse:', response.message);
+          console.error('SecurityService: Échec selon la réponse:', response.message);
           throw new Error(
             response.message || 'Erreur lors de la sauvegarde des paramètres de sécurité',
           );

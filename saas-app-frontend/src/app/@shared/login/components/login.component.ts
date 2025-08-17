@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService } from '../../../@core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ export class LoginComponent {
   loading = false;
   error = '';
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
@@ -24,22 +25,33 @@ export class LoginComponent {
       this.loading = true;
       this.error = '';
 
-      // Simuler la connexion - à remplacer par l'authentification réelle
-      const email = this.loginForm.value.email;
+      const credentials = {
+        email: this.loginForm.value.email,
+        password: this.loginForm.value.password,
+      };
 
-      // Redirection basée sur l'email pour la démo
-      if (email.includes('admin')) {
-        this.router.navigate(['/customer-admin']);
-      } else if (email.includes('manager')) {
-        this.router.navigate(['/customer-manager']);
-      } else if (email.includes('dev')) {
-        this.router.navigate(['/customer-developer']);
-      } else {
-        // Redirection par défaut vers admin
-        this.router.navigate(['/customer-admin']);
-      }
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          if (response.success && response.user) {
+            // Stocker les informations utilisateur dans le localStorage
+            localStorage.setItem('currentUser', JSON.stringify(response.user));
+            localStorage.setItem('isLoggedIn', 'true');
 
-      this.loading = false;
+            // Redirection automatique vers le dashboard
+            console.log('Connexion réussie, redirection vers le dashboard...');
+            this.router.navigate(['/dashboard']).then(() => {
+              console.log('Redirection vers le dashboard terminée');
+            });
+          } else {
+            this.error = 'Échec de la connexion';
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Email ou mot de passe incorrect';
+          this.loading = false;
+        },
+      });
     }
   }
 

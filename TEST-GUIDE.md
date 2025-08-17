@@ -15,24 +15,9 @@
 
 ## 👥 Comptes de Test
 
-### Administrateur Client
+_Les comptes de démonstration ont été supprimés pour des raisons de sécurité._
+_Veuillez créer vos propres comptes via l'interface d'inscription._
 
-- **Email**: admin@demo.com
-- **Mot de passe**: admin123
-- **Rôle**: CUSTOMER_ADMIN
-- **Accès**: Gestion complète de l'organisation
-
-### Manager Client
-
-- **Email**: manager@demo.com
-- **Mot de passe**: manager123
-- **Rôle**: CUSTOMER_MANAGER
-- **Accès**: Gestion des applications et équipes
-
-### Développeur Client
-
-- **Email**: developer@demo.com
-- **Mot de passe**: dev123
 - **Rôle**: CUSTOMER_DEVELOPER
 - **Accès**: Développement et déploiement
 

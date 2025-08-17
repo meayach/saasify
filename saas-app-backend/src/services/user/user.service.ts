@@ -90,6 +90,18 @@ export class UserService {
     await this.userModel.findByIdAndUpdate(id, { lastLoginAt: new Date() }).exec();
   }
 
+  async updatePassword(id: string, newPassword: string): Promise<void> {
+    // TODO: Hash the password with bcrypt before saving
+    // For now, we'll store it as plain text (NOT RECOMMENDED for production)
+    const updatedUser = await this.userModel
+      .findByIdAndUpdate(id, { password: newPassword }, { new: true })
+      .exec();
+
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  }
+
   private mapToResponseDto(user: User): UserResponseDto {
     return {
       id: user._id.toString(),
@@ -99,6 +111,10 @@ export class UserService {
       role: user.role,
       status: user.status,
       phone: user.phone,
+      phoneNumber: user.phoneNumber,
+      streetAddress: user.streetAddress,
+      city: user.city,
+      zipCode: user.zipCode,
       avatar: user.avatar,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,

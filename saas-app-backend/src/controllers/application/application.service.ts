@@ -6,7 +6,6 @@ import mongoose from 'mongoose';
 export interface Application {
   _id?: string;
   name: string;
-  description: string;
   status: 'active' | 'maintenance' | 'inactive';
   deployedAt?: Date;
   createdAt?: Date;
@@ -28,7 +27,6 @@ export class ApplicationService {
     return {
       _id: saasApp._id?.toString(),
       name: saasApp.applicationName || '',
-      description: saasApp.description || 'Application SaaS',
       status: (saasApp.status as 'active' | 'maintenance' | 'inactive') || 'active',
       deployedAt: new Date(),
       createdAt: saasApp.createdAt || new Date(),
@@ -71,7 +69,6 @@ export class ApplicationService {
       realmClientSecret: `secret_${Date.now()}`,
       saasClientSecret: `saas_secret_${Date.now()}`,
       applicationName: applicationData.name || '',
-      description: applicationData.description || '',
       status: applicationData.status || 'active',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -87,14 +84,22 @@ export class ApplicationService {
   }
 
   async update(id: string, applicationData: Partial<Application>): Promise<Application> {
-    console.log("✏️ Mise à jour de l'application ID:", id);
+    console.log("✏️ Mise à jour de l'application ID:", id, 'avec les données:', applicationData);
 
     const updateData: Partial<SaasApplicationPOJO> = {
-      applicationName: applicationData.name,
-      description: applicationData.description,
-      status: applicationData.status,
       updatedAt: new Date(),
     };
+
+    // Ajouter seulement les champs fournis
+    if (applicationData.name !== undefined) {
+      updateData.applicationName = applicationData.name;
+    }
+
+    if (applicationData.status !== undefined) {
+      updateData.status = applicationData.status;
+    }
+
+    console.log('📝 Données de mise à jour:', updateData);
 
     const updatedApp = await this.saasApplicationRepository.updateSaasApplication(id, updateData);
     if (!updatedApp) {

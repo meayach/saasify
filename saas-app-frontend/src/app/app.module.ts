@@ -31,6 +31,8 @@ import { AppComponent } from './app.component';
 import { SignupModule } from './@shared/signup/signup.module';
 import { LoginModule } from './@shared/login/login.module';
 import { DashboardModule } from './@shared/dashboard/dashboard.module';
+import { TestNotificationComponent } from './test-notification.component';
+import { TestApiComponent } from './test-api.component';
 import { SharedModule } from './@shared/shared.module';
 
 // Store
@@ -56,7 +58,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, TestNotificationComponent, TestApiComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationService, Application } from '../../../../@shared/services/application.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
+import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
 
 @Component({
   selector: 'app-application-edit',
@@ -11,7 +12,6 @@ import { NotificationService } from '../../../../@shared/services/notification.s
 export class ApplicationEditComponent implements OnInit {
   applicationForm = {
     name: '',
-    description: '',
     status: 'active' as 'active' | 'maintenance' | 'inactive',
   };
 
@@ -24,6 +24,7 @@ export class ApplicationEditComponent implements OnInit {
     private route: ActivatedRoute,
     private applicationService: ApplicationService,
     private notificationService: NotificationService,
+    private applicationRefreshService: ApplicationRefreshService,
   ) {}
 
   ngOnInit(): void {
@@ -44,7 +45,6 @@ export class ApplicationEditComponent implements OnInit {
         if (app) {
           this.applicationForm = {
             name: app.name,
-            description: app.description,
             status: app.status,
           };
         } else {
@@ -81,6 +81,9 @@ export class ApplicationEditComponent implements OnInit {
           `L'application "${application.name}" a été modifiée avec succès !`,
           'Application modifiée',
         );
+        // Marquer qu'un rafraîchissement est nécessaire pour la liste
+        localStorage.setItem('shouldRefreshApplications', 'true');
+        this.applicationRefreshService.triggerRefresh();
         // Rediriger vers la liste des applications
         this.router.navigate(['/applications']);
       },

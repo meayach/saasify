@@ -16,10 +16,7 @@
   <div class="form-container">
     <form (ngSubmit)="onSubmit()" class="application-form">
       <div class="form-group">
-        <label for="name" class="form-label">
-          <i class="icon">📱</i>
-          Nom de l'application *
-        </label>
+        <label for="name" class="form-label"> Nom de l'application * </label>
         <input
           type="text"
           id="name"
@@ -29,21 +26,6 @@
           placeholder="Ex: Mon Application SaaS"
           required
           [disabled]="isSubmitting" />
-      </div>
-
-      <div class="form-group">
-        <label for="description" class="form-label">
-          <i class="icon">📝</i>
-          Description
-        </label>
-        <textarea
-          id="description"
-          [(ngModel)]="applicationForm.description"
-          name="description"
-          class="form-textarea"
-          placeholder="Décrivez votre application..."
-          rows="4"
-          [disabled]="isSubmitting"></textarea>
       </div>
 
       <div class="form-group">
@@ -57,7 +39,7 @@
           name="status"
           class="form-select"
           [disabled]="isSubmitting">
-          <option value="active">Active</option>
+          <option value="active">🟢 Active</option>
           <option value="maintenance">🟡 En maintenance</option>
           <option value="inactive">🔴 Inactive</option>
         </select>
@@ -69,7 +51,6 @@
           class="btn btn-secondary"
           (click)="onCancel()"
           [disabled]="isSubmitting">
-          <i class="icon">❌</i>
           Annuler
         </button>
 

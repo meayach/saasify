@@ -1,0 +1,107 @@
+<div class="user-team-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="breadcrumbs">
+      <span class="breadcrumb-item" (click)="router.navigate(['/dashboard'])">Dashboard</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">Gestion de l'équipe</span>
+    </div>
+    <h1>Gestion de l'équipe</h1>
+    <p class="subtitle">Gérez les membres de votre équipe, leurs rôles et permissions</p>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ teamMembers.length }}</h3>
+        <p>Total Membres</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ (teamMembers | filter : 'status' : 'active').length }}</h3>
+        <p>Membres Actifs</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-user-plus"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ (teamMembers | filter : 'role' : 'manager').length }}</h3>
+        <p>Managers</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="pi pi-code"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ (teamMembers | filter : 'role' : 'developer').length }}</h3>
+        <p>Développeurs</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions-bar">
+    <button class="btn-primary" (click)="createNewMember()">
+      <i class="pi pi-plus"></i>
+      Ajouter un membre
+    </button>
+  </div>
+
+  <!-- Table des membres -->
+  <div class="members-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Date d'arrivée</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let member of teamMembers">
+          <td>{{ member.firstName }} {{ member.lastName }}</td>
+          <td>{{ member.email }}</td>
+          <td>
+            <span class="role-badge" [ngClass]="'role-' + member.role">
+              {{ member.role }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + member.status">
+              {{ member.status }}
+            </span>
+          </td>
+          <td>{{ member.joinedDate | date : 'dd/MM/yyyy' }}</td>
+          <td class="actions">
+            <button class="btn-edit" (click)="editMember(member.id)" title="Modifier">
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              class="btn-toggle"
+              (click)="toggleMemberStatus(member.id)"
+              title="Activer/Désactiver">
+              <i class="pi pi-power-off"></i>
+            </button>
+            <button class="btn-delete" (click)="deleteMember(member.id)" title="Supprimer">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -5,8 +5,8 @@ import { Observable } from 'rxjs';
 export interface Application {
   _id?: string;
   name: string;
-  description: string;
   status: 'active' | 'maintenance' | 'inactive';
+  isActive?: boolean;
   deployedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -50,6 +50,11 @@ export class ApplicationService {
   // Mettre à jour une application
   updateApplication(id: string, application: Partial<Application>): Observable<Application> {
     return this.http.put<Application>(`${this.baseUrl}/${id}`, application);
+  }
+
+  // Mettre à jour le statut d'une application
+  updateApplicationStatus(id: string, isActive: boolean): Observable<Application> {
+    return this.http.patch<Application>(`${this.baseUrl}/${id}/status`, { isActive });
   }
 
   // Supprimer une application

@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApplicationModule } from './controllers/application/application.module';
+import { ApplicationConfigurationModule } from './controllers/application-configuration/application-configuration.module';
 import { OrganizationModule } from './controllers/organization/organization.module';
 import { SecurityModule } from './controllers/security/security.module';
 import { BillingModule } from './controllers/billing/billing.module';
@@ -64,10 +65,7 @@ import { SaasSubscriptionController } from './controllers/subscription/saas-subs
 import { DashboardSubscriptionController } from './controllers/subscription/dashboard-subscription.controller';
 import { SaasPaymentController } from './controllers/payment/saas-payment.controller';
 import { AuthControllerModule } from './controllers/auth/auth.controller.module';
-import {
-  SaasCustomerAdmin,
-  SaasCustomerAdminSchema,
-} from './data/models/saasCustomerAdmin/saas-customer-admin.model';
+import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAdmin.data.module';
 
 @Module({
   imports: [
@@ -91,7 +89,6 @@ import {
       { name: SaasSubscription.name, schema: SaasSubscriptionSchema },
       { name: SaasPayment.name, schema: SaasPaymentSchema },
       { name: SaasPaymentMethodConfiguration.name, schema: SaasPaymentMethodConfigurationSchema },
-      { name: SaasCustomerAdmin.name, schema: SaasCustomerAdminSchema },
       { name: SecuritySettings.name, schema: SecuritySettingsSchema },
       { name: AuditLog.name, schema: AuditLogSchema },
       { name: BillingSettings.name, schema: BillingSettingsSchema },
@@ -113,9 +110,11 @@ import {
     AutomapperModule.forRoot({ strategyInitializer: classes() }),
     AuthControllerModule,
     ApplicationModule,
+    ApplicationConfigurationModule,
     OrganizationModule,
     SecurityModule,
     BillingModule,
+    SaasCustomerAdminModule,
   ],
   controllers: [
     AppController,

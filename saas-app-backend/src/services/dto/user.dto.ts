@@ -46,6 +46,11 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
+  @ApiPropertyOptional({ description: 'User email address' })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
   @ApiPropertyOptional({ description: 'User first name' })
   @IsOptional()
   @IsString()
@@ -65,6 +70,26 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @ApiPropertyOptional({ description: 'User phone number (alternative field)' })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({ description: 'User street address' })
+  @IsOptional()
+  @IsString()
+  streetAddress?: string;
+
+  @ApiPropertyOptional({ description: 'User city' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ description: 'User zip code' })
+  @IsOptional()
+  @IsString()
+  zipCode?: string;
 
   @ApiPropertyOptional({ description: 'User avatar URL' })
   @IsOptional()
@@ -108,6 +133,18 @@ export class UserResponseDto {
 
   @ApiPropertyOptional({ description: 'User phone number' })
   phone?: string;
+
+  @ApiPropertyOptional({ description: 'User phone number (alternative field)' })
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({ description: 'User street address' })
+  streetAddress?: string;
+
+  @ApiPropertyOptional({ description: 'User city' })
+  city?: string;
+
+  @ApiPropertyOptional({ description: 'User zip code' })
+  zipCode?: string;
 
   @ApiPropertyOptional({ description: 'User avatar URL' })
   avatar?: string;

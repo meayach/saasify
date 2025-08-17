@@ -9,8 +9,7 @@ import { NotificationService, Notification } from '../../services/notification.s
       <div
         *ngFor="let notification of notifications"
         class="notification"
-        [ngClass]="'notification-' + notification.type"
-        [@slideIn]>
+        [ngClass]="'notification-' + notification.type">
         <div class="notification-content">
           <div class="notification-header" *ngIf="notification.title">
             <span class="notification-title">{{ notification.title }}</span>
@@ -20,8 +19,6 @@ import { NotificationService, Notification } from '../../services/notification.s
           </div>
           <div class="notification-message">{{ notification.message }}</div>
         </div>
-
-        <div class="notification-progress" [ngClass]="'progress-' + notification.type"></div>
       </div>
     </div>
   `,
@@ -40,31 +37,30 @@ import { NotificationService, Notification } from '../../services/notification.s
       .notification {
         min-width: 320px;
         max-width: 400px;
-        border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         overflow: hidden;
         position: relative;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        animation: slideIn 0.3s ease-out;
       }
 
       .notification-success {
-        background: linear-gradient(135deg, #4caf50, #45a049);
+        background: #4caf50;
         color: white;
       }
 
       .notification-error {
-        background: linear-gradient(135deg, #f44336, #d32f2f);
+        background: #f44336;
         color: white;
       }
 
       .notification-warning {
-        background: linear-gradient(135deg, #ff9800, #f57c00);
+        background: #ff9800;
         color: white;
       }
 
       .notification-info {
-        background: linear-gradient(135deg, #2196f3, #1976d2);
+        background: #2196f3;
         color: white;
       }
 
@@ -93,11 +89,7 @@ import { NotificationService, Notification } from '../../services/notification.s
         padding: 0;
         width: 24px;
         height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         border-radius: 50%;
-        transition: background-color 0.2s;
       }
 
       .notification-close:hover {
@@ -107,36 +99,6 @@ import { NotificationService, Notification } from '../../services/notification.s
       .notification-message {
         font-size: 14px;
         line-height: 1.4;
-      }
-
-      .notification-progress {
-        height: 4px;
-        animation: progress 5s linear forwards;
-      }
-
-      .progress-success {
-        background: linear-gradient(90deg, #66bb6a, #4caf50);
-      }
-
-      .progress-error {
-        background: linear-gradient(90deg, #ef5350, #f44336);
-      }
-
-      .progress-warning {
-        background: linear-gradient(90deg, #ffa726, #ff9800);
-      }
-
-      .progress-info {
-        background: linear-gradient(90deg, #42a5f5, #2196f3);
-      }
-
-      @keyframes progress {
-        from {
-          width: 100%;
-        }
-        to {
-          width: 0%;
-        }
       }
 
       @keyframes slideIn {
@@ -149,13 +111,8 @@ import { NotificationService, Notification } from '../../services/notification.s
           opacity: 1;
         }
       }
-
-      .notification {
-        animation: slideIn 0.3s ease-out;
-      }
     `,
   ],
-  animations: [],
 })
 export class NotificationComponent implements OnInit, OnDestroy {
   notifications: Notification[] = [];

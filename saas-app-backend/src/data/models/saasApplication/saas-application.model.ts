@@ -21,9 +21,6 @@ export class SaasApplication extends Document {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
-  description: string;
-
   @Prop({ type: String, enum: ApplicationStatus, default: ApplicationStatus.DEVELOPMENT })
   status: ApplicationStatus;
 

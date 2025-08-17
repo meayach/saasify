@@ -1,0 +1,139 @@
+<div class="edit-member-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="breadcrumbs">
+      <span class="breadcrumb-item" (click)="router.navigate(['/dashboard'])">Dashboard</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item" (click)="router.navigate(['/user'])">Gestion de l'équipe</span>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-current">Modifier un membre</span>
+    </div>
+    <h1>Modifier un membre de l'équipe</h1>
+    <p class="subtitle" *ngIf="memberData">
+      Modification des informations de {{ memberData.firstName }} {{ memberData.lastName }}
+    </p>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="form-container" *ngIf="memberData">
+    <!-- Informations actuelles -->
+    <div class="current-info">
+      <h3>Informations actuelles</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Nom complet:</span>
+          <span class="info-value">{{ memberData.firstName }} {{ memberData.lastName }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ memberData.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Rôle actuel:</span>
+          <span class="role-badge" [class]="'role-' + memberData.role">
+            {{ getRoleLabel(memberData.role) }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Statut:</span>
+          <span class="status-badge" [class]="'status-' + memberData.status">
+            {{ memberData.status === 'active' ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Date d'arrivée:</span>
+          <span class="info-value">{{ memberData.joinedDate | date : 'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire de modification -->
+    <form [formGroup]="memberForm" (ngSubmit)="onSubmit()">
+      <h3>Nouvelles informations</h3>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="firstName">Prénom *</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            class="form-control"
+            [class.error]="
+              memberForm.get('firstName')?.invalid && memberForm.get('firstName')?.touched
+            " />
+          <div
+            class="error-message"
+            *ngIf="memberForm.get('firstName')?.invalid && memberForm.get('firstName')?.touched">
+            Le prénom est requis (min. 2 caractères)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Nom *</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            class="form-control"
+            [class.error]="
+              memberForm.get('lastName')?.invalid && memberForm.get('lastName')?.touched
+            " />
+          <div
+            class="error-message"
+            *ngIf="memberForm.get('lastName')?.invalid && memberForm.get('lastName')?.touched">
+            Le nom est requis (min. 2 caractères)
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="email">Email *</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+            [class.error]="memberForm.get('email')?.invalid && memberForm.get('email')?.touched" />
+          <div
+            class="error-message"
+            *ngIf="memberForm.get('email')?.invalid && memberForm.get('email')?.touched">
+            Veuillez saisir une adresse email valide
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="role">Rôle *</label>
+          <select id="role" formControlName="role" class="form-control">
+            <option *ngFor="let role of roles" [value]="role.value">
+              {{ role.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="status">Statut *</label>
+          <select id="status" formControlName="status" class="form-control">
+            <option value="active">Actif</option>
+            <option value="inactive">Inactif</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()">Annuler</button>
+        <button type="submit" class="btn-primary" [disabled]="memberForm.invalid || loading">
+          <i class="pi pi-spinner pi-spin" *ngIf="loading"></i>
+          <i class="pi pi-check" *ngIf="!loading"></i>
+          {{ loading ? 'Modification...' : 'Modifier le membre' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Chargement -->
+  <div class="loading-container" *ngIf="!memberData">
+    <i class="pi pi-spinner pi-spin"></i>
+    <p>Chargement des informations du membre...</p>
+  </div>
+</div>

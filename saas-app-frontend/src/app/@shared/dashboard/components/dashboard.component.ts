@@ -12,6 +12,7 @@ import {
   PaymentMethod,
   Invoice,
 } from '../../services/billing.service';
+import { UserService, UserProfile, PasswordChangeRequest } from '../../services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,9 +24,33 @@ export class DashboardComponent implements OnInit {
   userName = '';
   userEmail = '';
   isDropdownOpen = false;
+  userDropdownVisible = false;
   currentRoute = '';
-  activeSettingsSection = ''; // 'organization' | 'security' | 'billing' | ''
+  activeSettingsSection = ''; // 'organization' | 'security' | 'billing' | 'profile' | 'change-password'
+  activeProfileSection = ''; // 'edit' | 'password'
   activeSettingsSubsection = '';
+
+  // Données du profil utilisateur
+  userProfile = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    streetAddress: '',
+    city: '',
+    zipCode: '',
+  };
+
+  // Formulaire de changement de mot de passe
+  passwordChangeForm = {
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  };
+
+  // États de chargement
+  savingProfile = false;
+  changingPassword = false;
 
   // Données de l'organisation
   organizationSettings: OrganizationSettings = {
@@ -131,9 +156,13 @@ export class DashboardComponent implements OnInit {
     private organizationService: OrganizationService,
     private securityService: SecurityService,
     private billingService: BillingService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
+    // Récupérer les informations utilisateur depuis le localStorage
+    this.loadUserInfo();
+
     // Suivre les changements de route
     this.router.events.subscribe(() => {
       this.currentRoute = this.router.url;
@@ -156,6 +185,51 @@ export class DashboardComponent implements OnInit {
 
     // Initialiser les données
     this.refreshStats();
+  }
+
+  loadUserInfo(): void {
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (currentUser) {
+      const user = JSON.parse(currentUser);
+
+      // Essayer différentes combinaisons de noms selon la structure des données
+      if (user.firstName && user.lastName) {
+        this.userName = `${user.firstName} ${user.lastName}`;
+      } else if (user.firstname && user.lastname) {
+        this.userName = `${user.firstname} ${user.lastname}`;
+      } else if (user.name) {
+        this.userName = user.name;
+      } else if (user.fullName) {
+        this.userName = user.fullName;
+      } else if (user.email) {
+        // Utiliser l'email comme nom de fallback (partie avant @)
+        this.userName = user.email.split('@')[0];
+      } else {
+        this.userName = 'Utilisateur';
+      }
+
+      this.userEmail = user.email || '';
+      this.userRole =
+        user.role === 'admin'
+          ? 'Customer Admin'
+          : user.role === 'manager'
+          ? 'Customer Manager'
+          : 'Customer User';
+
+      // Initialiser le profil utilisateur pour l'édition
+      this.userProfile = {
+        firstName: user.firstName || user.firstname || '',
+        lastName: user.lastName || user.lastname || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || user.phone || '',
+        streetAddress: user.streetAddress || user.address || '',
+        city: user.city || '',
+        zipCode: user.zipCode || user.zip || '',
+      };
+    } else {
+      this.userName = 'Utilisateur';
+    }
   }
 
   getPageTitle(): string {
@@ -200,24 +274,31 @@ export class DashboardComponent implements OnInit {
   }
 
   editProfile(): void {
-    this.isDropdownOpen = false;
-    console.log('Modifier le profil');
+    this.userDropdownVisible = false;
+    this.activeProfileSection = 'edit';
+    this.activeSettingsSection = '';
   }
 
   changePassword(): void {
-    this.isDropdownOpen = false;
-    console.log('Changer le mot de passe');
-  }
-
-  viewNotifications(): void {
-    this.isDropdownOpen = false;
-    console.log('Voir les notifications');
+    this.userDropdownVisible = false;
+    this.activeProfileSection = 'password';
+    this.activeSettingsSection = '';
+    // Réinitialiser le formulaire de changement de mot de passe
+    this.passwordChangeForm = {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    };
   }
 
   logout(): void {
     this.isDropdownOpen = false;
-    console.log('Déconnexion');
+    // Nettoyer le localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isLoggedIn');
+    // Rediriger vers la page de login
     this.router.navigate(['/login']);
+    this.notificationService.success('Déconnexion réussie');
   }
 
   // Navigation vers les différentes sections
@@ -381,6 +462,12 @@ Détails par Plan:
   backToDashboard(): void {
     this.activeSettingsSection = '';
     this.activeSettingsSubsection = '';
+    this.activeProfileSection = '';
+  }
+
+  setActiveProfileSection(section: string) {
+    this.activeProfileSection = section;
+    this.isDropdownOpen = false; // Fermer le dropdown
   }
 
   // === MÉTHODES DE SÉCURITÉ ===
@@ -415,12 +502,12 @@ Détails par Plan:
   }
 
   saveSecuritySettings(): void {
-    console.log('🔄 Début de la sauvegarde des paramètres de sécurité...');
-    console.log('📊 Données actuelles:', this.securitySettings);
+    console.log('Début de la sauvegarde des paramètres de sécurité...');
+    console.log('Données actuelles:', this.securitySettings);
 
     // Validation des données avant envoi
     if (!this.securitySettings) {
-      console.error('❌ Aucune donnée de sécurité à sauvegarder');
+      console.error('Aucune donnée de sécurité à sauvegarder');
       this.notificationService.error('Aucune donnée à sauvegarder');
       return;
     }
@@ -450,18 +537,18 @@ Détails par Plan:
         : [],
     };
 
-    console.log('✨ Données nettoyées et validées:', cleanSettings);
-    console.log('🚀 Envoi de la requête...');
+    console.log('Données nettoyées et validées:', cleanSettings);
+    console.log('Envoi de la requête...');
 
     this.securityService.updateSecuritySettings(cleanSettings).subscribe({
       next: (settings) => {
-        console.log('✅ Réponse reçue du serveur:', settings);
+        console.log('Réponse reçue du serveur:', settings);
         this.securitySettings = settings;
         this.notificationService.success('Paramètres de sécurité sauvegardés avec succès !');
-        console.log('🎉 Sauvegarde terminée avec succès');
+        console.log('Sauvegarde terminée avec succès');
       },
       error: (error) => {
-        console.error('❌ Erreur détaillée lors de la sauvegarde:', {
+        console.error('Erreur détaillée lors de la sauvegarde:', {
           message: error.message,
           status: error.status,
           error: error.error,
@@ -648,6 +735,91 @@ Détails par Plan:
   createNewPlan(): void {
     console.log("Création d'un nouveau plan");
     this.notificationService.info('Formulaire de création de plan ouvert');
+  }
+
+  // Gestion du profil utilisateur
+  saveUserProfile(): void {
+    // Validation côté client
+    const validation = this.userService.validateProfile(this.userProfile);
+    if (!validation.isValid) {
+      validation.errors.forEach((error) => this.notificationService.error(error));
+      return;
+    }
+
+    this.savingProfile = true;
+
+    this.userService.updateUserProfile(this.userProfile).subscribe({
+      next: (updatedProfile: UserProfile) => {
+        console.log('✅ Profil mis à jour avec succès:', updatedProfile);
+
+        // Mettre à jour les données locales
+        this.userProfile = {
+          firstName: updatedProfile.firstName,
+          lastName: updatedProfile.lastName,
+          email: updatedProfile.email,
+          phoneNumber: updatedProfile.phoneNumber || '',
+          streetAddress: updatedProfile.streetAddress || '',
+          city: updatedProfile.city || '',
+          zipCode: updatedProfile.zipCode || '',
+        };
+
+        // Recharger les informations utilisateur dans l'interface
+        this.loadUserInfo();
+
+        this.savingProfile = false;
+        this.notificationService.success('Profil mis à jour avec succès !');
+      },
+      error: (error: string) => {
+        console.error('❌ Erreur lors de la mise à jour du profil:', error);
+        this.savingProfile = false;
+        this.notificationService.error(error);
+      },
+    });
+  }
+
+  // Gestion du changement de mot de passe
+  changeUserPassword(): void {
+    // Validation côté client
+    const passwordData = {
+      currentPassword: this.passwordChangeForm.currentPassword,
+      newPassword: this.passwordChangeForm.newPassword,
+      confirmPassword: this.passwordChangeForm.confirmPassword,
+    };
+
+    const validation = this.userService.validatePasswordChange(passwordData);
+    if (!validation.isValid) {
+      validation.errors.forEach((error) => this.notificationService.error(error));
+      return;
+    }
+
+    this.changingPassword = true;
+
+    const changePasswordRequest: PasswordChangeRequest = {
+      currentPassword: this.passwordChangeForm.currentPassword,
+      newPassword: this.passwordChangeForm.newPassword,
+    };
+
+    this.userService.changePassword(changePasswordRequest).subscribe({
+      next: (response) => {
+        console.log('✅ Mot de passe changé avec succès:', response);
+
+        this.changingPassword = false;
+
+        // Réinitialiser le formulaire
+        this.passwordChangeForm = {
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        };
+
+        this.notificationService.success('Mot de passe modifié avec succès !');
+      },
+      error: (error: string) => {
+        console.error('❌ Erreur lors du changement de mot de passe:', error);
+        this.changingPassword = false;
+        this.notificationService.error(error);
+      },
+    });
   }
 
   private refreshStats(): void {

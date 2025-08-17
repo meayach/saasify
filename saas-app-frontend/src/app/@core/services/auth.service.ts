@@ -9,22 +9,35 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SignupRequest {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+}
+
 export interface LoginResponse {
   user: AuthUser;
   token: string;
   refreshToken?: string;
+  success?: boolean;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private readonly apiUrl = `${environment.apiUrl}/customer/auth`;
 
   constructor(private http: HttpClient) {}
 
-  login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials);
+  login(credentials: LoginRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, credentials);
+  }
+
+  signup(userData: SignupRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/signup`, userData);
   }
 
   logout(): Observable<void> {
