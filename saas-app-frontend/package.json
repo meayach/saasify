@@ -37,6 +37,7 @@
     "@angular-devkit/build-angular": "^15.0.2",
     "@angular/cli": "^15.2.11",
     "@angular/compiler-cli": "^15.0.0",
+  "@types/node": "18.11.18",
     "@types/jasmine": "~4.3.0",
     "husky": "^8.0.0",
     "jasmine-core": "~4.5.0",
@@ -53,4 +54,6 @@
       "pre-commit": "pretty-quick --staged"
     }
   }
+  ,
+  "preinstall": "node ../scripts/disable-npm-ci.js $npm_config_argv || true"
 }
