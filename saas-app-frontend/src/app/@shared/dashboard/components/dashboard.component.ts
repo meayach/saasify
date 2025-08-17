@@ -275,8 +275,45 @@ export class DashboardComponent implements OnInit {
 
   editProfile(): void {
     this.userDropdownVisible = false;
+    // Load latest profile from server to ensure phone/address/city/zip are populated
+    this.loadUserProfileFromServer();
     this.activeProfileSection = 'edit';
     this.activeSettingsSection = '';
+  }
+
+  /**
+   * Charger le profil utilisateur depuis l'API pour pré-remplir le formulaire d'édition
+   */
+  loadUserProfileFromServer(): void {
+    this.userService.getCurrentUserProfile().subscribe({
+      next: (profile) => {
+        console.log('loadUserProfileFromServer: profile received', profile);
+        this.userProfile = {
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          email: profile.email || '',
+          phoneNumber: profile.phoneNumber || '',
+          streetAddress: profile.streetAddress || '',
+          city: profile.city || '',
+          zipCode: profile.zipCode || '',
+        };
+
+        // Update localStorage so other parts of the app see latest values
+        try {
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          const updated = { ...currentUser, ...this.userProfile };
+          localStorage.setItem('currentUser', JSON.stringify(updated));
+        } catch (e) {
+          // ignore localStorage errors
+        }
+      },
+      error: (err) => {
+        console.warn(
+          'loadUserProfileFromServer: erreur lors de la récupération du profil, utilisation des données locales.',
+          err,
+        );
+      },
+    });
   }
 
   changePassword(): void {
@@ -466,6 +503,11 @@ Détails par Plan:
   }
 
   setActiveProfileSection(section: string) {
+    // Si l'utilisateur ouvre la section d'édition, recharger le profil depuis le serveur
+    if (section === 'edit') {
+      this.loadUserProfileFromServer();
+    }
+
     this.activeProfileSection = section;
     this.isDropdownOpen = false; // Fermer le dropdown
   }
@@ -476,27 +518,21 @@ Détails par Plan:
     this.loadingSecuritySettings = true;
     this.securityService.getSecuritySettings().subscribe({
       next: (settings) => {
+        // The response here is security settings for the application, not a user profile.
+        // Assign the settings and clear loading state.
+        console.log('loadSecuritySettings: settings received', settings);
         this.securitySettings = settings;
         this.loadingSecuritySettings = false;
       },
       error: (error) => {
         console.error('Erreur lors du chargement des paramètres de sécurité:', error);
-        const errorMessage =
-          error.message || 'Erreur lors du chargement des paramètres de sécurité';
-        this.notificationService.error(errorMessage);
         this.loadingSecuritySettings = false;
-      },
-    });
-
-    // Charger les logs d'audit
-    this.securityService.getAuditLogs().subscribe({
-      next: (response) => {
-        this.auditLogs = response.logs;
-      },
-      error: (error) => {
-        console.error("Erreur lors du chargement des logs d'audit:", error);
-        const errorMessage = error.message || "Erreur lors du chargement des logs d'audit";
-        this.notificationService.error(errorMessage);
+        // Optional: show a user-friendly notification
+        const msg =
+          error?.error?.message ||
+          error?.message ||
+          'Erreur lors du chargement des paramètres de sécurité';
+        this.notificationService.error(msg);
       },
     });
   }

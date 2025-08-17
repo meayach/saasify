@@ -52,17 +52,69 @@ export class UserService {
    * Récupère le profil utilisateur actuel
    */
   getCurrentUserProfile(): Observable<UserProfile> {
-    return this.http
-      .get<ApiResponse<UserProfile>>(`${this.apiUrl}/profile`, this.getHttpOptions())
-      .pipe(
-        map((response) => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.message || 'Erreur lors de la récupération du profil');
-        }),
-        catchError(this.handleError),
-      );
+    const token = localStorage.getItem('authToken');
+
+    if (token) {
+      return this.http
+        .get<ApiResponse<UserProfile>>(`${this.apiUrl}/profile`, this.getHttpOptions())
+        .pipe(
+          map((response) => {
+            if (response.success && response.data) {
+              return response.data;
+            }
+            throw new Error(response.message || 'Erreur lors de la récupération du profil');
+          }),
+          catchError((err) => {
+            // If protected profile endpoint returns 404 (not found), try fallback by email
+            const isNotFound = err && (err.status === 404 || err === 'Utilisateur non trouvé');
+            if (isNotFound) {
+              try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                const email = currentUser?.email;
+                if (email) {
+                  return this.http
+                    .get<UserProfile>(`${this.apiUrl}/email/${encodeURIComponent(email)}`)
+                    .pipe(
+                      map((response: any) => {
+                        if (response && response.data) {
+                          return response.data as UserProfile;
+                        }
+                        return response as UserProfile;
+                      }),
+                      catchError(this.handleError),
+                    );
+                }
+              } catch (e) {
+                // JSON parse error or other problem - fall through to throw original error
+              }
+            }
+
+            return throwError(() => err);
+          }),
+        );
+    }
+
+    // Fallback: if we don't have a token, try to fetch by email using the public endpoint
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const email = currentUser?.email;
+      if (email) {
+        return this.http.get<UserProfile>(`${this.apiUrl}/email/${encodeURIComponent(email)}`).pipe(
+          map((response: any) => {
+            // Backend may return the user DTO directly or wrapped; normalize
+            if (response && response.data) {
+              return response.data as UserProfile;
+            }
+            return response as UserProfile;
+          }),
+          catchError(this.handleError),
+        );
+      }
+    } catch (e) {
+      // ignore JSON parse errors and fall through to error
+    }
+
+    return throwError(() => new Error('Utilisateur non authentifié'));
   }
 
   /**

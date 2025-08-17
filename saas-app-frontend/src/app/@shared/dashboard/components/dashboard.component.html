@@ -11,8 +11,9 @@
     ">
     <div style="display: flex; justify-content: space-between; align-items: center">
       <div style="display: flex; align-items: center; gap: 16px">
-        <img src="assets/logo-saasify.svg" alt="Saasify Logo" style="height: 40px" />
-        <h1 style="margin: 0; color: #1a202c">Dashboard</h1>
+        <a (click)="router.navigate(['/dashboard'])" style="display: inline-block; cursor: pointer">
+          <img src="assets/logo-saasify.svg" alt="Saasify Logo" style="height: 40px" />
+        </a>
       </div>
       <div style="position: relative">
         <button
@@ -128,20 +129,6 @@
   <!-- Section Édition de Profil -->
   <div *ngIf="activeProfileSection === 'edit'" class="profile-section">
     <div style="margin-bottom: 20px">
-      <button
-        (click)="backToDashboard()"
-        style="
-          background: #e2e8f0;
-          color: #4a5568;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 15px;
-        ">
-        ← Retour au Dashboard
-      </button>
       <h2 style="color: #2d3748; margin: 0">Modifier le Profil</h2>
     </div>
 
@@ -310,20 +297,6 @@
   <!-- Section Changement de Mot de Passe -->
   <div *ngIf="activeProfileSection === 'password'" class="profile-section">
     <div style="margin-bottom: 20px">
-      <button
-        (click)="backToDashboard()"
-        style="
-          background: #e2e8f0;
-          color: #4a5568;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 15px;
-        ">
-        ← Retour au Dashboard
-      </button>
       <h2 style="color: #2d3748; margin: 0">Changer le Mot de Passe</h2>
     </div>
 
@@ -446,20 +419,6 @@
   <!-- Section Paramètres Organisation -->
   <div *ngIf="activeSettingsSection === 'organization'" class="settings-section">
     <div style="margin-bottom: 20px">
-      <button
-        (click)="backToDashboard()"
-        style="
-          background: #e2e8f0;
-          color: #4a5568;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 15px;
-        ">
-        ← Retour au Dashboard
-      </button>
       <h2 style="color: #2d3748; margin: 0">Paramètres de l'Organisation</h2>
     </div>
 
@@ -592,20 +551,6 @@
   <!-- Section Sécurité -->
   <div *ngIf="activeSettingsSection === 'security'" class="settings-section">
     <div style="margin-bottom: 20px">
-      <button
-        (click)="backToDashboard()"
-        style="
-          background: #e2e8f0;
-          color: #4a5568;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 15px;
-        ">
-        ← Retour au Dashboard
-      </button>
       <h2 style="color: #2d3748; margin: 0">Paramètres de Sécurité</h2>
     </div>
 
@@ -702,20 +647,6 @@
   <!-- Section Facturation -->
   <div *ngIf="activeSettingsSection === 'billing'" class="settings-section">
     <div style="margin-bottom: 20px">
-      <button
-        (click)="backToDashboard()"
-        style="
-          background: #e2e8f0;
-          color: #4a5568;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 15px;
-        ">
-        ← Retour au Dashboard
-      </button>
       <h2 style="color: #2d3748; margin: 0">Paramètres de Facturation</h2>
     </div>
 

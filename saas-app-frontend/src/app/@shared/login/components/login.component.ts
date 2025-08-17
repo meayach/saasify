@@ -12,6 +12,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
   error = '';
+  submitted = false;
 
   constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
     this.loginForm = this.fb.group({
@@ -21,6 +22,7 @@ export class LoginComponent {
   }
 
   onSubmit() {
+    this.submitted = true;
     if (this.loginForm.valid) {
       this.loading = true;
       this.error = '';
@@ -57,5 +59,10 @@ export class LoginComponent {
 
   goToSignup() {
     this.router.navigate(['/signup']);
+  }
+
+  goToForgotPassword() {
+    // navigate to forgot password route or display modal
+    this.router.navigate(['/forgot-password']);
   }
 }

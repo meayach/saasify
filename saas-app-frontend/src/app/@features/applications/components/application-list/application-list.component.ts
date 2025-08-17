@@ -7,6 +7,7 @@ import {
   ApplicationStats,
 } from '../../../../@shared/services/application.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
+import { UserService } from '../../../../@shared/services/user.service';
 import { ConfirmationModalService } from '../../../../@shared/services/confirmation-modal.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
 
@@ -16,6 +17,12 @@ import { ApplicationRefreshService } from '../../../../@shared/services/applicat
   styleUrls: ['./application-list.component.css'],
 })
 export class ApplicationListComponent implements OnInit, OnDestroy {
+  // User / header state (for shared header)
+  userRole = 'Customer Admin';
+  userName = '';
+  userEmail = '';
+  isDropdownOpen = false;
+
   applications: Application[] = [];
   applicationStats: ApplicationStats = {
     totalApplications: 0,
@@ -33,9 +40,13 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
     private confirmationModalService: ConfirmationModalService,
     private applicationRefreshService: ApplicationRefreshService,
     private cdr: ChangeDetectorRef,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
+    // initialiser les infos utilisateur pour le header
+    this.loadUserInfo();
+
     this.loadApplications();
     this.loadApplicationStats();
 
@@ -79,6 +90,94 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
       this.loadApplications();
       this.loadApplicationStats();
     }, 50);
+  }
+
+  loadUserInfo(): void {
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (currentUser) {
+      const user = JSON.parse(currentUser);
+
+      if (user.firstName && user.lastName) {
+        this.userName = `${user.firstName} ${user.lastName}`;
+      } else if (user.firstname && user.lastname) {
+        this.userName = `${user.firstname} ${user.lastname}`;
+      } else if (user.name) {
+        this.userName = user.name;
+      } else if (user.fullName) {
+        this.userName = user.fullName;
+      } else if (user.email) {
+        this.userName = user.email.split('@')[0];
+      } else {
+        this.userName = 'Utilisateur';
+      }
+
+      this.userEmail = user.email || '';
+      this.userRole =
+        user.role === 'admin'
+          ? 'Customer Admin'
+          : user.role === 'manager'
+          ? 'Customer Manager'
+          : 'Customer User';
+    } else {
+      this.userName = 'Utilisateur';
+    }
+  }
+
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  setActiveProfileSection(section: string) {
+    // Avant de naviguer, récupérer le profil complet depuis le serveur
+    if (section === 'edit') {
+      this.userService.getCurrentUserProfile().subscribe({
+        next: (profile) => {
+          console.log('ApplicationList: profile received', profile);
+          // Normaliser et stocker les données utilisateur dans localStorage
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          const updated = {
+            ...currentUser,
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
+            email: profile.email || '',
+            phoneNumber: profile.phoneNumber || '',
+            streetAddress: profile.streetAddress || '',
+            city: profile.city || '',
+            zipCode: profile.zipCode || '',
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updated));
+
+          localStorage.setItem('activeProfileSection', section);
+          this.isDropdownOpen = false;
+          this.router.navigate(['/settings'], { queryParams: { section: 'profile' } });
+        },
+        error: (err) => {
+          console.warn(
+            'ApplicationList: impossible de récupérer le profil, navigation malgré tout',
+            err,
+          );
+          localStorage.setItem('activeProfileSection', section);
+          this.isDropdownOpen = false;
+          this.router.navigate(['/settings'], { queryParams: { section: 'profile' } });
+        },
+      });
+      return;
+    }
+
+    // store a lightweight flag so other components can react if needed
+    localStorage.setItem('activeProfileSection', section);
+    this.isDropdownOpen = false;
+    // navigate to settings if needed
+    this.router.navigate(['/settings'], { queryParams: { section: 'profile' } });
+  }
+
+  logout(): void {
+    this.isDropdownOpen = false;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isLoggedIn');
+    this.router.navigate(['/login']);
+    // notification service not injected here; silent logout
   }
 
   loadApplications(): void {

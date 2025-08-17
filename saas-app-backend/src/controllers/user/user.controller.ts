@@ -8,23 +8,22 @@ import {
   Param,
   Delete,
   Query,
-  UseGuards,
   Request,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../../services/user/user.service';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../../services/dto/user.dto';
 import { SaasCustomerAdminRepository } from '../../data/saasCustomerAdmin/repository/SaasCustomerAdmin.repository';
-
-@ApiTags('Users')
 @Controller('users')
 @ApiBearerAuth()
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly customerAdminRepository: SaasCustomerAdminRepository,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Post()
@@ -69,15 +68,40 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getCurrentProfile(): Promise<{ success: boolean; data: any }> {
+  async getCurrentProfile(@Request() req): Promise<{ success: boolean; data: any }> {
     try {
-      // Obtenir les utilisateurs depuis SaasCustomerAdmin
-      const users = await this.customerAdminRepository.findAll();
-      if (!users || users.length === 0) {
-        throw new HttpException('Aucun utilisateur trouvé', HttpStatus.NOT_FOUND);
+      // req.user doit être peuplé par le guard JWT
+      let authUser = req.user;
+      // Si req.user n'est pas fourni par le framework, essayer de décoder le token JWT
+      if (!authUser) {
+        const authHeader = req.headers?.authorization || req.headers?.Authorization;
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.replace('Bearer ', '');
+          try {
+            authUser = this.jwtService.decode(token) as any;
+          } catch (e) {
+            // ignore decode errors
+          }
+        }
+      }
+      if (!authUser) {
+        throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
       }
 
-      const user = users[0];
+      // Prioriser la recherche par id si disponible, sinon par email
+      let user = null;
+      if (authUser && (authUser.id || authUser._id)) {
+        const id = authUser.id || authUser._id;
+        user = await this.customerAdminRepository.findById(id);
+      }
+      if (!user && authUser && authUser.email) {
+        user = await this.customerAdminRepository.findByEmail(authUser.email);
+      }
+
+      if (!user) {
+        throw new HttpException('Utilisateur introuvable', HttpStatus.NOT_FOUND);
+      }
+
       return {
         success: true,
         data: {
@@ -94,6 +118,9 @@ export class UserController {
         },
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
         error.message || 'Erreur lors de la récupération du profil',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -113,16 +140,43 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   async updateProfile(
+    @Request() req,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<{ success: boolean; data: any; message?: string }> {
     try {
-      // Obtenir le premier utilisateur pour les tests
-      const users = await this.customerAdminRepository.findAll();
-      if (!users || users.length === 0) {
-        throw new HttpException('Aucun utilisateur trouvé', HttpStatus.NOT_FOUND);
+      // Déterminer l'utilisateur authentifié (req.user ou token décodé)
+      let authUser = req.user;
+      if (!authUser) {
+        const authHeader = req.headers?.authorization || req.headers?.Authorization;
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.replace('Bearer ', '');
+          try {
+            authUser = this.jwtService.decode(token) as any;
+          } catch (e) {
+            // ignore
+          }
+        }
       }
 
-      const userId = users[0]._id;
+      if (!authUser) {
+        throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Récupérer l'utilisateur par id ou email
+      let user = null;
+      if (authUser.id || authUser._id) {
+        const id = authUser.id || authUser._id;
+        user = await this.customerAdminRepository.findById(id);
+      }
+      if (!user && authUser.email) {
+        user = await this.customerAdminRepository.findByEmail(authUser.email);
+      }
+
+      if (!user) {
+        throw new HttpException('Utilisateur introuvable', HttpStatus.NOT_FOUND);
+      }
+
+      const userId = user._id;
 
       // Vérifier si l'email est déjà utilisé par un autre utilisateur
       if (updateUserDto.email) {
@@ -174,16 +228,43 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
   async changePassword(
+    @Request() req,
     @Body() passwordData: { currentPassword: string; newPassword: string },
   ): Promise<{ success: boolean; message: string }> {
     try {
-      // Obtenir le premier utilisateur pour les tests
-      const users = await this.customerAdminRepository.findAll();
-      if (!users || users.length === 0) {
-        throw new HttpException('Aucun utilisateur trouvé', HttpStatus.NOT_FOUND);
+      // Déterminer l'utilisateur authentifié (req.user ou token décodé)
+      let authUser = req.user;
+      if (!authUser) {
+        const authHeader = req.headers?.authorization || req.headers?.Authorization;
+        if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.replace('Bearer ', '');
+          try {
+            authUser = this.jwtService.decode(token) as any;
+          } catch (e) {
+            // ignore
+          }
+        }
       }
 
-      const userId = users[0]._id;
+      if (!authUser) {
+        throw new HttpException('Utilisateur non authentifié', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Récupérer l'utilisateur par id ou email
+      let user = null;
+      if (authUser.id || authUser._id) {
+        const id = authUser.id || authUser._id;
+        user = await this.customerAdminRepository.findById(id);
+      }
+      if (!user && authUser.email) {
+        user = await this.customerAdminRepository.findByEmail(authUser.email);
+      }
+
+      if (!user) {
+        throw new HttpException('Utilisateur introuvable', HttpStatus.NOT_FOUND);
+      }
+
+      const userId = user._id;
 
       // Validation côté serveur
       if (!passwordData.currentPassword || !passwordData.newPassword) {
@@ -310,8 +391,35 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  findByEmail(@Param('email') email: string): Promise<UserResponseDto> {
-    return this.userService.findByEmail(email);
+  async findByEmail(@Param('email') email: string) {
+    try {
+      const user = await this.customerAdminRepository.findByEmail(email);
+      if (!user) {
+        throw new HttpException(`User with email ${email} not found`, HttpStatus.NOT_FOUND);
+      }
+
+      return {
+        success: true,
+        data: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+          streetAddress: user.streetAddress,
+          city: user.city,
+          zipCode: user.zipCode,
+          role: user.role,
+          plan: user.plan,
+        },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        'Erreur lors de la recherche par email',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':id')
