@@ -28,7 +28,7 @@ export interface LoginResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/customer/auth`;
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/customer/auth`;
 
   constructor(private http: HttpClient) {}
 

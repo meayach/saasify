@@ -14,7 +14,7 @@ import { WorkspaceConfigurationDataModule } from './saasWorkspaceConfiguration/s
 import { SaasCustomerAdminModule } from './saasCustomerAdmin/saasCustomerAdmin.data.module';
 import { SaasApplicationConfigurationDataModule } from './saasApplicationConfiguration/saasApplicationConfiguration.data.module';
 
-let dataModules = [
+const dataModules = [
   SaasworkspaceModule,
   UserDataModule,
   SaasApplicationDataModule,

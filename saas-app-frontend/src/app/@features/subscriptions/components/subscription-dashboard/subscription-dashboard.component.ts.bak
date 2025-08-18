@@ -1,0 +1,192 @@
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+// import { SubscriptionService } from '../../services/subscription.service';
+// import { PlanService } from '../../services/plan.service';
+
+export interface Subscription {
+  _id: string;
+  planId: {
+    _id: string;
+    name: string;
+    description: string;
+    type: string;
+    price: number;
+    billingCycle: string;
+    features: Record<string, any>;
+  };
+  status: string;
+  billingCycle: string;
+  price: number;
+  currency: string;
+  startDate: Date;
+  endDate?: Date;
+  nextBillingDate?: Date;
+  trialEndDate?: Date;
+  autoRenew: boolean;
+}
+
+export interface Plan {
+  _id: string;
+  name: string;
+  description: string;
+  type: string;
+  billingCycle: string;
+  price: number;
+  currency: string;
+  features: Record<string, any>;
+  limits: Record<string, number>;
+  includedFeatures: string[];
+  isPopular: boolean;
+}
+
+@Component({
+  selector: 'app-subscription-dashboard',
+  templateUrl: './subscription-dashboard.component.html',
+  styleUrls: ['./subscription-dashboard.component.css']
+})
+export class SubscriptionDashboardComponent implements OnInit {
+  subscriptions: Subscription[] = [];
+  availablePlans: Plan[] = [];
+  currentSubscription: Subscription | null = null;
+  loading = false;
+  error: string | null = null;
+
+  constructor(
+    // private subscriptionService: SubscriptionService,
+    // private planService: PlanService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    // this.loadSubscriptions();
+    // this.loadAvailablePlans();
+    // Mock data for now
+    this.subscriptions = [];
+    this.availablePlans = [];
+  }
+
+  async loadSubscriptions(): Promise<void> {
+    // Mock implementation
+    /*
+    try {
+      this.loading = true;
+      this.subscriptionService.getMySubscriptions().subscribe({
+        next: (response) => {
+          this.subscriptions = response.data;
+          this.currentSubscription = this.subscriptions.find(
+            sub => sub.status === 'ACTIVE' || sub.status === 'TRIAL'
+          ) || null;
+          this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Failed to load subscriptions';
+          console.error('Error loading subscriptions:', error);
+          this.loading = false;
+        }
+      });
+    } catch (error) {
+      this.error = 'Failed to load subscriptions';
+      console.error('Error loading subscriptions:', error);
+      this.loading = false;
+    }
+  }
+
+  async loadAvailablePlans(): Promise<void> {
+    try {
+      this.planService.getPlans().subscribe({
+        next: (response) => {
+          this.availablePlans = response.data;
+        },
+        error: (error) => {
+          console.error('Error loading plans:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error loading plans:', error);
+    }
+  }
+
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'ACTIVE':
+        return 'text-green-600';
+      case 'TRIAL':
+        return 'text-blue-600';
+      case 'CANCELLED':
+        return 'text-red-600';
+      case 'SUSPENDED':
+        return 'text-yellow-600';
+      default:
+        return 'text-gray-600';
+    }
+  }
+
+  formatStatus(status: string): string {
+    switch (status) {
+      case 'ACTIVE':
+        return 'Active';
+      case 'TRIAL':
+        return 'Trial';
+      case 'CANCELLED':
+        return 'Cancelled';
+      case 'SUSPENDED':
+        return 'Suspended';
+      case 'PENDING':
+        return 'Pending';
+      default:
+        return status;
+    }
+  }
+
+  navigateToPlans(): void {
+    this.router.navigate(['/subscriptions/plans']);
+  }
+
+  navigateToDetails(subscriptionId: string): void {
+    this.router.navigate(['/subscriptions/details', subscriptionId]);
+  }
+
+  navigateToPaymentMethods(): void {
+    this.router.navigate(['/subscriptions/payment-methods']);
+  }
+
+  navigateToBillingHistory(): void {
+    this.router.navigate(['/subscriptions/billing-history']);
+  }
+
+  async cancelSubscription(subscription: Subscription): Promise<void> {
+    if (confirm('Are you sure you want to cancel this subscription?')) {
+      try {
+        this.subscriptionService.cancelSubscription(subscription._id).subscribe({
+          next: () => {
+            this.loadSubscriptions(); // Reload data
+          },
+          error: (error: any) => {
+            console.error('Error cancelling subscription:', error);
+            this.error = 'Failed to cancel subscription';
+          }
+        });
+      } catch (error) {
+        console.error('Error cancelling subscription:', error);
+        this.error = 'Failed to cancel subscription';
+      }
+    }
+  }
+
+  getDaysUntilBilling(subscription: Subscription): number {
+    if (!subscription.nextBillingDate) return 0;
+    const now = new Date();
+    const nextBilling = new Date(subscription.nextBillingDate);
+    const diffTime = nextBilling.getTime() - now.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  isTrialExpiringSoon(subscription: Subscription): boolean {
+    if (!subscription.trialEndDate || subscription.status !== 'TRIAL') return false;
+    const now = new Date();
+    const trialEnd = new Date(subscription.trialEndDate);
+    const diffTime = trialEnd.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return daysLeft <= 3 && daysLeft > 0;
+  }
+}

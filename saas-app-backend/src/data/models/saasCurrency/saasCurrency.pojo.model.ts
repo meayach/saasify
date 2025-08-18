@@ -13,6 +13,10 @@ export class SaasCurrencyPOJO {
 
   @AutoMap()
   @Prop()
+  code: string;
+
+  @AutoMap()
+  @Prop()
   name: string;
 
   @AutoMap()

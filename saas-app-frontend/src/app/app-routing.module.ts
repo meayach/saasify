@@ -25,7 +25,10 @@ const routes: Routes = [
     loadChildren: () =>
       import('./@features/applications/applications.module').then((m) => m.ApplicationsModule),
   },
-  { path: 'subscriptions', component: DashboardComponent },
+  {
+    path: 'subscriptions',
+    loadChildren: () => import('./@features/subscriptions').then((m) => m.SubscriptionsModule),
+  },
   { path: 'analytics', component: DashboardComponent },
   { path: 'settings', component: DashboardComponent },
 ];

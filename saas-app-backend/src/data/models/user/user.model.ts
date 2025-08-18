@@ -57,6 +57,9 @@ export class User extends Document {
   @Prop()
   avatar: string;
 
+  @Prop()
+  stripeCustomerId: string;
+
   @Prop({ type: Date })
   lastLoginAt: Date;
 

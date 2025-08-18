@@ -16,8 +16,8 @@ export class SaasPlanService {
 
   async findAll(
     applicationId?: string,
-    page: number = 1,
-    limit: number = 10,
+    page = 1,
+    limit = 10,
   ): Promise<{
     plans: SaasPlanResponseDto[];
     total: number;

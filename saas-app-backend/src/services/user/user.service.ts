@@ -2,11 +2,15 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../../data/models/user/user.model';
+import { SaasCustomerAdmin } from '../../data/models/saasCustomerAdmin/saas-customer-admin.model';
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from '../dto/user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(SaasCustomerAdmin.name) private saasCustomerAdminModel: Model<SaasCustomerAdmin>,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     // Check if user with email already exists
@@ -21,8 +25,8 @@ export class UserService {
   }
 
   async findAll(
-    page: number = 1,
-    limit: number = 10,
+    page = 1,
+    limit = 10,
   ): Promise<{
     users: UserResponseDto[];
     total: number;
@@ -100,6 +104,37 @@ export class UserService {
     if (!updatedUser) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+  }
+
+  async getUserStats(): Promise<{
+    totalUsers: number;
+    activeUsers: number;
+    newUsersThisMonth: number;
+  }> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [totalUsers, activeUsers, newUsersThisMonth] = await Promise.all([
+      // Total des utilisateurs depuis la collection saasCustomerAdmins
+      this.saasCustomerAdminModel.countDocuments(),
+
+      // Utilisateurs actifs (ayant une lastLoginAt dans les 30 derniers jours)
+      // Note: Le modèle SaasCustomerAdmin n'a pas de champ lastLoginAt, on utilise updatedAt comme approximation
+      this.saasCustomerAdminModel.countDocuments({
+        updatedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+      }),
+
+      // Nouveaux utilisateurs ce mois
+      this.saasCustomerAdminModel.countDocuments({
+        createdAt: { $gte: startOfMonth },
+      }),
+    ]);
+
+    return {
+      totalUsers,
+      activeUsers,
+      newUsersThisMonth,
+    };
   }
 
   private mapToResponseDto(user: User): UserResponseDto {

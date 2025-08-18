@@ -67,7 +67,7 @@ export class SecurityController {
   @Get('audit-logs')
   @ApiOperation({ summary: 'Get audit logs' })
   @ApiResponse({ status: 200, description: 'Audit logs retrieved successfully' })
-  async getAuditLogs(@Query('page') page: number = 1, @Query('limit') limit: number = 50) {
+  async getAuditLogs(@Query('page') page = 1, @Query('limit') limit = 50) {
     try {
       const auditLogs = await this.securityService.getAuditLogs(page, limit);
       return {

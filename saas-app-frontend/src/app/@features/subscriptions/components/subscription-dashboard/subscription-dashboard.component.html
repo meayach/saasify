@@ -1,0 +1,315 @@
+<div class="subscription-dashboard-container">
+  <!-- Global header (logo + user dropdown) -->
+  <div
+    style="
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 24px;
+    ">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; align-items: center; gap: 16px">
+        <a (click)="router.navigate(['/dashboard'])" style="display: inline-block; cursor: pointer">
+          <img src="assets/logo-saasify.svg" alt="Saasify Logo" style="height: 40px" />
+        </a>
+      </div>
+      <div style="position: relative">
+        <button
+          (click)="toggleDropdown()"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+          ">
+          <div
+            style="
+              width: 32px;
+              height: 32px;
+              background: rgba(255, 255, 255, 0.2);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+            ">
+            <span style="color: white; font-weight: bold; font-size: 18px">{{
+              (userName || 'U').charAt(0).toUpperCase()
+            }}</span>
+          </div>
+          <div>
+            <div style="font-size: 13px; line-height: 1.2">{{ userName || 'Utilisateur' }}</div>
+            <div style="font-size: 11px; opacity: 0.8">{{ userRole }}</div>
+          </div>
+          <span
+            style="margin-left: 8px; transition: transform 0.3s ease"
+            [style.transform]="isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'">
+            ▼
+          </span>
+        </button>
+
+        <div
+          *ngIf="isDropdownOpen"
+          style="
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            min-width: 200px;
+            margin-top: 8px;
+            z-index: 1000;
+            border: 1px solid #e2e8f0;
+          ">
+          <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9">
+            <div style="font-weight: 600; color: #1a202c; font-size: 14px">
+              {{ userName || 'Utilisateur' }}
+            </div>
+            <div style="color: #64748b; font-size: 12px">{{ userEmail }}</div>
+          </div>
+          <button
+            (click)="setActiveProfileSection('edit')"
+            style="
+              display: block;
+              width: 100%;
+              padding: 12px 16px;
+              color: #374151;
+              background: transparent;
+              border: none;
+              text-align: left;
+              cursor: pointer;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#f8fafc'"
+            onmouseout="this.style.backgroundColor='transparent'">
+            Modifier le profil
+          </button>
+          <button
+            (click)="setActiveProfileSection('password')"
+            style="
+              display: block;
+              width: 100%;
+              padding: 12px 16px;
+              color: #374151;
+              background: transparent;
+              border: none;
+              text-align: left;
+              cursor: pointer;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#f8fafc'"
+            onmouseout="this.style.backgroundColor='transparent'">
+            Changer le mot de passe
+          </button>
+          <div style="border-top: 1px solid #f1f5f9; margin-top: 8px"></div>
+          <button
+            (click)="logout()"
+            style="
+              display: block;
+              width: 100%;
+              padding: 12px 16px;
+              color: #ef4444;
+              background: transparent;
+              border: none;
+              text-align: left;
+              cursor: pointer;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.backgroundColor='#fef2f2'"
+            onmouseout="this.style.backgroundColor='transparent'">
+            Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Gestion des abonnements</h1>
+    <p class="dashboard-subtitle">Gérez vos abonnements, offres et informations de facturation</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Chargement de vos abonnements...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button (click)="loadSubscriptions()" class="retry-button">Réessayer</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    <!-- Carte d'abonnement actuel -->
+    <div *ngIf="currentSubscription" class="current-subscription-card">
+      <div class="card-header">
+        <h2 class="card-title">Abonnement actuel</h2>
+        <span class="status-badge" [ngClass]="getStatusColor(currentSubscription.status)">
+          {{ formatStatus(currentSubscription.status) }}
+        </span>
+      </div>
+
+      <div class="subscription-details">
+        <div class="plan-info">
+          <h3 class="plan-name">{{ currentSubscription.planId.name }}</h3>
+          <p class="plan-description">{{ currentSubscription.planId.description }}</p>
+          <div class="plan-price">
+            <span class="price">${{ currentSubscription.price }}</span>
+            <span class="billing-cycle"
+              >/ {{ currentSubscription.billingCycle.toLowerCase() }}</span
+            >
+          </div>
+        </div>
+
+        <!-- Avertissement période d'essai -->
+        <div *ngIf="isTrialExpiringSoon(currentSubscription)" class="trial-warning">
+          <div class="warning-icon">⏰</div>
+          <div class="warning-content">
+            <h4>Période d'essai bientôt terminée&nbsp;!</h4>
+            <p>
+              Votre période d'essai se termine le {{ currentSubscription.trialEndDate | date }}.
+              <a (click)="navigateToPlans()" class="upgrade-link">Passez à une offre</a> pour
+              continuer à utiliser nos services.
+            </p>
+          </div>
+        </div>
+
+        <!-- Prochaine facturation -->
+        <div
+          *ngIf="currentSubscription.nextBillingDate && currentSubscription.status === 'ACTIVE'"
+          class="next-billing">
+          <p>Prochaine facturation&nbsp;: {{ currentSubscription.nextBillingDate | date }}</p>
+          <p class="days-until">{{ getDaysUntilBilling(currentSubscription) }} jours restants</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button (click)="navigateToDetails(currentSubscription._id)" class="btn btn-primary">
+            Voir les détails
+          </button>
+          <button (click)="navigateToPlans()" class="btn btn-secondary">Changer de forfait</button>
+          <button
+            *ngIf="currentSubscription.status === 'ACTIVE'"
+            (click)="cancelSubscription(currentSubscription)"
+            class="btn btn-danger">
+            Annuler l'abonnement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aucun abonnement actif -->
+    <div *ngIf="!currentSubscription" class="no-subscription-card">
+      <div class="no-subscription-content">
+        <div class="empty-icon">📋</div>
+        <h2>Aucun abonnement actif</h2>
+        <p>Vous n'avez pas d'abonnement actif. Choisissez une offre pour commencer&nbsp;!</p>
+        <button (click)="navigateToPlans()" class="btn btn-primary btn-large">
+          Voir les offres disponibles
+        </button>
+      </div>
+
+      <!-- Offres rapides -->
+      <div class="quick-subscribe-section">
+        <h3>Abonnez-vous rapidement</h3>
+        <div class="plans-grid">
+          <div class="plan-quick-card" *ngFor="let plan of availablePlans">
+            <div class="plan-header">
+              <h4>{{ plan.name }}</h4>
+              <div class="plan-price-quick">
+                <span class="price">${{ plan.price }}</span>
+                <span class="period">/mois</span>
+              </div>
+            </div>
+            <p class="plan-description">{{ plan.description }}</p>
+            <ul class="features-list" *ngIf="plan.features">
+              <li *ngFor="let feature of plan.features">{{ feature }}</li>
+            </ul>
+            <button (click)="createSubscription(plan._id)" class="btn btn-outline btn-full-width">
+              S'abonner maintenant
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3 class="section-title">Actions rapides</h3>
+      <div class="action-grid">
+        <div class="action-card" (click)="navigateToPlans()">
+          <div class="action-icon">📦</div>
+          <h4>Parcourir les offres</h4>
+          <p>Découvrez les offres d'abonnement disponibles</p>
+        </div>
+
+        <div class="action-card" (click)="navigateToPaymentMethods()">
+          <div class="action-icon">💳</div>
+          <h4>Moyens de paiement</h4>
+          <p>Gérez vos moyens de paiement</p>
+        </div>
+
+        <div class="action-card" (click)="navigateToBillingHistory()">
+          <div class="action-icon">📊</div>
+          <h4>Historique de facturation</h4>
+          <p>Consultez l'historique de vos paiements</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tous les abonnements -->
+    <div *ngIf="subscriptions.length > 0" class="all-subscriptions">
+      <h3 class="section-title">Tous les abonnements</h3>
+      <div class="subscriptions-table">
+        <div class="table-header">
+          <div class="col-plan">Offre</div>
+          <div class="col-status">Statut</div>
+          <div class="col-price">Prix</div>
+          <div class="col-date">Date de début</div>
+          <div class="col-actions">Actions</div>
+        </div>
+
+        <div *ngFor="let subscription of subscriptions" class="table-row">
+          <div class="col-plan">
+            <div class="plan-cell">
+              <strong>{{ subscription.planId.name }}</strong>
+              <small>{{ subscription.planId.type }}</small>
+            </div>
+          </div>
+          <div class="col-status">
+            <span class="status-badge" [ngClass]="getStatusColor(subscription.status)">
+              {{ formatStatus(subscription.status) }}
+            </span>
+          </div>
+          <div class="col-price">
+            ${{ subscription.price }} / {{ subscription.billingCycle.toLowerCase() }}
+          </div>
+          <div class="col-date">
+            {{ subscription.startDate | date }}
+          </div>
+          <div class="col-actions">
+            <button (click)="navigateToDetails(subscription._id)" class="btn btn-sm btn-outline">
+              Détails
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

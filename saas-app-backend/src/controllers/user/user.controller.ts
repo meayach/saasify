@@ -59,6 +59,34 @@ export class UserController {
 
   // =================== ROUTES SPÉCIFIQUES AVANT LES ROUTES GÉNÉRIQUES ===================
 
+  @Get('stats')
+  @ApiOperation({ summary: 'Get user statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'User statistics retrieved successfully',
+  })
+  async getUserStats(): Promise<{
+    success: boolean;
+    data: {
+      totalUsers: number;
+      activeUsers: number;
+      newUsersThisMonth: number;
+    };
+  }> {
+    try {
+      const stats = await this.userService.getUserStats();
+      return {
+        success: true,
+        data: stats,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques utilisateurs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({

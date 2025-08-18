@@ -1,0 +1,397 @@
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import Stripe from 'stripe';
+import {
+  SaasSubscription,
+  SubscriptionStatus,
+  BillingCycle,
+} from '../../data/models/saassubscription/saas-subscription.model';
+import { SaasPlan } from '../../data/models/saasPlan/saas-plan.model';
+import {
+  SaasPayment,
+  PaymentStatus,
+  PaymentType,
+} from '../../data/models/SaasPayment/saas-payment.model';
+import { PaymentMethod } from '../../data/models/paymentMethod/payment-method.model';
+import { User } from '../../data/models/user/user.model';
+
+@Injectable()
+export class SubscriptionManagementService {
+  private stripe: Stripe;
+
+  constructor(
+    @InjectModel(SaasSubscription.name)
+    private subscriptionModel: Model<SaasSubscription>,
+    @InjectModel(SaasPlan.name)
+    private planModel: Model<SaasPlan>,
+    @InjectModel(SaasPayment.name)
+    private paymentModel: Model<SaasPayment>,
+    @InjectModel(PaymentMethod.name)
+    private paymentMethodModel: Model<PaymentMethod>,
+    @InjectModel(User.name)
+    private userModel: Model<User>,
+  ) {
+    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+      // Utiliser la version par défaut de Stripe
+    });
+  }
+
+  // Create subscription with Stripe integration
+  async createSubscription(createSubscriptionDto: {
+    userId: string;
+    planId: string;
+    paymentMethodId?: string;
+    billingCycle: BillingCycle;
+    couponCode?: string;
+  }) {
+    const { userId, planId, paymentMethodId, billingCycle, couponCode } = createSubscriptionDto;
+
+    // Validate user and plan
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const plan = await this.planModel.findById(createSubscriptionDto.planId).populate('currencyId');
+    if (!plan) {
+      throw new NotFoundException('Plan not found');
+    }
+
+    // Cast to access populated properties
+    const planWithCurrency = plan as any;
+
+    // Check for existing active subscription
+    const existingSubscription = await this.subscriptionModel.findOne({
+      userId: new Types.ObjectId(userId),
+      status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
+    });
+
+    if (existingSubscription) {
+      throw new BadRequestException('User already has an active subscription');
+    }
+
+    // Create Stripe customer if not exists
+    const userWithStripe = user as any;
+    let stripeCustomerId = userWithStripe.stripeCustomerId;
+    if (!stripeCustomerId) {
+      const stripeCustomer = await this.stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        metadata: {
+          userId: userId,
+        },
+      });
+      stripeCustomerId = stripeCustomer.id;
+
+      // Update user with Stripe customer ID
+      await this.userModel.findByIdAndUpdate(userId, {
+        stripeCustomerId: stripeCustomerId,
+      });
+    }
+
+    // Create a simple subscription for now - this would normally use pre-created price IDs
+    const stripeSubscription = await this.stripe.subscriptions.create({
+      customer: stripeCustomerId,
+      items: [
+        {
+          price_data: {
+            currency: planWithCurrency.currencyId?.code?.toLowerCase() || 'usd',
+            product: plan.name, // Simple product reference
+            unit_amount: Math.round(plan.price * 100), // Convert to cents
+            recurring: {
+              interval: billingCycle.toLowerCase() as any,
+            },
+          },
+        },
+      ],
+      payment_behavior: 'default_incomplete',
+      expand: ['latest_invoice.payment_intent'],
+      ...(couponCode && { coupon: couponCode }),
+    });
+
+    // Calculate dates
+    const now = new Date();
+    const trialEndDate =
+      plan.type === 'FREE'
+        ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) // 14 days trial
+        : null;
+
+    const nextBillingDate = this.calculateNextBillingDate(now, billingCycle);
+
+    // Create subscription in database
+    const subscription = new this.subscriptionModel({
+      userId: new Types.ObjectId(userId),
+      customerId: new Types.ObjectId(userId),
+      planId: new Types.ObjectId(planId),
+      applicationId: plan.applicationId,
+      status: plan.type === 'FREE' ? SubscriptionStatus.TRIAL : SubscriptionStatus.PENDING,
+      billingCycle,
+      price: plan.price,
+      currency: planWithCurrency.currencyId?.code || 'USD',
+      startDate: now,
+      endDate: null,
+      trialEndDate,
+      nextBillingDate,
+      paymentMethodId: stripeSubscription.default_payment_method as string,
+      autoRenew: true,
+      metadata: {
+        stripeSubscriptionId: stripeSubscription.id,
+        stripeCustomerId,
+      },
+    });
+
+    const savedSubscription = await subscription.save();
+
+    return {
+      subscription: savedSubscription,
+      clientSecret: (stripeSubscription.latest_invoice as any)?.payment_intent?.client_secret,
+      stripeSubscriptionId: stripeSubscription.id,
+    };
+  }
+
+  // Get user subscriptions
+  async getUserSubscriptions(userId: string) {
+    const subscriptions = await this.subscriptionModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .populate('planId')
+      .populate('applicationId')
+      .sort({ createdAt: -1 });
+
+    return subscriptions;
+  }
+
+  // Cancel subscription
+  async cancelSubscription(subscriptionId: string, immediately = false) {
+    const subscription = await this.subscriptionModel.findById(subscriptionId);
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    // Cancel in Stripe
+    const stripeSubscriptionId = subscription.metadata?.stripeSubscriptionId;
+    if (stripeSubscriptionId) {
+      await this.stripe.subscriptions.update(stripeSubscriptionId, {
+        cancel_at_period_end: !immediately,
+      });
+
+      if (immediately) {
+        await this.stripe.subscriptions.cancel(stripeSubscriptionId);
+      }
+    }
+
+    // Update subscription status
+    const updateData: any = {
+      cancelledAt: new Date(),
+      autoRenew: false,
+    };
+
+    if (immediately) {
+      updateData.status = SubscriptionStatus.CANCELLED;
+      updateData.endDate = new Date();
+    }
+
+    const updatedSubscription = await this.subscriptionModel.findByIdAndUpdate(
+      subscriptionId,
+      updateData,
+      { new: true },
+    );
+
+    return updatedSubscription;
+  }
+
+  // Update subscription (upgrade/downgrade)
+  async updateSubscription(subscriptionId: string, newPlanId: string) {
+    const subscription = await this.subscriptionModel.findById(subscriptionId);
+    if (!subscription) {
+      throw new NotFoundException('Subscription not found');
+    }
+
+    const newPlan = await this.planModel.findById(newPlanId).populate('currencyId');
+    if (!newPlan) {
+      throw new NotFoundException('Plan not found');
+    }
+
+    const stripeSubscriptionId = subscription.metadata?.stripeSubscriptionId;
+    if (stripeSubscriptionId) {
+      // Update Stripe subscription
+      const stripeSubscription = await this.stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+      await this.stripe.subscriptions.update(stripeSubscriptionId, {
+        items: [
+          {
+            id: stripeSubscription.items.data[0].id,
+            price_data: {
+              currency: (newPlan as any).currencyId?.code?.toLowerCase() || 'usd',
+              product: newPlan.name, // Simplified product reference
+              unit_amount: Math.round(newPlan.price * 100),
+              recurring: {
+                interval: subscription.billingCycle.toLowerCase() as any,
+              },
+            },
+          },
+        ],
+        proration_behavior: 'create_prorations',
+      });
+    }
+
+    // Update subscription in database
+    const updatedSubscription = await this.subscriptionModel.findByIdAndUpdate(
+      subscriptionId,
+      {
+        planId: new Types.ObjectId(newPlanId),
+        price: newPlan.price,
+        currency: (newPlan as any).currencyId?.code || 'USD',
+      },
+      { new: true },
+    );
+
+    return updatedSubscription;
+  }
+
+  // Handle Stripe webhook events
+  async handleStripeWebhook(event: Stripe.Event) {
+    switch (event.type) {
+      case 'customer.subscription.updated':
+        await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        break;
+      case 'customer.subscription.deleted':
+        await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        break;
+      case 'invoice.payment_succeeded':
+        await this.handlePaymentSucceeded(event.data.object as Stripe.Invoice);
+        break;
+      case 'invoice.payment_failed':
+        await this.handlePaymentFailed(event.data.object as Stripe.Invoice);
+        break;
+    }
+  }
+
+  private async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
+    const subscription = await this.subscriptionModel.findOne({
+      'metadata.stripeSubscriptionId': stripeSubscription.id,
+    });
+
+    if (subscription) {
+      await this.subscriptionModel.findByIdAndUpdate(subscription._id, {
+        status: this.mapStripeStatus(stripeSubscription.status),
+        nextBillingDate: new Date((stripeSubscription as any).current_period_end * 1000),
+      });
+    }
+  }
+
+  private async handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
+    const subscription = await this.subscriptionModel.findOne({
+      'metadata.stripeSubscriptionId': stripeSubscription.id,
+    });
+
+    if (subscription) {
+      await this.subscriptionModel.findByIdAndUpdate(subscription._id, {
+        status: SubscriptionStatus.CANCELLED,
+        endDate: new Date(),
+      });
+    }
+  }
+
+  private async handlePaymentSucceeded(invoice: Stripe.Invoice) {
+    // Create payment record
+    const subscription = await this.subscriptionModel.findOne({
+      'metadata.stripeSubscriptionId': (invoice as any).subscription,
+    });
+
+    if (subscription) {
+      const payment = new this.paymentModel({
+        userId: subscription.userId,
+        subscriptionId: subscription._id,
+        planId: subscription.planId,
+        amount: invoice.amount_paid / 100,
+        currencyId: subscription.currency,
+        status: PaymentStatus.COMPLETED,
+        type: PaymentType.SUBSCRIPTION,
+        transactionId: (invoice as any).payment_intent as string,
+        paymentGateway: 'stripe',
+        paymentDate: new Date(),
+        gatewayResponse: invoice,
+        metadata: {
+          stripeInvoiceId: invoice.id,
+        },
+      });
+
+      await payment.save();
+
+      // Update subscription status if it was pending
+      if (subscription.status === SubscriptionStatus.PENDING) {
+        await this.subscriptionModel.findByIdAndUpdate(subscription._id, {
+          status: SubscriptionStatus.ACTIVE,
+        });
+      }
+    }
+  }
+
+  private async handlePaymentFailed(invoice: Stripe.Invoice) {
+    const subscription = await this.subscriptionModel.findOne({
+      'metadata.stripeSubscriptionId': (invoice as any).subscription,
+    });
+
+    if (subscription) {
+      // Create failed payment record
+      const payment = new this.paymentModel({
+        userId: subscription.userId,
+        subscriptionId: subscription._id,
+        planId: subscription.planId,
+        amount: invoice.amount_due / 100,
+        currencyId: subscription.currency,
+        status: PaymentStatus.FAILED,
+        type: PaymentType.SUBSCRIPTION,
+        paymentGateway: 'stripe',
+        failureReason: 'Payment failed in Stripe',
+        gatewayResponse: invoice,
+      });
+
+      await payment.save();
+
+      // Update subscription status
+      await this.subscriptionModel.findByIdAndUpdate(subscription._id, {
+        status: SubscriptionStatus.SUSPENDED,
+        suspendedAt: new Date(),
+      });
+    }
+  }
+
+  private mapStripeStatus(stripeStatus: string): SubscriptionStatus {
+    switch (stripeStatus) {
+      case 'active':
+        return SubscriptionStatus.ACTIVE;
+      case 'trialing':
+        return SubscriptionStatus.TRIAL;
+      case 'past_due':
+      case 'unpaid':
+        return SubscriptionStatus.SUSPENDED;
+      case 'canceled':
+        return SubscriptionStatus.CANCELLED;
+      case 'incomplete':
+      case 'incomplete_expired':
+        return SubscriptionStatus.PENDING;
+      default:
+        return SubscriptionStatus.INACTIVE;
+    }
+  }
+
+  private calculateNextBillingDate(startDate: Date, cycle: BillingCycle): Date {
+    const nextDate = new Date(startDate);
+
+    switch (cycle) {
+      case BillingCycle.MONTHLY:
+        nextDate.setMonth(nextDate.getMonth() + 1);
+        break;
+      case BillingCycle.YEARLY:
+        nextDate.setFullYear(nextDate.getFullYear() + 1);
+        break;
+      case BillingCycle.WEEKLY:
+        nextDate.setDate(nextDate.getDate() + 7);
+        break;
+    }
+
+    return nextDate;
+  }
+}

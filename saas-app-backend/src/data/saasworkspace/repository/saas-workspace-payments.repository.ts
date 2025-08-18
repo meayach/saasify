@@ -15,7 +15,7 @@ export class SaasWorkspacePaymentsRepository {
     saasClientId: string,
     saasRealmId: string,
   ): Promise<SaasWorkspacePOJO> {
-    let saasWorkspace: SaasWorkspacePOJO = await this.saasWorkspaceModel
+    const saasWorkspace: SaasWorkspacePOJO = await this.saasWorkspaceModel
       .findOne({ realmId: saasRealmId })
       .select('applications -_id')
       .populate({

@@ -49,6 +49,10 @@ import {
   PaymentMethodSchema,
 } from './data/models/paymentMethod/payment-method.schema';
 import { Invoice, InvoiceSchema } from './data/models/invoice/invoice.schema';
+import {
+  SaasCustomerAdmin,
+  SaasCustomerAdminSchema,
+} from './data/models/saasCustomerAdmin/saas-customer-admin.model';
 
 // Import services
 import { UserService } from './services/user/user.service';
@@ -82,6 +86,7 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
+      { name: SaasCustomerAdmin.name, schema: SaasCustomerAdminSchema },
       { name: SaasApplication.name, schema: SaasApplicationSchema },
       { name: SaasApplicationConfiguration.name, schema: SaasApplicationConfigurationSchema },
       { name: SaasCurrency.name, schema: SaasCurrencySchema },

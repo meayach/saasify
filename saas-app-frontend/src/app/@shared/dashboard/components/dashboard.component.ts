@@ -13,6 +13,7 @@ import {
   Invoice,
 } from '../../services/billing.service';
 import { UserService, UserProfile, PasswordChangeRequest } from '../../services/user.service';
+import { DashboardStatsService, DashboardMetrics } from '../../services/dashboard-stats.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -131,12 +132,20 @@ export class DashboardComponent implements OnInit {
     maintenanceApplications: 1,
   };
 
-  // Données pour les statistiques
+  // Métriques dynamiques du dashboard
+  dashboardMetrics: DashboardMetrics = {
+    activeApplications: 5,
+    totalUsers: 89,
+    monthlyRevenue: 2847,
+    conversionRate: 3.8,
+  };
+
+  // Données pour les statistiques (seront mises à jour dynamiquement)
   stats = [
-    { title: 'Applications Actives', value: '12', icon: 'pi pi-desktop' },
-    { title: 'Utilisateurs', value: '247', icon: 'pi pi-users' },
-    { title: 'Revenus Mensuels', value: '€8,450', icon: 'pi pi-euro' },
-    { title: 'Taux de Conversion', value: '3.2%', icon: 'pi pi-chart-line' },
+    { title: 'Applications Actives', value: '5', icon: 'pi pi-desktop' },
+    { title: 'Utilisateurs', value: '89', icon: 'pi pi-users' },
+    { title: 'Revenus Mensuels', value: '€2,847', icon: 'pi pi-euro' },
+    { title: 'Taux de Conversion', value: '3.8%', icon: 'pi pi-chart-line' },
   ];
 
   // Activités récentes
@@ -157,6 +166,7 @@ export class DashboardComponent implements OnInit {
     private securityService: SecurityService,
     private billingService: BillingService,
     private userService: UserService,
+    private dashboardStatsService: DashboardStatsService,
   ) {}
 
   ngOnInit(): void {
@@ -859,12 +869,47 @@ Détails par Plan:
   }
 
   private refreshStats(): void {
+    // Charger les statistiques des applications
     this.applicationService.getStats().subscribe({
       next: (stats: ApplicationStats) => {
         this.applicationStats = stats;
       },
       error: (error: any) => {
-        console.error('Erreur lors du chargement des statistiques:', error);
+        console.error('Erreur lors du chargement des statistiques applications:', error);
+      },
+    });
+
+    // Charger les métriques dynamiques du dashboard
+    this.dashboardStatsService.getDashboardMetrics().subscribe({
+      next: (metrics: DashboardMetrics) => {
+        this.dashboardMetrics = metrics;
+
+        // Mettre à jour les stats affichées avec les données réelles
+        this.stats = [
+          {
+            title: 'Applications Actives',
+            value: metrics.activeApplications.toString(),
+            icon: 'pi pi-desktop',
+          },
+          {
+            title: 'Utilisateurs',
+            value: metrics.totalUsers.toString(),
+            icon: 'pi pi-users',
+          },
+          {
+            title: 'Revenus Mensuels',
+            value: this.dashboardStatsService.formatCurrency(metrics.monthlyRevenue),
+            icon: 'pi pi-euro',
+          },
+          {
+            title: 'Taux de Conversion',
+            value: this.dashboardStatsService.formatPercentage(metrics.conversionRate),
+            icon: 'pi pi-chart-line',
+          },
+        ];
+      },
+      error: (error: any) => {
+        console.error('Erreur lors du chargement des métriques dashboard:', error);
         this.notificationService.error('Erreur lors du chargement des statistiques');
       },
     });

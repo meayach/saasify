@@ -27,7 +27,7 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class OrganizationService {
-  private apiUrl = `${environment.apiUrl || 'http://localhost:3001'}/api/organization`;
+  private apiUrl = `${environment.apiUrl}/api/v1/api/organization`;
 
   constructor(private http: HttpClient) {}
 

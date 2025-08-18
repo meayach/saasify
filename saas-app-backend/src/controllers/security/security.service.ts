@@ -62,8 +62,8 @@ export class SecurityService {
   }
 
   async getAuditLogs(
-    page: number = 1,
-    limit: number = 50,
+    page = 1,
+    limit = 50,
   ): Promise<{
     logs: AuditLog[];
     total: number;

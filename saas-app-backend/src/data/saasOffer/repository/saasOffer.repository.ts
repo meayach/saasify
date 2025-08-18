@@ -16,7 +16,7 @@ export class SaasOfferRepository {
     offerId: mongoose.Types.ObjectId,
     planName: string,
   ): Promise<SaasPlanPOJO | null> {
-    let offer: SaasOfferPOJO = await this.saasOfferModel
+    const offer: SaasOfferPOJO = await this.saasOfferModel
       .findById(offerId)
       .select('plans')
       .populate({
@@ -27,7 +27,7 @@ export class SaasOfferRepository {
     if (!offer || !offer.plans || offer.plans.length === 0) {
       return null;
     }
-    let plan: SaasPlanPOJO = offer.plans[0];
+    const plan: SaasPlanPOJO = offer.plans[0];
     return plan;
   }
 }

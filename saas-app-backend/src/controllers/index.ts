@@ -1,4 +1,4 @@
 import { AuthControllerModule } from './auth/auth.controller.module';
 
-let controllerModules = [AuthControllerModule];
+const controllerModules = [AuthControllerModule];
 export { controllerModules };

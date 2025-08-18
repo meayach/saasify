@@ -50,7 +50,7 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class SecurityService {
-  private baseUrl = `${environment.apiUrl || 'http://localhost:3001/api/v1'}/api/security`;
+  private baseUrl = `${environment.apiUrl}/api/v1/api/security`;
 
   constructor(private http: HttpClient) {}
 

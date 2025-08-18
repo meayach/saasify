@@ -5,14 +5,14 @@ import { PaymentManagerMapperConfig } from './payment-manager/payment-manager.ma
 import { UserServiceMapper } from './user/user-service.mapper';
 import { UserServiceMapperConfig } from './user/user-service.mapper.config';
 
-let mapperServices = [
+const mapperServices = [
   UserServiceMapper,
   PaymentManagerMapper,
 
   // new
   CustomerAdminServiceMapper,
 ];
-let mapperServiceConfigs = [
+const mapperServiceConfigs = [
   UserServiceMapperConfig,
   PaymentManagerMapperConfig,
 

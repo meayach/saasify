@@ -1,7 +1,5 @@
 import { Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
-import { SaasOfferPOJO } from '@Data/models/saasOffer/saasOffer.pojo.model';
-import mongoose from 'mongoose';
 
 @Controller()
 export class AppController {
