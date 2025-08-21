@@ -20,16 +20,17 @@ export interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class SubscriptionService {
-  private readonly apiUrl = `${environment.apiUrl}/api/v1/api/v1/subscription-management`;
+  // Use the actual mapped route from backend logs: /api/v1/api/v1/subscriptions
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/api/v1/subscriptions`;
 
   constructor(private http: HttpClient) {}
 
   createSubscription(dto: CreateSubscriptionDto): Observable<ApiResponse<any>> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/subscribe`, dto);
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}`, dto);
   }
 
   getMySubscriptions(): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/my-subscriptions`);
+    return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}`);
   }
 
   updateSubscriptionPlan(subscriptionId: string, planId: string): Observable<ApiResponse<any>> {

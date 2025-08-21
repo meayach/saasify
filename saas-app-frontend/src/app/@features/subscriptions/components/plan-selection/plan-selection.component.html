@@ -161,12 +161,7 @@
 
   <!-- Plans Grid -->
   <div *ngIf="!loading && !error" class="plans-grid">
-    <div *ngFor="let plan of getFilteredPlans()" class="plan-card" [class.popular]="plan.isPopular">
-      <!-- Popular Badge -->
-      <div *ngIf="plan.isPopular" class="popular-badge">
-        <span>Most Popular</span>
-      </div>
-
+    <div *ngFor="let plan of getFilteredPlans()" class="plan-card">
       <!-- Plan Header -->
       <div class="plan-card-header">
         <h3 class="plan-name">{{ plan.name }}</h3>
@@ -174,13 +169,8 @@
 
         <div class="plan-pricing">
           <div class="price-container">
-            <span class="price">{{ getPriceDisplay(plan) }}</span>
-            <span class="billing-period">/ {{ selectedBillingCycle.toLowerCase() }}</span>
-          </div>
-
-          <!-- Yearly Discount -->
-          <div *ngIf="getYearlyDiscount(plan)" class="yearly-savings">
-            Save {{ getYearlyDiscount(plan) }}% with yearly billing
+            <span class="price">{{ formatPrice(plan) }}</span>
+            <span class="billing-period">/ {{ plan.interval.toLowerCase() }}</span>
           </div>
         </div>
       </div>
@@ -189,26 +179,10 @@
       <div class="plan-features">
         <h4 class="features-title">What's included:</h4>
 
-        <!-- Core Limits -->
-        <ul class="features-list">
-          <li class="feature-item">
-            <span class="feature-icon">👥</span>
-            <span>{{ getLimitDisplay(plan, 'users') }} users</span>
-          </li>
-          <li class="feature-item">
-            <span class="feature-icon">💾</span>
-            <span>{{ getLimitDisplay(plan, 'storage') }}GB storage</span>
-          </li>
-          <li class="feature-item">
-            <span class="feature-icon">🔗</span>
-            <span>{{ getLimitDisplay(plan, 'apiCalls') }} API calls/month</span>
-          </li>
-        </ul>
-
-        <!-- Additional Features -->
-        <ul class="features-list" *ngIf="getFeaturesList(plan).length > 0">
-          <li *ngFor="let feature of getFeaturesList(plan)" class="feature-item">
-            <span class="feature-icon">✅</span>
+        <!-- Plan Features from BillingService -->
+        <ul class="features-list" *ngIf="getPlanFeatures(plan).length > 0">
+          <li *ngFor="let feature of getPlanFeatures(plan)" class="feature-item">
+            <span class="feature-icon">✓</span>
             <span>{{ feature }}</span>
           </li>
         </ul>
@@ -217,12 +191,9 @@
       <!-- Plan Footer -->
       <div class="plan-card-footer">
         <button (click)="selectPlan(plan)" class="select-plan-button">
-          <span *ngIf="plan.type === 'FREE'">Start Free Trial</span>
-          <span *ngIf="plan.type !== 'FREE'">Choose {{ plan.name }}</span>
+          Choose {{ plan.name }}
         </button>
-
-        <p class="plan-note" *ngIf="plan.type === 'FREE'">No credit card required</p>
-        <p class="plan-note" *ngIf="plan.type !== 'FREE'">14-day free trial included</p>
+        <p class="plan-note">14-day free trial included</p>
       </div>
     </div>
   </div>

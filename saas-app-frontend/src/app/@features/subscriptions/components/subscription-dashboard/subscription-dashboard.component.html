@@ -160,7 +160,7 @@
     <div *ngIf="currentSubscription" class="current-subscription-card">
       <div class="card-header">
         <h2 class="card-title">Abonnement actuel</h2>
-        <span class="status-badge" [ngClass]="getStatusColor(currentSubscription.status)">
+        <span class="status-badge" [class]="getStatusColor(currentSubscription.status)">
           {{ formatStatus(currentSubscription.status) }}
         </span>
       </div>
@@ -183,7 +183,8 @@
           <div class="warning-content">
             <h4>Période d'essai bientôt terminée&nbsp;!</h4>
             <p>
-              Votre période d'essai se termine le {{ currentSubscription.trialEndDate | date }}.
+              Votre période d'essai se termine le
+              {{ formatDate(currentSubscription.trialEndDate) }}.
               <a (click)="navigateToPlans()" class="upgrade-link">Passez à une offre</a> pour
               continuer à utiliser nos services.
             </p>
@@ -194,7 +195,7 @@
         <div
           *ngIf="currentSubscription.nextBillingDate && currentSubscription.status === 'ACTIVE'"
           class="next-billing">
-          <p>Prochaine facturation&nbsp;: {{ currentSubscription.nextBillingDate | date }}</p>
+          <p>Prochaine facturation&nbsp;: {{ formatDate(currentSubscription.nextBillingDate) }}</p>
           <p class="days-until">{{ getDaysUntilBilling(currentSubscription) }} jours restants</p>
         </div>
 
@@ -293,7 +294,7 @@
             </div>
           </div>
           <div class="col-status">
-            <span class="status-badge" [ngClass]="getStatusColor(subscription.status)">
+            <span class="status-badge" [class]="getStatusColor(subscription.status)">
               {{ formatStatus(subscription.status) }}
             </span>
           </div>
@@ -301,7 +302,7 @@
             ${{ subscription.price }} / {{ subscription.billingCycle.toLowerCase() }}
           </div>
           <div class="col-date">
-            {{ subscription.startDate | date }}
+            {{ formatDate(subscription.startDate) }}
           </div>
           <div class="col-actions">
             <button (click)="navigateToDetails(subscription._id)" class="btn btn-sm btn-outline">

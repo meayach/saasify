@@ -4,24 +4,7 @@ import { PlanService } from '../../services/plan.service';
 import { SubscriptionService } from '../../services/subscription.service';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
-
-export interface Plan {
-  _id: string;
-  name: string;
-  description: string;
-  type: string;
-  billingCycle: string;
-  price: number;
-  currencyId: {
-    code: string;
-    symbol: string;
-  };
-  features: Record<string, any>;
-  limits: Record<string, number>;
-  includedFeatures: string[];
-  isPopular: boolean;
-  isActive: boolean;
-}
+import { BillingService, Plan } from '../../../../@shared/services/billing.service';
 
 @Component({
   selector: 'app-plan-selection',
@@ -31,11 +14,12 @@ export interface Plan {
 export class PlanSelectionComponent implements OnInit {
   plans: Plan[] = [];
   loading = false;
+  loadingPlans = false;
   error: string | null = null;
-  selectedBillingCycle = 'MONTHLY';
+  selectedBillingCycle = 'month';
   billingCycles = [
-    { value: 'MONTHLY', label: 'Monthly' },
-    { value: 'YEARLY', label: 'Yearly' },
+    { value: 'month', label: 'Monthly' },
+    { value: 'year', label: 'Yearly' },
   ];
   // Header user dropdown properties
   userName = 'Utilisateur';
@@ -46,6 +30,7 @@ export class PlanSelectionComponent implements OnInit {
 
   constructor(
     private planService: PlanService,
+    private billingService: BillingService,
     private subscriptionService: SubscriptionService,
     private router: Router,
     private userService: UserService,
@@ -102,9 +87,81 @@ export class PlanSelectionComponent implements OnInit {
       },
     });
 
-    // Toujours charger les plans depuis la collection "plans" de la base de données
-    console.log('DEBUG: Loading plans from database collection "plans"');
+    // Utiliser la même logique que dans dashboard.component.ts pour charger les plans
+    console.log('Chargement des plans avec BillingService...');
     this.loadPlans();
+  }
+
+  // Même méthode que dans dashboard.component.ts pour charger les plans
+  loadPlans(): void {
+    this.loadingPlans = true;
+    this.billingService.getPlans().subscribe({
+      next: (plans) => {
+        this.plans = plans;
+        this.loadingPlans = false;
+        console.log('✅ Plans chargés:', plans.length, 'plans trouvés');
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des plans:', error);
+        this.loadingPlans = false;
+        // Créer des plans par défaut si aucun n'existe (même logique que dashboard.component.ts)
+        this.plans = [
+          {
+            name: 'Plan Starter',
+            description: 'Parfait pour débuter',
+            price: 9.99,
+            interval: 'month' as const,
+            features: ['1 Application', 'Support email', 'Analytics de base'],
+            isActive: true,
+            maxUsers: 5,
+            maxApplications: 1,
+            hasApiAccess: false,
+            hasAdvancedAnalytics: false,
+            hasPrioritySupport: false,
+          },
+          {
+            name: 'Plan Starter',
+            description: 'Parfait pour débuter',
+            price: 99.99,
+            interval: 'year' as const,
+            features: ['1 Application', 'Support email', 'Analytics de base'],
+            isActive: true,
+            maxUsers: 5,
+            maxApplications: 1,
+            hasApiAccess: false,
+            hasAdvancedAnalytics: false,
+            hasPrioritySupport: false,
+          },
+          {
+            name: 'Plan Pro',
+            description: 'Pour les professionnels',
+            price: 29.99,
+            interval: 'month' as const,
+            features: ['5 Applications', 'Support prioritaire', 'Analytics avancées'],
+            isActive: true,
+            maxUsers: 25,
+            maxApplications: 5,
+            hasApiAccess: true,
+            hasAdvancedAnalytics: true,
+            hasPrioritySupport: true,
+          },
+          {
+            name: 'Plan Pro',
+            description: 'Pour les professionnels',
+            price: 299.99,
+            interval: 'year' as const,
+            features: ['5 Applications', 'Support prioritaire', 'Analytics avancées'],
+            isActive: true,
+            maxUsers: 25,
+            maxApplications: 5,
+            hasApiAccess: true,
+            hasAdvancedAnalytics: true,
+            hasPrioritySupport: true,
+          },
+        ];
+        console.log('📝 Plans par défaut créés');
+      },
+    });
   }
 
   // Header user dropdown methods
@@ -137,246 +194,32 @@ export class PlanSelectionComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  async loadPlans(): Promise<void> {
-    try {
-      console.log('DEBUG: Calling PlanService.getPlans() to load from database');
-      const response: any = await this.planService.getPlans().toPromise();
-      console.log('DEBUG: API response:', response);
-
-      // Vérifier différents formats de réponse de l'API
-      let plansData = null;
-      if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
-        plansData = response.data;
-      } else if (
-        response &&
-        response.plans &&
-        Array.isArray(response.plans) &&
-        response.plans.length > 0
-      ) {
-        plansData = response.plans;
-      } else if (response && Array.isArray(response) && response.length > 0) {
-        plansData = response;
-      }
-
-      if (plansData) {
-        this.plans = plansData;
-        console.log('DEBUG: Plans loaded successfully from database:', this.plans);
-      } else {
-        console.log('DEBUG: No plans found in database, using mock data');
-        this.plans = this.getMockPlans();
-      }
-    } catch (error) {
-      console.error('ERROR: Failed to load plans from database, using mock data:', error);
-      this.plans = this.getMockPlans();
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  private getMockPlans(): any[] {
-    return [
-      {
-        _id: 'plan-1',
-        name: 'Starter',
-        description: 'Parfait pour débuter avec les fonctionnalités de base',
-        price: 9.99,
-        type: 'Mensuel',
-        billingCycle: 'MONTHLY',
-        features: [
-          'Accès aux fonctionnalités de base',
-          'Support par email',
-          '1 GB de stockage',
-          "Jusqu'à 1000 utilisateurs",
-        ],
-        isActive: true,
-        isPopular: false,
-      },
-      {
-        _id: 'plan-1-yearly',
-        name: 'Starter',
-        description: 'Parfait pour débuter avec les fonctionnalités de base',
-        price: 99.99,
-        type: 'Annuel',
-        billingCycle: 'YEARLY',
-        features: [
-          'Accès aux fonctionnalités de base',
-          'Support par email',
-          '1 GB de stockage',
-          "Jusqu'à 1000 utilisateurs",
-        ],
-        isActive: true,
-        isPopular: false,
-      },
-      {
-        _id: 'plan-2',
-        name: 'Professional',
-        description: 'Pour les équipes qui ont besoin de fonctionnalités avancées',
-        price: 29.99,
-        type: 'Mensuel',
-        billingCycle: 'MONTHLY',
-        features: [
-          'Toutes les fonctionnalités Starter',
-          'Support prioritaire',
-          '10 GB de stockage',
-          "Jusqu'à 10 000 utilisateurs",
-          'Analytiques avancées',
-        ],
-        isActive: true,
-        isPopular: true,
-      },
-      {
-        _id: 'plan-2-yearly',
-        name: 'Professional',
-        description: 'Pour les équipes qui ont besoin de fonctionnalités avancées',
-        price: 299.99,
-        type: 'Annuel',
-        billingCycle: 'YEARLY',
-        features: [
-          'Toutes les fonctionnalités Starter',
-          'Support prioritaire',
-          '10 GB de stockage',
-          "Jusqu'à 10 000 utilisateurs",
-          'Analytiques avancées',
-        ],
-        isActive: true,
-        isPopular: true,
-      },
-      {
-        _id: 'plan-3',
-        name: 'Enterprise',
-        description: 'Solution complète pour les grandes entreprises',
-        price: 99.99,
-        type: 'Mensuel',
-        billingCycle: 'MONTHLY',
-        features: [
-          'Toutes les fonctionnalités Professional',
-          'Support 24/7',
-          'Stockage illimité',
-          'Utilisateurs illimités',
-          'Intégrations personnalisées',
-          'Gestionnaire de compte dédié',
-        ],
-        isActive: true,
-        isPopular: false,
-      },
-      {
-        _id: 'plan-3-yearly',
-        name: 'Enterprise',
-        description: 'Solution complète pour les grandes entreprises',
-        price: 999.99,
-        type: 'Annuel',
-        billingCycle: 'YEARLY',
-        features: [
-          'Toutes les fonctionnalités Professional',
-          'Support 24/7',
-          'Stockage illimité',
-          'Utilisateurs illimités',
-          'Intégrations personnalisées',
-          'Gestionnaire de compte dédié',
-        ],
-        isActive: true,
-        isPopular: false,
-      },
-    ];
-  }
-
+  // Méthodes pour le filtrage et affichage des plans
   getFilteredPlans(): Plan[] {
-    console.log('DEBUG: getFilteredPlans called');
-    console.log('DEBUG: selectedBillingCycle:', this.selectedBillingCycle);
-    console.log('DEBUG: all plans:', this.plans);
+    return this.plans.filter((plan) => plan.interval === this.selectedBillingCycle);
+  }
 
-    const filtered = this.plans.filter((plan) => {
-      console.log(`DEBUG: Plan ${plan.name} has billingCycle: ${plan.billingCycle}`);
-      return plan.billingCycle === this.selectedBillingCycle;
-    });
-    console.log('DEBUG: filtered plans:', filtered);
+  getPlanFeatures(plan: Plan): string[] {
+    return plan.features || [];
+  }
 
-    return filtered;
+  formatPrice(plan: Plan): string {
+    return `€${plan.price.toFixed(2)}`;
   }
 
   selectPlan(plan: Plan): void {
-    // Navigate to subscription creation with selected plan
-    this.router.navigate(['/subscriptions/checkout'], {
-      queryParams: {
-        planId: plan._id,
-        billingCycle: this.selectedBillingCycle,
-      },
-    });
+    console.log('Plan sélectionné:', plan);
+    this.notificationService.success(`Plan ${plan.name} sélectionné !`);
+    // Ici vous pouvez ajouter la logique pour souscrire au plan
   }
 
-  getFeaturesList(plan: Plan): string[] {
-    if (plan.includedFeatures && plan.includedFeatures.length > 0) {
-      return plan.includedFeatures;
-    }
-
-    // Fallback to features object
-    if (plan.features) {
-      return Object.keys(plan.features)
-        .map((key) => {
-          const value = plan.features[key];
-          if (typeof value === 'boolean') {
-            return value ? key : '';
-          }
-          return `${key}: ${value}`;
-        })
-        .filter((feature) => feature !== '');
-    }
-
-    return [];
-  }
-
-  getLimitDisplay(plan: Plan, limitKey: string): string {
-    if (!plan.limits || !plan.limits[limitKey]) {
-      return 'Unlimited';
-    }
-
-    const limit = plan.limits[limitKey];
-    if (limit === -1 || limit === 0) {
-      return 'Unlimited';
-    }
-
-    return limit.toString();
-  }
-
-  getPriceDisplay(plan: Plan): string {
-    const symbol = plan.currencyId?.symbol || '$';
-    return `${symbol}${plan.price}`;
-  }
-
-  getYearlyDiscount(plan: Plan): number | null {
-    if (this.selectedBillingCycle !== 'YEARLY') return null;
-
-    const monthlyPlan = this.plans.find(
-      (p) => p.name === plan.name && p.billingCycle === 'MONTHLY',
-    );
-
-    if (!monthlyPlan) return null;
-
-    const yearlyTotal = plan.price;
-    const monthlyTotal = monthlyPlan.price * 12;
-    const savings = monthlyTotal - yearlyTotal;
-
-    return Math.round((savings / monthlyTotal) * 100);
+  // Méthodes utilitaires
+  changeBillingCycle(cycle: string): void {
+    this.selectedBillingCycle = cycle;
   }
 
   onBillingCycleChange(): void {
-    // Refresh the view when billing cycle changes
-  }
-
-  private mapBillingCycle(value: string): string {
-    // Map various billing cycle formats to standardized values
-    const lowerValue = (value || '').toLowerCase();
-    if (
-      lowerValue.includes('mensuel') ||
-      lowerValue.includes('month') ||
-      lowerValue === 'monthly'
-    ) {
-      return 'MONTHLY';
-    }
-    if (lowerValue.includes('annuel') || lowerValue.includes('year') || lowerValue === 'yearly') {
-      return 'YEARLY';
-    }
-    // Default to monthly
-    return 'MONTHLY';
+    // Actualiser la vue lorsque le cycle de facturation change
+    console.log('Cycle de facturation changé vers:', this.selectedBillingCycle);
   }
 }

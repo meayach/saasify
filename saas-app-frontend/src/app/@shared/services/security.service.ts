@@ -50,6 +50,7 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class SecurityService {
+  // Fixed URL to match backend routes: /api/v1/api/security (double prefix exists in backend logs)
   private baseUrl = `${environment.apiUrl}/api/v1/api/security`;
 
   constructor(private http: HttpClient) {}

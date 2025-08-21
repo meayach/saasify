@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
+import { SubscriptionService } from '../../services/subscription.service';
+import { PlanService } from '../../services/plan.service';
 
 @Component({
   selector: 'app-subscription-dashboard',
@@ -26,11 +29,13 @@ export class SubscriptionDashboardComponent implements OnInit {
     public router: Router,
     private userService: UserService,
     private notificationService: NotificationService,
+    private subscriptionService: SubscriptionService,
+    private planService: PlanService,
+    private datePipe: DatePipe,
   ) {}
 
   ngOnInit(): void {
-    // Mock data for testing - Simulation d'abonnements
-    this.createMockSubscriptions();
+    this.loadAvailablePlans();
     this.loadSubscriptions();
 
     // Load current user profile for header
@@ -85,33 +90,10 @@ export class SubscriptionDashboardComponent implements OnInit {
 
   // Créer des abonnements de test
   createMockSubscriptions(): void {
-    // Simulation d'offres disponibles
-    this.availablePlans = [
-      {
-        _id: 'plan-1',
-        name: 'Starter',
-        description: 'Parfait pour débuter avec les fonctionnalités de base',
-        price: 9.99,
-        type: 'Mensuel',
-        features: ['5 projets', 'Support email', '1 GB stockage'],
-      },
-      {
-        _id: 'plan-2',
-        name: 'Professional',
-        description: 'Pour les équipes qui ont besoin de fonctionnalités avancées',
-        price: 29.99,
-        type: 'Mensuel',
-        features: ['50 projets', 'Support prioritaire', '10 GB stockage', 'Analytics'],
-      },
-      {
-        _id: 'plan-3',
-        name: 'Enterprise',
-        description: 'Solution complète pour les grandes entreprises',
-        price: 99.99,
-        type: 'Mensuel',
-        features: ['Projets illimités', 'Support 24/7', '100 GB stockage', 'API avancée'],
-      },
-    ];
+    // Ensure we have mock plans
+    if (this.availablePlans.length === 0) {
+      this.createMockPlans();
+    }
 
     // Simulation d'un abonnement actif
     this.currentSubscription = {
@@ -151,7 +133,36 @@ export class SubscriptionDashboardComponent implements OnInit {
   }
 
   onCancelSubscription(subscriptionId: string): void {
-    console.log('Cancel subscription:', subscriptionId);
+    if (confirm('Êtes-vous sûr de vouloir annuler cet abonnement ?')) {
+      this.subscriptionService.cancelSubscription(subscriptionId).subscribe({
+        next: (response) => {
+          this.notificationService.success('Abonnement annulé avec succès');
+          this.loadSubscriptions(); // Reload data
+        },
+        error: (error) => {
+          console.error("Erreur lors de l'annulation:", error);
+          this.notificationService.error("Erreur lors de l'annulation de l'abonnement");
+        },
+      });
+    }
+  }
+
+  onCreateSubscription(planId: string, billingCycle: string = 'monthly'): void {
+    const dto = {
+      planId,
+      billingCycle,
+    };
+
+    this.subscriptionService.createSubscription(dto).subscribe({
+      next: (response) => {
+        this.notificationService.success('Abonnement créé avec succès');
+        this.loadSubscriptions(); // Reload data
+      },
+      error: (error) => {
+        console.error('Erreur lors de la création:', error);
+        this.notificationService.error("Erreur lors de la création de l'abonnement");
+      },
+    });
   }
 
   onViewDetails(subscriptionId: string): void {
@@ -167,15 +178,77 @@ export class SubscriptionDashboardComponent implements OnInit {
   }
 
   // Methods used in template
+  loadAvailablePlans(): void {
+    this.planService.getPlans().subscribe({
+      next: (response) => {
+        this.availablePlans = response.data || [];
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des plans:', error);
+        this.createMockPlans(); // Fallback to mock data
+      },
+    });
+  }
+
   loadSubscriptions(): void {
     this.loading = true;
     this.error = null;
-    // Simulation du chargement des abonnements
-    setTimeout(() => {
-      this.loading = false;
-      // Les données sont déjà créées dans createMockSubscriptions()
-      console.log('Abonnements chargés:', this.subscriptions);
-    }, 1000);
+
+    this.subscriptionService.getMySubscriptions().subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.subscriptions = response.data || [];
+        this.currentSubscription = this.subscriptions.find(
+          (sub) => sub.status === 'ACTIVE' || sub.status === 'TRIAL',
+        );
+        console.log('Abonnements chargés:', this.subscriptions);
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Erreur lors du chargement des abonnements:', error);
+
+        if (error.status === 0) {
+          this.error =
+            'Impossible de se connecter au serveur. Vérifiez votre connexion ou contactez le support.';
+        } else if (error.status === 401) {
+          this.error = 'Session expirée. Veuillez vous reconnecter.';
+        } else {
+          this.error = 'Impossible de charger vos abonnements. Réessayez plus tard.';
+        }
+
+        // Fallback to mock data for development
+        this.createMockSubscriptions();
+      },
+    });
+  }
+
+  createMockPlans(): void {
+    this.availablePlans = [
+      {
+        _id: 'plan-1',
+        name: 'Starter',
+        description: 'Parfait pour débuter avec les fonctionnalités de base',
+        price: 9.99,
+        type: 'Mensuel',
+        features: ['5 projets', 'Support email', '1 GB stockage'],
+      },
+      {
+        _id: 'plan-2',
+        name: 'Professional',
+        description: 'Pour les équipes qui ont besoin de fonctionnalités avancées',
+        price: 29.99,
+        type: 'Mensuel',
+        features: ['50 projets', 'Support prioritaire', '10 GB stockage', 'Analytics'],
+      },
+      {
+        _id: 'plan-3',
+        name: 'Enterprise',
+        description: 'Solution complète pour les grandes entreprises',
+        price: 99.99,
+        type: 'Mensuel',
+        features: ['Projets illimités', 'Support 24/7', '100 GB stockage', 'API avancée'],
+      },
+    ];
   }
 
   getStatusColor(status: string): string {
@@ -345,5 +418,10 @@ export class SubscriptionDashboardComponent implements OnInit {
 
     this.notificationService.success('Déconnexion réussie');
     this.router.navigate(['/login']);
+  }
+
+  formatDate(date: string | Date): string {
+    if (!date) return '';
+    return this.datePipe.transform(date, 'short') || '';
   }
 }

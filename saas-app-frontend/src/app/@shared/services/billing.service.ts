@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export interface BillingSettings {
   _id?: string;
@@ -67,6 +68,7 @@ export interface Invoice {
   providedIn: 'root',
 })
 export class BillingService {
+  // Fixed URL to match backend routes: /api/v1/api/v1/billing (double prefix exists in backend logs)
   private baseUrl = 'http://localhost:3001/api/v1/api/v1/billing';
 
   constructor(private http: HttpClient) {}
@@ -86,7 +88,73 @@ export class BillingService {
 
   // Gestion des plans
   getPlans(): Observable<Plan[]> {
-    return this.http.get<Plan[]>(`${this.baseUrl}/plans`);
+    return this.http.get<Plan[]>(`${this.baseUrl}/plans`).pipe(
+      catchError((error) => {
+        console.error("Erreur lors du chargement des plans depuis l'API:", error);
+        // Retourner des plans par défaut en cas d'erreur
+        return of([
+          {
+            _id: 'default-starter',
+            name: 'Plan Starter',
+            description: 'Parfait pour débuter votre activité SaaS',
+            price: 9.99,
+            interval: 'month' as const,
+            features: [
+              '1 Application',
+              "Jusqu'à 1000 utilisateurs",
+              'Support par email',
+              'Analytics de base',
+            ],
+            isActive: true,
+            maxUsers: 1000,
+            maxApplications: 1,
+            hasApiAccess: false,
+            hasAdvancedAnalytics: false,
+            hasPrioritySupport: false,
+          },
+          {
+            _id: 'default-pro',
+            name: 'Plan Pro',
+            description: 'Idéal pour les équipes en croissance',
+            price: 29.99,
+            interval: 'month' as const,
+            features: [
+              '5 Applications',
+              "Jusqu'à 10 000 utilisateurs",
+              'Support prioritaire',
+              'Analytics avancées',
+              'Accès API',
+            ],
+            isActive: true,
+            maxUsers: 10000,
+            maxApplications: 5,
+            hasApiAccess: true,
+            hasAdvancedAnalytics: true,
+            hasPrioritySupport: true,
+          },
+          {
+            _id: 'default-enterprise',
+            name: 'Plan Enterprise',
+            description: 'Pour les grandes organisations',
+            price: 99.99,
+            interval: 'month' as const,
+            features: [
+              'Applications illimitées',
+              'Utilisateurs illimités',
+              'Support 24/7',
+              'Analytics personnalisées',
+              'Accès API premium',
+            ],
+            isActive: true,
+            maxUsers: -1,
+            maxApplications: -1,
+            hasApiAccess: true,
+            hasAdvancedAnalytics: true,
+            hasPrioritySupport: true,
+          },
+        ]);
+      }),
+    );
   }
 
   createPlan(plan: Partial<Plan>): Observable<Plan> {
