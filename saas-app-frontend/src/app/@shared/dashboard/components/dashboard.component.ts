@@ -169,6 +169,13 @@ export class DashboardComponent implements OnInit {
     private dashboardStatsService: DashboardStatsService,
   ) {}
 
+  // Ouvrir l'éditeur de plan (naviguer vers une route d'édition)
+  editPlan(planId: string | undefined): void {
+    if (!planId) return;
+    // Naviguer vers une route dédiée à l'édition du plan
+    this.router.navigate(['/subscriptions', 'plans', 'edit', planId]);
+  }
+
   ngOnInit(): void {
     // Récupérer les informations utilisateur depuis le localStorage
     this.loadUserInfo();

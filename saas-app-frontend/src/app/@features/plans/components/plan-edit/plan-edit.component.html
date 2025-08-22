@@ -1,0 +1,138 @@
+<div class="plan-edit-container">
+  <h2 style="margin-bottom: 16px">Modifier le plan</h2>
+
+  <div *ngIf="loading" class="loading">
+    <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
+    <span style="margin-left: 8px">Chargement du plan...</span>
+  </div>
+
+  <form [formGroup]="planForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+    <div style="display: grid; gap: 12px; max-width: 720px">
+      <div>
+        <label>Nom du plan</label>
+        <input type="text" formControlName="name" placeholder="Nom du plan" />
+      </div>
+
+      <div>
+        <label>Description</label>
+        <textarea
+          formControlName="description"
+          rows="3"
+          placeholder="Description du plan"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 12px">
+        <div style="flex: 1">
+          <label>Prix</label>
+          <input type="number" formControlName="price" step="0.01" />
+        </div>
+        <div style="width: 140px">
+          <label>Devise</label>
+          <input type="text" formControlName="currency" />
+        </div>
+        <div style="width: 140px">
+          <label>Statut</label>
+          <select formControlName="status">
+            <option value="active">Actif</option>
+            <option value="inactive">Inactif</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px">
+        <div style="flex: 1">
+          <label>Utilisateurs max</label>
+          <input type="number" formControlName="maxUsers" />
+        </div>
+        <div style="align-self: end">
+          <label style="display: flex; align-items: center; gap: 8px">
+            <input type="checkbox" formControlName="isPopular" />
+            Populaire
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label>Fonctionnalités</label>
+        <div formArrayName="features" style="display: grid; gap: 8px; margin-top: 8px">
+          <div
+            *ngFor="let f of featuresArray.controls; let i = index"
+            [formGroupName]="i"
+            style="display: flex; gap: 8px; align-items: center">
+            <input type="checkbox" formControlName="included" />
+            <input type="text" formControlName="name" [readonly]="isPredefinedFeature(i)" />
+            <button type="button" (click)="removeFeature(i)" [disabled]="isPredefinedFeature(i)">
+              Supprimer
+            </button>
+          </div>
+        </div>
+        <div style="margin-top: 8px">
+          <button type="button" (click)="addCustomFeature()">
+            Ajouter une fonctionnalité personnalisée
+          </button>
+        </div>
+      </div>
+
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px">
+        <div style="color: #6b7280">Créé le: {{ getPlanCreatedDate() }}</div>
+        <div style="display: flex; gap: 8px">
+          <button type="submit" [disabled]="planForm.invalid || loading">
+            <span *ngIf="!loading">Enregistrer</span>
+            <span *ngIf="loading"><i class="pi pi-spin pi-spinner"></i> Enregistrement...</span>
+          </button>
+          <button
+            type="button"
+            (click)="onCancel()"
+            [disabled]="loading"
+            style="background: #ef4444">
+            Annuler
+          </button>
+        </div>
+      </div>
+      <!-- Diagnostic simple pour aider au debugging -->
+      <div
+        style="
+          margin-top: 12px;
+          padding: 10px;
+          border-radius: 8px;
+          background: #f1f5f9;
+          color: #0f172a;
+        ">
+        <div>
+          <strong>État du formulaire:</strong>
+          <span [style.color]="planForm.valid ? '#059669' : '#b91c1c'">{{
+            planForm.valid ? 'Valide' : 'Invalide'
+          }}</span>
+        </div>
+        <div style="margin-top: 6px">
+          <strong>Contrôles invalides:</strong>
+          <span *ngIf="getInvalidControls().length === 0">Aucun</span>
+          <ul *ngIf="getInvalidControls().length > 0">
+            <li *ngFor="let c of getInvalidControls()">{{ c }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div style="margin-top: 12px; max-width: 720px">
+    <div
+      *ngIf="lastResponse"
+      style="padding: 10px; background: #ecfdf5; border-radius: 6px; color: #065f46">
+      <strong>Réponse serveur (dernier):</strong>
+      <pre style="white-space: pre-wrap">{{ lastResponse | json }}</pre>
+    </div>
+    <div
+      *ngIf="lastError"
+      style="
+        padding: 10px;
+        background: #fff1f2;
+        border-radius: 6px;
+        color: #9f1239;
+        margin-top: 8px;
+      ">
+      <strong>Erreur serveur (dernier):</strong>
+      <pre style="white-space: pre-wrap">{{ lastError | json }}</pre>
+    </div>
+  </div>
+</div>

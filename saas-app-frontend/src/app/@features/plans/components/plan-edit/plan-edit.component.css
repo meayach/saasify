@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  padding: 20px;
+  background: #f8fafc;
+  min-height: 100%;
+}
+
+.plan-edit-container {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 24px;
+  max-width: 980px;
+  margin: 0 auto;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+}
+
+.plan-edit-container h2 {
+  font-size: 20px;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+input[type='text'],
+input[type='number'],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4b5563;
+}
+
+button[type='submit'],
+button[type='button'] {
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button[type='button'] {
+  background: #6b7280;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.plan-edit-container .features-list {
+  display: grid;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .plan-edit-container {
+    padding: 16px;
+  }
+  .plan-edit-container h2 {
+    font-size: 18px;
+  }
+}

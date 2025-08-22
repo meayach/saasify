@@ -194,6 +194,12 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
           isActive: app.isActive !== undefined ? app.isActive : app.status === 'active',
         }));
         console.log('🔍 Premier élément après traitement:', this.applications[0]);
+        // Mettre à jour le compteur de déploiements d'aujourd'hui en se basant sur deployedAt
+        try {
+          this.applicationStats.deploymentsToday = this.computeDeploymentsToday();
+        } catch (e) {
+          console.warn('Impossible de calculer deploymentsToday localement', e);
+        }
         this.loading = false;
         // Forcer la mise à jour de l'interface
         this.cdr.detectChanges();
@@ -236,10 +242,44 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Calcule localement le nombre d'applications déployées aujourd'hui
+   * en regardant la propriété `deployedAt` de chaque application.
+   */
+  private computeDeploymentsToday(): number {
+    if (!this.applications || this.applications.length === 0) return 0;
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    return this.applications.reduce((count, app) => {
+      if (!app) return count;
+
+      // Prefer deployedAt when available, otherwise fallback to createdAt
+      const dateToCheck = app.deployedAt
+        ? new Date(app.deployedAt)
+        : app.createdAt
+        ? new Date(app.createdAt)
+        : null;
+      if (!dateToCheck) return count;
+      if (dateToCheck >= startOfToday && dateToCheck < startOfTomorrow) return count + 1;
+      return count;
+    }, 0);
+  }
+
   loadApplicationStats(): void {
     this.applicationService.getApplicationStats().subscribe({
       next: (stats) => {
-        this.applicationStats = stats;
+        // Merge stats but prefer a local calculation for deploymentsToday when applications are loaded
+        this.applicationStats = {
+          ...stats,
+          deploymentsToday:
+            this.applications && this.applications.length > 0
+              ? this.computeDeploymentsToday()
+              : stats.deploymentsToday,
+        };
       },
       error: (error) => {
         console.error('Erreur lors du chargement des statistiques:', error);
@@ -247,7 +287,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
         this.applicationStats = {
           totalApplications: 3,
           activeApplications: 2,
-          deploymentsToday: 1,
+          deploymentsToday: this.computeDeploymentsToday(),
           maintenanceApplications: 1,
         };
       },

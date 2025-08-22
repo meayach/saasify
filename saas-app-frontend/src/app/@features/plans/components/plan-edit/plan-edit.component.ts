@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { BillingService } from '../../../../@shared/services/billing.service';
+import { NotificationService } from '../../../../@shared/services/notification.service';
 
 interface Plan {
   id: string;
@@ -10,7 +12,6 @@ interface Plan {
   currency: string;
   features: string[];
   maxUsers: number;
-  maxApps: number;
   status: 'active' | 'inactive';
   isPopular: boolean;
   createdDate: Date;
@@ -31,6 +32,8 @@ export class PlanEditComponent implements OnInit {
   loading = false;
   planData: Plan | null = null;
   planId: string | null = null;
+  lastResponse: any = null;
+  lastError: any = null;
 
   predefinedFeatures: PlanFeature[] = [
     { name: 'Support par email', included: false },
@@ -45,14 +48,19 @@ export class PlanEditComponent implements OnInit {
     { name: 'Manager dédié', included: false },
   ];
 
-  constructor(private fb: FormBuilder, public router: Router, private route: ActivatedRoute) {
+  constructor(
+    private fb: FormBuilder,
+    public router: Router,
+    private route: ActivatedRoute,
+    private billingService: BillingService,
+    private notificationService: NotificationService,
+  ) {
     this.planForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: [0, [Validators.required, Validators.min(0)]],
       currency: ['EUR', Validators.required],
       maxUsers: [100, [Validators.required, Validators.min(-1)]],
-      maxApps: [1, [Validators.required, Validators.min(-1)]],
       isPopular: [false],
       status: ['active', Validators.required],
       features: this.fb.array([]),
@@ -73,33 +81,63 @@ export class PlanEditComponent implements OnInit {
 
     this.loading = true;
 
-    // Simuler le chargement des données
-    setTimeout(() => {
-      // Données simulées - normalement récupérées via API
-      this.planData = {
-        id: this.planId!,
-        name: 'Pro',
-        description: 'Idéal pour les entreprises en croissance',
-        price: 29.99,
-        currency: 'EUR',
-        features: [
-          'Support par email',
-          'Tableau de bord basique',
-          'Support prioritaire',
-          'Analyses avancées',
-          'API complète',
-          'Intégrations tierces',
-        ],
-        maxUsers: 1000,
-        maxApps: 5,
-        status: 'active',
-        isPopular: true,
-        createdDate: new Date('2023-01-01'),
-      };
+    // Charger le plan via le service de facturation
+    this.billingService.getPlans().subscribe({
+      next: (plans) => {
+        // Rechercher par _id ou id
+        const found: any = plans.find((p: any) => p._id === this.planId || p.id === this.planId);
+        if (found) {
+          this.planData = {
+            id: found._id,
+            name: found.name || '',
+            description: found.description || '',
+            price: found.price || 0,
+            // API doesn't include currency; default to EUR
+            currency: 'EUR',
+            features: found.features || [],
+            maxUsers: typeof found.maxUsers === 'number' ? found.maxUsers : 100,
+            status: found.isActive === false ? 'inactive' : 'active',
+            isPopular: !!found.isPopular,
+            createdDate: found.createdAt ? new Date(found.createdAt) : new Date(),
+          };
+        } else {
+          // Fallback: si non trouvé, initialiser avec des valeurs par défaut
+          this.planData = {
+            id: this.planId!,
+            name: '',
+            description: '',
+            price: 0,
+            currency: 'EUR',
+            features: [],
+            maxUsers: 100,
+            status: 'inactive',
+            isPopular: false,
+            createdDate: new Date(),
+          };
+        }
 
-      this.initializeForm();
-      this.loading = false;
-    }, 1000);
+        this.initializeForm();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Erreur lors du chargement du plan:', err);
+        // Fallback local si l'API échoue
+        this.planData = {
+          id: this.planId!,
+          name: '',
+          description: '',
+          price: 0,
+          currency: 'EUR',
+          features: [],
+          maxUsers: 100,
+          status: 'inactive',
+          isPopular: false,
+          createdDate: new Date(),
+        };
+        this.initializeForm();
+        this.loading = false;
+      },
+    });
   }
 
   initializeForm(): void {
@@ -112,7 +150,6 @@ export class PlanEditComponent implements OnInit {
       price: this.planData.price,
       currency: this.planData.currency,
       maxUsers: this.planData.maxUsers,
-      maxApps: this.planData.maxApps,
       isPopular: this.planData.isPopular,
       status: this.planData.status,
     });
@@ -179,30 +216,77 @@ export class PlanEditComponent implements OnInit {
         .filter((f: any) => f.included)
         .map((f: any) => f.name);
 
-      const updatedPlan = {
-        ...this.planData,
-        ...formData,
+      // Build payload that matches backend UpdatePlanDto (allowed: name, description, price, interval, features, isActive)
+      const updatedPlan: any = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
         features: selectedFeatures,
-        updatedDate: new Date(),
+        // map status -> isActive expected by API
+        isActive: formData.status === 'active',
       };
 
-      console.log('Plan modifié:', updatedPlan);
+      // include interval only if present on the form or existing planData
+      if (formData.interval) {
+        updatedPlan.interval = formData.interval;
+      } else if ((this.planData as any)?.interval) {
+        updatedPlan.interval = (this.planData as any).interval;
+      }
 
-      // Simuler l'appel API
-      setTimeout(() => {
-        console.log('Plan modifié avec succès');
-        this.loading = false;
-        this.router.navigate(['/plans']);
-      }, 2000);
+      // Appel réel à l'API pour mettre à jour le plan (payload filtered to allowed fields)
+      const planIdToUpdate = this.planData.id || this.planId!;
+      console.log('updatePlan: planId=', planIdToUpdate, 'payload=', updatedPlan);
+      this.billingService.updatePlan(planIdToUpdate, updatedPlan).subscribe({
+        next: (res) => {
+          console.log('Plan modifié avec succès', res);
+          this.lastResponse = res;
+          try {
+            this.notificationService.success('Plan mis à jour');
+          } catch (e) {
+            console.warn('Notification service failed', e);
+          }
+          this.loading = false;
+          console.log('Navigation vers /subscriptions/plans (déclenchement)');
+          // utiliser setTimeout pour s'assurer que la navigation se produit après la mise à jour UI
+          setTimeout(() => {
+            this.router
+              .navigateByUrl('/subscriptions/plans')
+              .then((ok) => console.log('router.navigateByUrl result=', ok))
+              .catch((err) => console.error('router.navigateByUrl error=', err));
+          }, 0);
+        },
+        error: (err) => {
+          console.error('Erreur lors de la mise à jour du plan:', err);
+          this.lastError = err;
+          try {
+            this.notificationService.error('Erreur lors de la mise à jour du plan');
+          } catch (e) {
+            console.warn('Notification service failed', e);
+          }
+          this.loading = false;
+        },
+      });
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/plans']);
+    this.router.navigate(['/subscriptions', 'plans']);
   }
 
   isPredefinedFeature(index: number): boolean {
     return index < this.predefinedFeatures.length;
+  }
+
+  // Retourne la liste des contrôles invalides (utilisé pour debug dans le template)
+  getInvalidControls(): string[] {
+    const invalid: string[] = [];
+    Object.keys(this.planForm.controls).forEach((key) => {
+      const control = this.planForm.get(key);
+      if (control && control.invalid) {
+        invalid.push(key);
+      }
+    });
+    return invalid;
   }
 
   getPlanCreatedDate(): string {

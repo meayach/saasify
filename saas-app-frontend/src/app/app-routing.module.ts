@@ -29,6 +29,11 @@ const routes: Routes = [
     path: 'subscriptions',
     loadChildren: () => import('./@features/subscriptions').then((m) => m.SubscriptionsModule),
   },
+  // Mount Plans module under /subscriptions/plans
+  {
+    path: 'subscriptions/plans',
+    loadChildren: () => import('./@features/plans/plans.module').then((m) => m.PlansModule),
+  },
   { path: 'analytics', component: DashboardComponent },
   { path: 'settings', component: DashboardComponent },
 ];

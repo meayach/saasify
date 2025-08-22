@@ -99,13 +99,13 @@ export class PlanCreateComponent implements OnInit {
       setTimeout(() => {
         console.log('Plan créé avec succès');
         this.loading = false;
-        this.router.navigate(['/plans']);
+        this.router.navigate(['/subscriptions', 'plans']);
       }, 2000);
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/plans']);
+    this.router.navigate(['/subscriptions', 'plans']);
   }
 
   onPresetSelect(preset: string): void {

@@ -162,7 +162,23 @@ export class BillingService {
   }
 
   updatePlan(planId: string, plan: Partial<Plan>): Observable<Plan> {
-    return this.http.put<Plan>(`${this.baseUrl}/plans/${planId}`, plan);
+    const url = `${this.baseUrl}/plans/${planId}`;
+    console.log('BillingService.updatePlan: PUT', url, 'payload=', plan);
+    return this.http.put<Plan>(url, plan).pipe(
+      // log response for debugging
+      // Note: import of rxjs/operators already present
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // Use tap to inspect response but avoid importing here to keep change small
+      // We'll use map passthrough with side-effect
+      // tslint:disable-next-line: no-shadowed-variable
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // keep it simple: subscribe site will see response; in case of error it will be logged below
+      // attach catch to log errors
+      catchError((err) => {
+        console.error('BillingService.updatePlan: error', err);
+        throw err;
+      }),
+    );
   }
 
   deletePlan(planId: string): Observable<void> {

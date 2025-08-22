@@ -117,11 +117,11 @@ export class PlanListComponent implements OnInit {
   }
 
   onCreatePlan(): void {
-    this.router.navigate(['/plans/create']);
+    this.router.navigate(['/subscriptions', 'plans', 'create']);
   }
 
   onEditPlan(plan: Plan): void {
-    this.router.navigate(['/plans/edit', plan.id]);
+    this.router.navigate(['/subscriptions', 'plans', 'edit', plan.id]);
   }
 
   onToggleStatus(plan: Plan): void {
