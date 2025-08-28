@@ -3,7 +3,6 @@ import mongoose, { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { SaasOfferDocument, SaasOfferPOJO } from '@Data/models/saasOffer/saasOffer.pojo.model';
 import { SaasPlanPOJO } from '@Data/models/saasPlan/saasPlan.pojo.model';
-import { GetPlanFromOfferDTO } from '@Services/dto/plan/get-offer-from-offer.dto';
 
 @Injectable()
 export class SaasOfferRepository {
@@ -29,5 +28,14 @@ export class SaasOfferRepository {
     }
     const plan: SaasPlanPOJO = offer.plans[0];
     return plan;
+  }
+
+  async createOffer(saasOfferPOJO: Partial<SaasOfferPOJO>): Promise<SaasOfferPOJO> {
+    const created = await this.saasOfferModel.create(saasOfferPOJO);
+    return created.toObject();
+  }
+
+  async findByApplication(applicationId: string): Promise<SaasOfferPOJO[]> {
+    return this.saasOfferModel.find({ saasApplication: applicationId }).lean().exec();
   }
 }

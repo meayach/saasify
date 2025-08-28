@@ -53,6 +53,8 @@ import {
   SaasCustomerAdmin,
   SaasCustomerAdminSchema,
 } from './data/models/saasCustomerAdmin/saas-customer-admin.model';
+import { SaasOfferDataModule } from './data/saasOffer/saasOffer.data.module';
+import { SaasApplicationDataModule } from './data/saasApplication/saasApplication.data.module';
 
 // Import services
 import { UserService } from './services/user/user.service';
@@ -60,6 +62,7 @@ import { SaasApplicationService } from './services/application/saas-application.
 import { SaasPlanService } from './services/plan/saas-plan.service';
 import { SaasSubscriptionService } from './services/subscription/saas-subscription.service';
 import { SaasPaymentService } from './services/payment/saas-payment.service';
+import { SaasOfferService } from './services/offer/saas-offer.service';
 
 // Import controllers
 import { UserController } from './controllers/user/user.controller';
@@ -68,6 +71,7 @@ import { SaasPlanController } from './controllers/plan/saas-plan.controller';
 import { SaasSubscriptionController } from './controllers/subscription/saas-subscription.controller';
 import { DashboardSubscriptionController } from './controllers/subscription/dashboard-subscription.controller';
 import { SaasPaymentController } from './controllers/payment/saas-payment.controller';
+import { SaasOfferController } from './controllers/offer/saas-offer.controller';
 import { AuthControllerModule } from './controllers/auth/auth.controller.module';
 import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAdmin.data.module';
 
@@ -120,6 +124,8 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     SecurityModule,
     BillingModule,
     SaasCustomerAdminModule,
+    SaasOfferDataModule,
+    SaasApplicationDataModule,
   ],
   controllers: [
     AppController,
@@ -129,6 +135,7 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     SaasSubscriptionController,
     DashboardSubscriptionController,
     SaasPaymentController,
+    SaasOfferController,
   ],
   providers: [
     AppService,
@@ -137,6 +144,7 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     SaasPlanService,
     SaasSubscriptionService,
     SaasPaymentService,
+    SaasOfferService,
   ],
 })
 export class AppModule {}

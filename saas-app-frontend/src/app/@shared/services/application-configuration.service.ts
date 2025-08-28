@@ -34,7 +34,7 @@ export interface ApplicationConfigurationResponse {
   providedIn: 'root',
 })
 export class ApplicationConfigurationService {
-  private baseUrl = 'http://localhost:3001/api/v1/api/v1/application-configuration';
+  private baseUrl = 'http://localhost:3001/api/v1/application-configuration';
   private useMockData = false; // Mode production - connecté à la base de données
 
   constructor(private http: HttpClient) {}

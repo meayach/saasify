@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsUrl, IsArray, IsObject, IsMongoId } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsUrl, IsArray, IsObject } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   ApplicationStatus,
@@ -138,6 +138,9 @@ export class SaasApplicationResponseDto {
 
   @ApiPropertyOptional({ description: 'Application launch date' })
   launchedAt?: Date;
+
+  @ApiPropertyOptional({ description: 'Application deployed date' })
+  deployedAt?: Date;
 
   @ApiProperty({ description: 'Application creation date' })
   createdAt: Date;

@@ -46,6 +46,10 @@ export class SaasApplicationPOJO {
   @AutoMap()
   updatedAt?: Date;
 
+  @Prop()
+  @AutoMap()
+  deployedAt?: Date;
+
   @AutoMap(() => SaasWorkspacePOJO)
   @Prop({
     required: false,

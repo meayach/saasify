@@ -28,7 +28,8 @@ export class ApplicationService {
       _id: saasApp._id?.toString(),
       name: saasApp.applicationName || '',
       status: (saasApp.status as 'active' | 'maintenance' | 'inactive') || 'active',
-      deployedAt: new Date(),
+      // Use the stored deployedAt if present; otherwise leave undefined
+      deployedAt: saasApp.deployedAt ? new Date(saasApp.deployedAt) : undefined,
       createdAt: saasApp.createdAt || new Date(),
       updatedAt: saasApp.updatedAt || new Date(),
     };

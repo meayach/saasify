@@ -109,6 +109,7 @@ export class SaasApplicationService {
         {
           status: 'PRODUCTION',
           launchedAt: new Date(),
+          deployedAt: new Date(),
         },
         { new: true },
       )
@@ -135,6 +136,7 @@ export class SaasApplicationService {
       apiUrl: application.apiUrl,
       tags: application.tags,
       launchedAt: application.launchedAt,
+      deployedAt: application.deployedAt,
       createdAt: application.createdAt,
       updatedAt: application.updatedAt,
     };

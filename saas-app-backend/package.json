@@ -20,6 +20,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migrate:cleanup-orphan-offers": "ts-node scripts/cleanup-orphan-offers.ts",
+    "typecheck": "tsc --noEmit",
     "seed:billing": "ts-node src/scripts/seed-billing-security.ts",
     "prepare": "husky install"
   },

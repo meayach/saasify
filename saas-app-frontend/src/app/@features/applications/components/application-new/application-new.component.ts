@@ -130,6 +130,20 @@ export class ApplicationNewComponent implements OnInit {
 
             this.isSubmitting = false;
 
+            // If backend returned a logoPath/logoUrl, persist it so the list can show it immediately
+            try {
+              const logoValue = (savedConfig as any)?.logoUrl || (savedConfig as any)?.logoPath;
+              if (logoValue && createdApp._id) {
+                const fullLogoUrl = logoValue.startsWith('http')
+                  ? logoValue
+                  : `${window.location.protocol}//${window.location.hostname}:3001/${logoValue}`;
+                localStorage.setItem(`appLogo:${createdApp._id}`, fullLogoUrl);
+                localStorage.setItem('lastConfiguredAppId', createdApp._id);
+              }
+            } catch (e) {
+              console.warn('Unable to persist app logo to localStorage', e);
+            }
+
             // Déclencher le rafraîchissement de la liste des applications
             this.applicationRefreshService.triggerRefresh();
 

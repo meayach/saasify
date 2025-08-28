@@ -11,7 +11,10 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Servir les fichiers statiques (uploads)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // Use process.cwd() so that the runtime serves the uploads directory
+  // regardless of whether the app is running from the compiled `dist` folder
+  // or directly from the TS sources in development.
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
 

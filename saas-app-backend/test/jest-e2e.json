@@ -1,9 +1,21 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "..",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": "test/.*\\.e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@root(.*)$": "<rootDir>/src$1",
+    "^@Services(.*)$": "<rootDir>/src/services$1",
+    "^@Service(.*)$": "<rootDir>/src/services$1",
+    "^@Data(.*)$": "<rootDir>/src/data$1",
+    "^@Datas(.*)$": "<rootDir>/src/data$1",
+    "^@Controller(.*)$": "<rootDir>/src/controllers$1",
+    "^@Controllers(.*)$": "<rootDir>/src/controllers$1",
+    "^@Gateway(.*)$": "<rootDir>/src/gateway$1",
+    "^@Gateways(.*)$": "<rootDir>/src/gateway$1",
+    "^@app(.*)$": "<rootDir>/src$1"
   }
 }

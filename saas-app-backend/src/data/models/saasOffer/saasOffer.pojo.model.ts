@@ -18,11 +18,11 @@ export class SaasOfferPOJO {
 
   @AutoMap(() => SaasApplicationPOJO)
   @Prop({
-    required: false,
+    required: true,
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'SaasApplicationOJO',
+    ref: 'SaasApplicationPOJO',
   })
-  saasApplication?: SaasApplicationPOJO;
+  saasApplication: SaasApplicationPOJO;
 
   @AutoMap(() => SaasPlanPOJO)
   @Prop({
@@ -34,3 +34,5 @@ export class SaasOfferPOJO {
 }
 
 export const SaasOfferSchema = SchemaFactory.createForClass(SaasOfferPOJO);
+// index for efficient lookup of offers by application
+SaasOfferSchema.index({ saasApplication: 1 });

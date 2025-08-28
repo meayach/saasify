@@ -164,13 +164,9 @@
 
   <!-- Actions -->
   <div class="actions-bar">
-    <button class="btn-primary" (click)="createNewApplication()">
+    <button class="btn-primary" data-pulse="true" (click)="createNewApplication()">
       <i class="pi pi-plus"></i>
-      Nouvelle Application
-    </button>
-    <button class="btn-secondary" (click)="refreshData()" [disabled]="loading">
-      <i class="pi pi-refresh" [class.pi-spin]="loading"></i>
-      {{ loading ? 'Actualisation...' : 'Actualiser' }}
+      <span style="display: inline-block; transform: translateY(-1px)">Nouvelle Application</span>
     </button>
   </div>
 
@@ -179,64 +175,48 @@
     <div
       class="application-card"
       *ngFor="let app of applications; trackBy: trackByFn; let i = index">
-      <div class="card-header">
-        <div class="app-info">
-          <h3>{{ app.name }}</h3>
+      <div class="card-main">
+        <div class="logo-wrap">
+          <img
+            class="app-logo"
+            [src]="app.logoUrl || 'assets/logo-saasify.svg'"
+            alt="{{ app.name }} logo"
+            (error)="onLogoError($event)" />
         </div>
-        <div class="app-toggle">
-          <div class="toggle-switch">
-            <div
-              class="manual-toggle"
-              [class.active]="applications[i].isActive"
-              (click)="simpleToggle(i)"
-              [style.background]="applications[i].isActive ? '#4CAF50' : '#ccc'"
-              style="
-                width: 50px;
-                height: 25px;
-                border-radius: 25px;
-                position: relative;
-                cursor: pointer;
-                transition: all 0.3s;
-              ">
-              <div
-                class="toggle-circle"
-                [style.left]="applications[i].isActive ? '27px' : '2px'"
-                style="
-                  width: 21px;
-                  height: 21px;
-                  background: white;
-                  border-radius: 50%;
-                  position: absolute;
-                  top: 2px;
-                  transition: all 0.3s;
-                "></div>
-            </div>
+
+        <div class="info-wrap">
+          <div class="app-title">
+            <h3>{{ app.name }}</h3>
           </div>
-          <span class="toggle-label">
-            {{ applications[i].isActive ? 'Actif' : 'Inactif' }}
-          </span>
+          <div class="meta-row">
+            <span class="created-date">
+              <i class="pi pi-calendar"></i>
+              Créé le {{ app.createdAt | date : 'dd/MM/yyyy' }}
+            </span>
+            <span class="deployments" *ngIf="app.deployedAt">
+              <i class="pi pi-upload"></i>
+              Déployé le {{ app.deployedAt | date : 'dd/MM/yyyy' }}
+            </span>
+          </div>
         </div>
-      </div>
 
-      <div class="card-content">
-        <div class="metadata">
-          <span class="created-date">
-            <i class="pi pi-calendar"></i>
-            Créé le {{ app.createdAt | date : 'dd/MM/yyyy' }}
-          </span>
-        </div>
-      </div>
+        <div class="actions-wrap">
+          <label class="toggle-label-wrap">
+            <input
+              type="checkbox"
+              [checked]="app.isActive"
+              (change)="toggleApplicationStatus(app._id!, $event)" />
+            <span class="toggle-slider"></span>
+          </label>
 
-      <div class="card-actions">
-        <button class="btn-configure" (click)="configureApplication(app._id!)">
-          <i class="pi pi-cog"></i>
-          Configurer
-        </button>
-        <button class="btn-delete" (click)="deleteApplication(app._id!)">
-          <div class="trash-icon">
+          <button class="icon-btn" title="Configurer" (click)="configureApplication(app._id!)">
+            <i class="pi pi-cog"></i>
+          </button>
+
+          <button class="icon-btn danger" title="Supprimer" (click)="deleteApplication(app._id!)">
             <i class="pi pi-trash"></i>
-          </div>
-        </button>
+          </button>
+        </div>
       </div>
     </div>
   </div>

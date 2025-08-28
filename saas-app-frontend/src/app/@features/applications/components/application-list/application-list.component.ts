@@ -1,11 +1,14 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { Subscription, filter } from 'rxjs';
+import { Subscription, EMPTY } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import {
   ApplicationService,
   Application,
   ApplicationStats,
 } from '../../../../@shared/services/application.service';
+import { ApplicationConfigurationService } from '../../../../@shared/services/application-configuration.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { UserService } from '../../../../@shared/services/user.service';
 import { ConfirmationModalService } from '../../../../@shared/services/confirmation-modal.service';
@@ -39,6 +42,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private confirmationModalService: ConfirmationModalService,
     private applicationRefreshService: ApplicationRefreshService,
+    private configurationService: ApplicationConfigurationService,
     private cdr: ChangeDetectorRef,
     private userService: UserService,
   ) {}
@@ -189,10 +193,56 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
         console.log('✅ Applications reçues:', applications);
         console.log('🔍 Premier élément brut:', applications[0]);
         // S'assurer que chaque application a une propriété isActive définie
-        this.applications = applications.map((app) => ({
-          ...app,
-          isActive: app.isActive !== undefined ? app.isActive : app.status === 'active',
-        }));
+        // et normaliser l'ID renvoyé par le backend (certains endpoints renvoient `id` au lieu de `_id`).
+        this.applications = applications.map((app: any) => {
+          const normalized = {
+            ...app,
+            isActive: app.isActive !== undefined ? app.isActive : app.status === 'active',
+          } as any;
+          // If backend returned `id` (not `_id`), copy it to `_id` so components expect a single shape
+          if (!normalized._id && (normalized.id || (normalized as any).ID)) {
+            normalized._id = normalized.id || (normalized as any).ID;
+          }
+          return normalized as Application;
+        });
+
+        // If we just returned from configuring an application, only try to apply
+        // the logo for that specific application (avoid overwriting others).
+        const lastConfiguredAppId = localStorage.getItem('lastConfiguredAppId');
+        if (lastConfiguredAppId) {
+          // If a stored logo URL exists for that app, apply it immediately, otherwise fetch its configuration
+          const target = this.applications.find(
+            (a) => a._id === lastConfiguredAppId || (a as any).id === lastConfiguredAppId,
+          );
+          if (target) {
+            const idKey = target._id || (target as any).id;
+            const storedLogo = idKey ? localStorage.getItem(`appLogo:${idKey}`) : null;
+            if (storedLogo) {
+              target.logoUrl = storedLogo;
+            } else if (!target.logoUrl) {
+              this.fetchAndApplyLogo(target);
+            }
+          }
+          // Clear the flag so subsequent loads behave normally
+          localStorage.removeItem('lastConfiguredAppId');
+        } else {
+          // Normal startup: for apps that do not provide a logoUrl, try to fetch the configuration
+          // which may contain a logoPath. Also prefer any per-app stored logo in localStorage.
+          this.applications = this.applications.map((app) => {
+            const idKey = (app as any)._id || (app as any).id;
+            const storedLogo = idKey ? localStorage.getItem(`appLogo:${idKey}`) : null;
+            return {
+              ...app,
+              logoUrl: app.logoUrl || storedLogo || app.logoUrl,
+            } as Application;
+          });
+
+          this.applications.forEach((app) => {
+            if (!app.logoUrl && app._id) {
+              this.fetchAndApplyLogo(app);
+            }
+          });
+        }
         console.log('🔍 Premier élément après traitement:', this.applications[0]);
         // Mettre à jour le compteur de déploiements d'aujourd'hui en se basant sur deployedAt
         try {
@@ -240,6 +290,38 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private backendBase(): string {
+    // Adjust if backend runs on different host/port in production
+    return 'http://localhost:3001/';
+  }
+
+  private fetchAndApplyLogo(app: Application): void {
+    if (!app._id) return;
+    this.configurationService
+      .getConfiguration(app._id)
+      .pipe(
+        catchError((err) => {
+          // If configuration doesn't exist (404), just ignore silently.
+          // For other errors, also suppress to avoid spamming console while keeping UX intact.
+          return EMPTY;
+        }),
+      )
+      .subscribe({
+        next: (config) => {
+          // The backend may return null when no configuration exists for an app.
+          if (!config) {
+            return; // nothing to apply
+          }
+          if ((config as any).logoPath) {
+            app.logoUrl = this.backendBase() + (config as any).logoPath;
+            // force change detection
+            this.applications = [...this.applications];
+            this.cdr.detectChanges();
+          }
+        },
+      });
   }
 
   /**
@@ -299,9 +381,8 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
   }
 
   configureApplication(id: string): void {
-    // Marquer qu'un rafraîchissement sera nécessaire au retour
-    localStorage.setItem('shouldRefreshApplications', 'true');
-    localStorage.setItem('lastConfiguredAppId', id);
+    // Navigate to the configuration page. The configure component will
+    // set the refresh flags (and persist the logo) once the user saves.
     this.router.navigate(['/applications/configure', id]);
   }
 
@@ -568,5 +649,12 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
   // TrackBy function pour forcer la mise à jour du DOM
   trackByFn(index: number, item: Application): string {
     return item._id + '-' + item.name; // Utiliser ID + nom pour forcer la mise à jour
+  }
+
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (img) {
+      img.src = 'assets/logo-saasify.svg';
+    }
   }
 }

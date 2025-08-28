@@ -236,6 +236,26 @@ export class ApplicationConfigureComponent implements OnInit {
         // Marquer qu'un rafraîchissement est nécessaire
         localStorage.setItem('shouldRefreshApplications', 'true');
 
+        // If backend returned a logoUrl or logoPath, persist it so the list can show it immediately for this app
+        const logoValue = (savedConfig as any)?.logoUrl || (savedConfig as any)?.logoPath;
+        if (logoValue && this.applicationId) {
+          try {
+            // Ensure we store a fully-qualified URL. The backend returns a relative path like "uploads/...".
+            const fullLogoUrl = logoValue.startsWith('http')
+              ? logoValue
+              : `${window.location.protocol}//${window.location.hostname}:3001/${logoValue}`;
+            console.debug('Persisting app logo to localStorage', this.applicationId, fullLogoUrl);
+            localStorage.setItem(`appLogo:${this.applicationId}`, fullLogoUrl);
+            // also tell the list which app was just configured
+            localStorage.setItem('lastConfiguredAppId', this.applicationId);
+            if (this.currentApplication) {
+              this.currentApplication.logoUrl = fullLogoUrl;
+            }
+          } catch (e) {
+            console.warn('Unable to persist app logo to localStorage', e);
+          }
+        }
+
         // Déclencher le rafraîchissement de la liste des applications
         this.applicationRefreshService.triggerRefresh();
 

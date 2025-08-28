@@ -18,7 +18,7 @@ import {
   UpdateApplicationConfigurationDto,
 } from '../../services/dto/application-configuration.dto';
 
-@Controller('api/v1/application-configuration')
+@Controller('application-configuration')
 export class ApplicationConfigurationController {
   constructor(private readonly configurationService: ApplicationConfigurationService) {}
 
@@ -70,10 +70,8 @@ export class ApplicationConfigurationController {
       const configuration = await this.configurationService.getConfigurationByApplicationId(
         applicationId,
       );
-      if (!configuration) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
-      }
-      return configuration;
+      // If no configuration exists for this application, return null (200) instead of 404
+      return configuration || null;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

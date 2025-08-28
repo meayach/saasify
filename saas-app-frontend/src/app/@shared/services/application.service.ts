@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 export interface Application {
   _id?: string;
   name: string;
+  logoUrl?: string;
   status: 'active' | 'maintenance' | 'inactive';
   isActive?: boolean;
   deployedAt?: Date;
