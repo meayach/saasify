@@ -1,0 +1,105 @@
+<div class="plan-edit-container">
+  <div class="header">
+    <h2>{{ planId ? 'Modifier le plan' : 'Créer un nouveau plan' }}</h2>
+    <button class="btn-cancel" (click)="onCancel()">Retour à la liste</button>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    Chargement...
+  </div>
+
+  <form [formGroup]="planForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+    <div class="form-section">
+      <h3>Informations générales</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Nom du plan *</label>
+          <input 
+            id="name"
+            type="text" 
+            class="form-control" 
+            formControlName="name"
+            placeholder="Ex: Plan Premium"
+          />
+          <div class="error-message" *ngIf="planForm.get('name')?.invalid && planForm.get('name')?.touched">
+            Le nom est requis (minimum 2 caractères)
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="currency">Devise *</label>
+          <select id="currency" class="form-control" formControlName="currency">
+            <option value="EUR">EUR - Euro</option>
+            <option value="USD">USD - Dollar</option>
+            <option value="GBP">GBP - Livre Sterling</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Fonctionnalités configurables</h3>
+        
+        <div *ngIf="applicationFeatures.length === 0" class="no-features">
+          Aucune fonctionnalité configurée pour cette application.
+        </div>
+
+        <div class="features-grid" *ngIf="applicationFeatures.length > 0" formArrayName="features">
+          <div *ngFor="let feature of featuresArray.controls; let i = index" 
+               class="feature-card" 
+               [formGroupName]="i">
+            
+            <div class="feature-header">
+              <h4>{{ applicationFeatures[i]?.name }}</h4>
+              <span class="feature-unit">{{ applicationFeatures[i]?.unitDisplayName }}</span>
+            </div>
+
+            <div class="feature-controls">
+              <div class="unlimited-toggle">
+                <input 
+                  type="checkbox" 
+                  [id]="'unlimited-' + i"
+                  formControlName="isUnlimited"
+                  (change)="onUnlimitedToggle(i)"
+                />
+                <label [for]="'unlimited-' + i">Illimité</label>
+              </div>
+
+              <div class="value-input" *ngIf="!feature.get('isUnlimited')?.value">
+                <label [for]="'value-' + i">Valeur:</label>
+                <input 
+                  [id]="'value-' + i"
+                  type="number" 
+                  class="form-control-small" 
+                  formControlName="value"
+                  min="0"
+                  (input)="onFeatureValueChange(i)"
+                />
+              </div>
+
+              <div class="display-value">
+                <strong>Affichage:</strong> {{ feature.get('displayValue')?.value }}
+              </div>
+            </div>
+
+            <input type="hidden" formControlName="featureId" />
+            <input type="hidden" formControlName="featureName" />
+            <input type="hidden" formControlName="unitDisplayName" />
+            <input type="hidden" formControlName="displayValue" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()">Annuler</button>
+        <button 
+          type="submit" 
+          class="btn-save" 
+          [disabled]="planForm.invalid || loading"
+        >
+          {{ planId ? 'Modifier le plan' : 'Créer le plan' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

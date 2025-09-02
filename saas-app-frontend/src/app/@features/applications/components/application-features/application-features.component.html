@@ -1,0 +1,193 @@
+<div class="features-container">
+  <div class="features-header">
+    <h2 class="features-title">Fonctionnalités de l'application</h2>
+    <button class="btn-add-feature" (click)="showAddForm()" [disabled]="loading">
+      + Ajouter une fonctionnalité
+    </button>
+  </div>
+
+  <!-- Form for adding/editing features -->
+  <div class="feature-form" *ngIf="showForm">
+    <h3 class="form-title">
+      {{ editingFeature ? 'Modifier la fonctionnalité' : 'Nouvelle fonctionnalité' }}
+    </h3>
+    
+    <form [formGroup]="featureForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="name">Nom de la fonctionnalité *</label>
+            <input 
+              id="name"
+              type="text" 
+              class="form-control" 
+              formControlName="name"
+              (input)="onNameChange()"
+              placeholder="Ex: Emails par mois"
+            />
+            <div class="error-message" *ngIf="featureForm.get('name')?.invalid && featureForm.get('name')?.touched">
+              Le nom est requis (minimum 3 caractères)
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-col">
+          <div class="form-group">
+            <label for="key">Clé technique *</label>
+            <input 
+              id="key"
+              type="text" 
+              class="form-control" 
+              formControlName="key"
+              placeholder="Ex: emails_per_month"
+            />
+            <div class="form-help">Uniquement lettres minuscules et underscores</div>
+            <div class="error-message" *ngIf="featureForm.get('key')?.invalid && featureForm.get('key')?.touched">
+              Format invalide (lettres minuscules et _ seulement)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <label for="unit">Unité *</label>
+            <select 
+              id="unit"
+              class="form-control" 
+              formControlName="unit"
+              (change)="onUnitChange()"
+            >
+              <option value="">Sélectionnez une unité</option>
+              <option *ngFor="let option of unitOptions" [value]="option.value">
+                {{ option.value }} ({{ option.displayName }})
+              </option>
+            </select>
+            <div class="error-message" *ngIf="featureForm.get('unit')?.invalid && featureForm.get('unit')?.touched">
+              L'unité est requise
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-col">
+          <div class="form-group">
+            <label for="unitDisplayName">Nom d'affichage de l'unité *</label>
+            <input 
+              id="unitDisplayName"
+              type="text" 
+              class="form-control" 
+              formControlName="unitDisplayName"
+              placeholder="Ex: emails/mois"
+            />
+            <div class="error-message" *ngIf="featureForm.get('unitDisplayName')?.invalid && featureForm.get('unitDisplayName')?.touched">
+              Le nom d'affichage est requis
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          id="description"
+          class="form-control" 
+          formControlName="description"
+          rows="3"
+          placeholder="Description de la fonctionnalité (optionnel)"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-col">
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input 
+                id="isActive"
+                type="checkbox" 
+                formControlName="isActive"
+              />
+              <label for="isActive">Fonctionnalité active</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-col">
+          <div class="form-group">
+            <label for="sortOrder">Ordre d'affichage</label>
+            <input 
+              id="sortOrder"
+              type="number" 
+              class="form-control" 
+              formControlName="sortOrder"
+              min="0"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancelForm()">Annuler</button>
+        <button 
+          type="submit" 
+          class="btn-save" 
+          [disabled]="featureForm.invalid || loading"
+        >
+          {{ editingFeature ? 'Modifier' : 'Créer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading" *ngIf="loading && !showForm">
+    Chargement des fonctionnalités...
+  </div>
+
+  <!-- Features list -->
+  <div class="features-list" *ngIf="!loading">
+    <div *ngIf="features.length === 0" class="no-features">
+      Aucune fonctionnalité configurée pour cette application.
+      <br>
+      Cliquez sur "Ajouter une fonctionnalité" pour commencer.
+    </div>
+
+    <div *ngFor="let feature of features" class="feature-item">
+      <div class="feature-info">
+        <div class="feature-name">{{ feature.name }}</div>
+        <div class="feature-details">
+          <span class="feature-key">{{ feature.key }}</span>
+          • 
+          <span class="feature-unit">{{ feature.unitDisplayName }}</span>
+        </div>
+        <div class="feature-details" *ngIf="feature.description">
+          {{ feature.description }}
+        </div>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <span class="feature-status" 
+              [class.status-active]="feature.isActive"
+              [class.status-inactive]="!feature.isActive">
+          {{ feature.isActive ? 'Active' : 'Inactive' }}
+        </span>
+        
+        <div class="feature-actions">
+          <button class="btn-sm btn-edit" (click)="editFeature(feature)" [disabled]="loading">
+            Modifier
+          </button>
+          <button 
+            class="btn-sm btn-toggle" 
+            (click)="toggleFeatureStatus(feature)" 
+            [disabled]="loading"
+          >
+            {{ feature.isActive ? 'Désactiver' : 'Activer' }}
+          </button>
+          <button class="btn-sm btn-delete" (click)="deleteFeature(feature)" [disabled]="loading">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
