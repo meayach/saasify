@@ -2,7 +2,7 @@ import { UserDocument, UserPOJO } from '@Data/models/user/user.pojo.model';
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { SaasWorkspacePOJO } from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+import { SaasWorkspacePOJO } from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 
 @Injectable()
 export class UserRepository {

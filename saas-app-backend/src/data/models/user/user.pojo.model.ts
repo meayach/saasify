@@ -1,7 +1,7 @@
 import { AutoMap } from '@automapper/classes';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { SaasWorkspacePOJO } from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+import { SaasWorkspacePOJO } from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 import { UserRolePOJO } from './user.role.pojo.model';
 
 export type UserDocument = UserPOJO & Document;

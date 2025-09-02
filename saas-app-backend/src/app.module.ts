@@ -53,6 +53,14 @@ import {
   SaasCustomerAdmin,
   SaasCustomerAdminSchema,
 } from './data/models/saasCustomerAdmin/saas-customer-admin.model';
+import { 
+  SaasApplicationFeature, 
+  SaasApplicationFeatureSchema 
+} from './data/models/saasApplicationFeature/saas-application-feature.model';
+import { 
+  SaasPlanFeatureValue, 
+  SaasPlanFeatureValueSchema 
+} from './data/models/saasPlanFeatureValue/saas-plan-feature-value.model';
 
 // Import services
 import { UserService } from './services/user/user.service';
@@ -60,6 +68,8 @@ import { SaasApplicationService } from './services/application/saas-application.
 import { SaasPlanService } from './services/plan/saas-plan.service';
 import { SaasSubscriptionService } from './services/subscription/saas-subscription.service';
 import { SaasPaymentService } from './services/payment/saas-payment.service';
+import { SaasApplicationFeatureService } from './services/saas-application-feature/saas-application-feature.service';
+import { SaasPlanFeatureValueService } from './services/saas-plan-feature-value/saas-plan-feature-value.service';
 
 // Import controllers
 import { UserController } from './controllers/user/user.controller';
@@ -68,6 +78,8 @@ import { SaasPlanController } from './controllers/plan/saas-plan.controller';
 import { SaasSubscriptionController } from './controllers/subscription/saas-subscription.controller';
 import { DashboardSubscriptionController } from './controllers/subscription/dashboard-subscription.controller';
 import { SaasPaymentController } from './controllers/payment/saas-payment.controller';
+import { SaasApplicationFeatureController } from './controllers/saas-application-feature/saas-application-feature.controller';
+import { SaasPlanFeatureValueController } from './controllers/saas-plan-feature-value/saas-plan-feature-value.controller';
 import { AuthControllerModule } from './controllers/auth/auth.controller.module';
 import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAdmin.data.module';
 
@@ -100,6 +112,8 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
       { name: Plan.name, schema: PlanSchema },
       { name: PaymentMethod.name, schema: PaymentMethodSchema },
       { name: Invoice.name, schema: InvoiceSchema },
+      { name: SaasApplicationFeature.name, schema: SaasApplicationFeatureSchema },
+      { name: SaasPlanFeatureValue.name, schema: SaasPlanFeatureValueSchema },
     ]),
     HttpModule,
     JwtModule.registerAsync({
@@ -129,6 +143,8 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     SaasSubscriptionController,
     DashboardSubscriptionController,
     SaasPaymentController,
+    SaasApplicationFeatureController,
+    SaasPlanFeatureValueController,
   ],
   providers: [
     AppService,
@@ -137,6 +153,8 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     SaasPlanService,
     SaasSubscriptionService,
     SaasPaymentService,
+    SaasApplicationFeatureService,
+    SaasPlanFeatureValueService,
   ],
 })
 export class AppModule {}

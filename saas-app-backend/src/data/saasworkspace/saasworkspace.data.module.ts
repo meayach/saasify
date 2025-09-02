@@ -1,7 +1,7 @@
 import {
   SaasWorkspacePOJO,
   SaasWorkspaceSchema,
-} from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+} from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';

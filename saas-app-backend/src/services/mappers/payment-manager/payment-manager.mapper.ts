@@ -3,7 +3,7 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { SaasPaymentMethodConfigurationPOJO } from '@Data/models/saasPaymentMethodConfiguration/saasPaymentMethodConfiguration.pojo.model';
 import { PaymentsConfigResultsDTO } from '@Services/dto/payment/get-client-id.dto';
-import { SaasWorkspacePOJO } from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+import { SaasWorkspacePOJO } from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 import { GetPaymentsConfigurationDTO } from '@Services/dto/payment/get-payment-configuration.dto';
 
 @Injectable()

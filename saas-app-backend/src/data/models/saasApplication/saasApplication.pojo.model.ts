@@ -1,7 +1,7 @@
 import { AutoMap } from '@automapper/classes';
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { SaasWorkspacePOJO } from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+import { SaasWorkspacePOJO } from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 import { SaasApplicationConfigurationPOJO } from '../saasApplicationConfiguration/saasApplicationConfiguration.pojo.model';
 import { SaasOfferPOJO } from '../saasOffer/saasOffer.pojo.model';
 import { SaasPlanPOJO } from '../saasPlan/saasPlan.pojo.model';

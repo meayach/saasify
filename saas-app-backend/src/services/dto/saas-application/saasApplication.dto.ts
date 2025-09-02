@@ -1,5 +1,5 @@
 import { AutoMap } from '@automapper/classes';
-import { SaasWorkspacePOJO } from '@Data/models/saasworkspace/saasWorkspace.pojo.model';
+import { SaasWorkspacePOJO } from '@Data/models/saasWorkspace/saasWorkspace.pojo.model';
 
 import { Prop } from '@nestjs/mongoose';
 
