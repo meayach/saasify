@@ -8,6 +8,7 @@ import { ApplicationListComponent } from './components/application-list/applicat
 import { ApplicationEditComponent } from './components/application-edit/application-edit.component';
 import { ApplicationConfigureComponent } from './components/application-configure/application-configure.component';
 import { ApplicationNewComponent } from './components/application-new/application-new.component';
+import { FeatureValuesConfigComponent } from './components/feature-values-config/feature-values-config.component';
 import { SharedModule } from '../../@shared/shared.module';
 
 const routes: Routes = [
@@ -40,6 +41,7 @@ const routes: Routes = [
     ApplicationEditComponent,
     ApplicationConfigureComponent,
     ApplicationNewComponent,
+    FeatureValuesConfigComponent,
   ],
   imports: [CommonModule, FormsModule, RouterModule.forChild(routes), SharedModule],
   exports: [
@@ -48,6 +50,7 @@ const routes: Routes = [
     ApplicationEditComponent,
     ApplicationConfigureComponent,
     ApplicationNewComponent,
+    FeatureValuesConfigComponent,
   ],
 })
 export class ApplicationsModule {}

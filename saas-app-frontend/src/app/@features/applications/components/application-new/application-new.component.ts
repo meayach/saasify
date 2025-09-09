@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ApplicationService, Application } from '../../../../@shared/services/application.service';
 import { ApplicationConfigurationService } from '../../../../@shared/services/application-configuration.service';
 import {
@@ -42,9 +42,11 @@ export class ApplicationNewComponent implements OnInit {
 
   selectedLogo: File | null = null;
   logoPreview: string | null = null;
+  selectedPlan: any = null; // Plan présélectionné
 
   constructor(
     public router: Router,
+    private route: ActivatedRoute,
     private applicationService: ApplicationService,
     private configurationService: ApplicationConfigurationService,
     private notificationService: NotificationService,
@@ -52,13 +54,43 @@ export class ApplicationNewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Vérifier si nous venons de la sélection de plan
+    this.route.queryParams.subscribe((params) => {
+      if (params['planId'] && params['planName']) {
+        this.selectedPlan = {
+          id: params['planId'],
+          name: params['planName'],
+        };
+
+        // Aussi récupérer depuis localStorage si disponible
+        const storedPlan = localStorage.getItem('selectedPlan');
+        if (storedPlan) {
+          this.selectedPlan = { ...this.selectedPlan, ...JSON.parse(storedPlan) };
+        }
+
+        this.notificationService.info(
+          `Plan ${this.selectedPlan.name} sélectionné. Finalisez maintenant la création de votre application.`,
+          "Création d'application",
+        );
+      }
+    });
+
     // Notification d'accueil pour la nouvelle application
     setTimeout(() => {
-      this.notificationService.info(
-        'Créez une nouvelle application SaaS en quelques étapes simples.',
-        'Nouvelle Application',
-      );
-    }, 500);
+      if (!this.selectedPlan) {
+        this.notificationService.info(
+          'Créez une nouvelle application SaaS en quelques étapes simples.',
+          'Nouvelle Application',
+        );
+      }
+    }, 1000);
+  }
+
+  // Méthode pour changer de plan
+  changePlan(): void {
+    this.router.navigate(['/subscriptions/plans'], {
+      queryParams: { returnTo: 'create-application' },
+    });
   }
 
   // Générer automatiquement le domaine basé sur le nom de l'application
@@ -97,10 +129,19 @@ export class ApplicationNewComponent implements OnInit {
     // Notification de début de création
     this.notificationService.info('Création de la nouvelle application en cours...', 'Création');
 
+    // Inclure les informations du plan dans la création
+    const planInfo = this.selectedPlan
+      ? {
+          selectedPlanId: this.selectedPlan.id,
+          selectedPlanName: this.selectedPlan.name,
+        }
+      : {};
+
     // Étape 1: Créer l'application
     const newApplication: Partial<Application> = {
       name: this.configurationForm.applicationName,
       status: this.configurationForm.isActive ? ('active' as const) : ('inactive' as const),
+      ...planInfo, // Inclure les informations du plan
     };
 
     this.applicationService.createApplication(newApplication).subscribe({
@@ -123,12 +164,18 @@ export class ApplicationNewComponent implements OnInit {
 
         this.configurationService.saveConfiguration(configRequest).subscribe({
           next: (savedConfig) => {
-            this.notificationService.success(
-              `Nouvelle application "${this.configurationForm.applicationName}" créée avec succès !`,
-              'Application créée',
-            );
+            const successMessage = this.selectedPlan
+              ? `Nouvelle application "${this.configurationForm.applicationName}" créée avec succès avec le plan ${this.selectedPlan.name} !`
+              : `Nouvelle application "${this.configurationForm.applicationName}" créée avec succès !`;
+
+            this.notificationService.success(successMessage, 'Application créée');
 
             this.isSubmitting = false;
+
+            // Nettoyer le plan sélectionné après création réussie
+            if (this.selectedPlan) {
+              localStorage.removeItem('selectedPlan');
+            }
 
             // If backend returned a logoPath/logoUrl, persist it so the list can show it immediately
             try {

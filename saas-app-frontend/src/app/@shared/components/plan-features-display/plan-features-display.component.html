@@ -1,0 +1,133 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-container">
+  <div class="loading-spinner"></div>
+  <p>Chargement des fonctionnalités...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error && !loading" class="error-container">
+  <div class="error-icon">⚠️</div>
+  <p>{{ error }}</p>
+  <button class="retry-button" (click)="refresh()">Réessayer</button>
+</div>
+
+<!-- Features Display -->
+<div
+  *ngIf="!loading && !error && hasVisibleFeatures()"
+  class="features-container"
+  [class]="'display-mode-' + displayMode">
+  <!-- Category-based display -->
+  <div *ngIf="showCategories" class="features-by-category">
+    <div
+      *ngFor="let category of getFeatureCategories()"
+      class="category-section"
+      [class]="getCategoryClass(category)">
+      <h3 class="category-title">
+        <span class="category-icon">{{ getDefaultIcon(category) }}</span>
+        {{ getCategoryLabel(category) }}
+      </h3>
+
+      <div class="features-grid" [class]="'grid-' + displayMode">
+        <div
+          *ngFor="let feature of getFeaturesForCategory(category)"
+          class="feature-item"
+          [class]="getStatusClass(feature.configuration.status)"
+          [class.highlighted]="isFeatureHighlighted(feature)">
+          <!-- Feature Header -->
+          <div class="feature-header">
+            <div class="feature-icon">{{ getFeatureIcon(feature) }}</div>
+            <div class="feature-title-section">
+              <h4 class="feature-title">{{ getFeatureDisplayName(feature) }}</h4>
+              <span *ngIf="isFeatureHighlighted(feature)" class="highlight-badge">
+                {{ getHighlightText(feature) }}
+              </span>
+            </div>
+            <div class="feature-status">
+              <span class="status-badge" [class]="getStatusClass(feature.configuration.status)">
+                {{ getStatusLabel(feature.configuration.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Feature Description -->
+          <div class="feature-description" *ngIf="displayMode !== 'compact'">
+            <p>{{ getFeatureDescription(feature) }}</p>
+          </div>
+
+          <!-- Feature Values -->
+          <div class="feature-values" *ngIf="getFieldValues(feature).length > 0">
+            <div *ngFor="let fieldValue of getFieldValues(feature)" class="field-value-item">
+              <span class="field-label">{{ fieldValue.label }}:</span>
+              <span class="field-value" [class.unlimited]="fieldValue.isUnlimited">
+                {{ fieldValue.value }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Feature Details (for card mode) -->
+          <div
+            *ngIf="displayMode === 'card' && feature.customFields.length > 0"
+            class="feature-details">
+            <div class="details-toggle" (click)="toggleDetails(feature)">
+              <span>Détails</span>
+              <span class="toggle-icon">▼</span>
+            </div>
+            <div class="details-content" [class.expanded]="feature._expanded">
+              <div *ngFor="let field of feature.customFields" class="detail-item">
+                <strong>{{ field.displayName || field.fieldName }}:</strong>
+                <span>{{ field.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flat display (no categories) -->
+  <div *ngIf="!showCategories" class="features-flat">
+    <div class="features-grid" [class]="'grid-' + displayMode">
+      <div
+        *ngFor="let feature of planFeatures?.features"
+        class="feature-item"
+        [class]="getStatusClass(feature.configuration.status)"
+        [class.highlighted]="isFeatureHighlighted(feature)">
+        <!-- Same feature content as above -->
+        <div class="feature-header">
+          <div class="feature-icon">{{ getFeatureIcon(feature) }}</div>
+          <div class="feature-title-section">
+            <h4 class="feature-title">{{ getFeatureDisplayName(feature) }}</h4>
+            <span *ngIf="isFeatureHighlighted(feature)" class="highlight-badge">
+              {{ getHighlightText(feature) }}
+            </span>
+          </div>
+          <div class="feature-status">
+            <span class="status-badge" [class]="getStatusClass(feature.configuration.status)">
+              {{ getStatusLabel(feature.configuration.status) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="feature-description" *ngIf="displayMode !== 'compact'">
+          <p>{{ getFeatureDescription(feature) }}</p>
+        </div>
+
+        <div class="feature-values" *ngIf="getFieldValues(feature).length > 0">
+          <div *ngFor="let fieldValue of getFieldValues(feature)" class="field-value-item">
+            <span class="field-label">{{ fieldValue.label }}:</span>
+            <span class="field-value" [class.unlimited]="fieldValue.isUnlimited">
+              {{ fieldValue.value }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!loading && !error && !hasVisibleFeatures()" class="empty-state">
+  <div class="empty-icon">📦</div>
+  <h3>Aucune fonctionnalité configurée</h3>
+  <p>Ce plan n'a pas encore de fonctionnalités configurées.</p>
+</div>

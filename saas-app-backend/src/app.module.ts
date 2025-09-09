@@ -12,6 +12,8 @@ import { ApplicationConfigurationModule } from './controllers/application-config
 import { OrganizationModule } from './controllers/organization/organization.module';
 import { SecurityModule } from './controllers/security/security.module';
 import { BillingModule } from './controllers/billing/billing.module';
+import { FeatureManagementModule } from './modules/feature-management.module';
+// import { FeatureModule } from './controllers/feature/feature.module'; // TEMPORARILY COMMENTED FOR COMPILATION
 
 // Import models
 import { User, UserSchema } from './data/models/user/user.model';
@@ -53,6 +55,14 @@ import {
   SaasCustomerAdmin,
   SaasCustomerAdminSchema,
 } from './data/models/saasCustomerAdmin/saas-customer-admin.model';
+
+// Import new feature models - TEMPORARILY COMMENTED FOR COMPILATION
+// import { FeaturePOJO, FeatureSchema } from './data/models/feature/feature.pojo.model';
+// import { FeatureCustomFieldPOJO, FeatureCustomFieldSchema } from './data/models/featureCustomField/featureCustomField.pojo.model';
+// import { FeaturePlanConfigurationPOJO, FeaturePlanConfigurationSchema } from './data/models/featurePlanConfiguration/featurePlanConfiguration.pojo.model';
+// import { FeatureCustomFieldValuePOJO, FeatureCustomFieldValueSchema } from './data/models/featureCustomFieldValue/featureCustomFieldValue.pojo.model';
+// import { SubscriptionConsumptionPOJO, SubscriptionConsumptionSchema } from './data/models/subscriptionConsumption/subscriptionConsumption.pojo.model';
+
 import { SaasOfferDataModule } from './data/saasOffer/saasOffer.data.module';
 import { SaasApplicationDataModule } from './data/saasApplication/saasApplication.data.module';
 
@@ -104,6 +114,12 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
       { name: Plan.name, schema: PlanSchema },
       { name: PaymentMethod.name, schema: PaymentMethodSchema },
       { name: Invoice.name, schema: InvoiceSchema },
+      // New feature management schemas - TEMPORARILY COMMENTED FOR COMPILATION
+      // { name: FeaturePOJO.name, schema: FeatureSchema },
+      // { name: FeatureCustomFieldPOJO.name, schema: FeatureCustomFieldSchema },
+      // { name: FeaturePlanConfigurationPOJO.name, schema: FeaturePlanConfigurationSchema },
+      // { name: FeatureCustomFieldValuePOJO.name, schema: FeatureCustomFieldValueSchema },
+      // { name: SubscriptionConsumptionPOJO.name, schema: SubscriptionConsumptionSchema },
     ]),
     HttpModule,
     JwtModule.registerAsync({
@@ -123,6 +139,8 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
     OrganizationModule,
     SecurityModule,
     BillingModule,
+    FeatureManagementModule,
+    // FeatureModule, // TEMPORARILY COMMENTED FOR COMPILATION
     SaasCustomerAdminModule,
     SaasOfferDataModule,
     SaasApplicationDataModule,

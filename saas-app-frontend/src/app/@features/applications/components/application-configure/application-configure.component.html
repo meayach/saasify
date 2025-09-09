@@ -47,6 +47,164 @@
         </div>
       </div>
 
+      <!-- Section: Plans disponibles -->
+      <div class="form-section">
+        <h3 class="section-title">Plans disponibles pour cette application</h3>
+
+        <!-- Affichage du plan actuellement sélectionné -->
+        <div class="current-plan-section" *ngIf="selectedDefaultPlanId">
+          <h4 class="current-plan-title">📋 Plan actuellement sélectionné</h4>
+          <div class="current-plan-card" *ngIf="getCurrentSelectedPlan() as selectedPlan">
+            <div class="current-plan-header">
+              <div class="plan-info">
+                <h5>{{ selectedPlan.name }}</h5>
+                <p>{{ selectedPlan.description }}</p>
+              </div>
+              <div class="plan-price-badge">
+                <span class="price">{{
+                  selectedPlan.price | currency : 'EUR' : 'symbol' : '1.2-2'
+                }}</span>
+                <span class="cycle">/ {{ getPlanCycleLabel(selectedPlan.billingCycle) }}</span>
+              </div>
+            </div>
+            <div
+              class="current-plan-features"
+              *ngIf="selectedPlan.features && selectedPlan.features.length > 0">
+              <h6>Fonctionnalités incluses :</h6>
+              <div class="features-list">
+                <span class="feature-tag" *ngFor="let feature of selectedPlan.features">
+                  ✓ {{ feature }}
+                </span>
+              </div>
+            </div>
+            <div class="current-plan-actions">
+              <button type="button" class="btn btn-warning btn-sm" (click)="startChangingPlan()">
+                🔄 Changer de plan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message d'information sur le chargement des plans -->
+        <div
+          class="info-message"
+          style="
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            border-radius: 4px;
+          ">
+          <p>
+            <strong>ℹ️ Information :</strong>
+            <span *ngIf="!selectedDefaultPlanId"
+              >Aucun plan sélectionné. Vous pouvez choisir un plan par défaut pour cette application
+              ci-dessous.</span
+            >
+            <span *ngIf="selectedDefaultPlanId && !isChangingPlan"
+              >Plan par défaut configuré. Vous pouvez le changer à tout moment.</span
+            >
+            <span *ngIf="isChangingPlan"
+              >Sélectionnez un nouveau plan ci-dessous et confirmez votre choix.</span
+            >
+          </p>
+          <small>Plans disponibles: {{ plans?.length || 0 }}</small>
+        </div>
+
+        <!-- Section de changement de plan (affichée seulement si pas de plan sélectionné ou en mode changement) -->
+        <div *ngIf="!selectedDefaultPlanId || isChangingPlan" class="plan-selection-section">
+          <h4 class="section-subtitle" *ngIf="isChangingPlan">Choisir un nouveau plan</h4>
+          <h4 class="section-subtitle" *ngIf="!selectedDefaultPlanId">
+            Choisir un plan par défaut
+          </h4>
+
+          <div *ngIf="plans && plans.length > 0; else noPlansTemplate">
+            <div class="plans-grid">
+              <div
+                class="plan-card"
+                *ngFor="let plan of plans"
+                [class.selected]="getPlanId(plan) === selectedDefaultPlanId"
+                [class.highlighted]="getPlanId(plan) === tempSelectedPlanId">
+                <div class="plan-header">
+                  <strong>{{ plan.name }}</strong>
+                  <span class="plan-price">{{
+                    plan.price | currency : 'EUR' : 'symbol' : '1.2-2'
+                  }}</span>
+                </div>
+                <div class="plan-body">
+                  <p>{{ plan.description }}</p>
+                  <small>Cycle: {{ getPlanCycleLabel(plan.billingCycle) }}</small>
+                  <div class="plan-features" *ngIf="plan.features && plan.features.length > 0">
+                    <ul>
+                      <li *ngFor="let feature of plan.features">{{ feature }}</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-primary]="getPlanId(plan) === selectedDefaultPlanId"
+                    [class.btn-success]="getPlanId(plan) === tempSelectedPlanId"
+                    [class.btn-secondary]="
+                      getPlanId(plan) !== selectedDefaultPlanId &&
+                      getPlanId(plan) !== tempSelectedPlanId
+                    "
+                    (click)="selectPlan(plan)">
+                    <span *ngIf="getPlanId(plan) === selectedDefaultPlanId">✓ Plan actuel</span>
+                    <span
+                      *ngIf="
+                        getPlanId(plan) === tempSelectedPlanId &&
+                        getPlanId(plan) !== selectedDefaultPlanId
+                      "
+                      >✓ Sélectionné</span
+                    >
+                    <span
+                      *ngIf="
+                        getPlanId(plan) !== selectedDefaultPlanId &&
+                        getPlanId(plan) !== tempSelectedPlanId
+                      "
+                      >Sélectionner</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Boutons de confirmation pour le changement de plan -->
+            <div class="plan-change-actions" *ngIf="isChangingPlan && tempSelectedPlanId">
+              <button type="button" class="btn btn-success" (click)="confirmPlanChange()">
+                ✓ Confirmer le changement
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancelPlanChange()">
+                ✗ Annuler
+              </button>
+            </div>
+          </div>
+
+          <ng-template #noPlansTemplate>
+            <div
+              class="no-plans-message"
+              style="
+                text-align: center;
+                padding: 2rem;
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+              ">
+              <h4>😔 Aucun plan disponible</h4>
+              <p>Il semble qu'aucun plan ne soit disponible pour le moment.</p>
+              <p>Vous pouvez :</p>
+              <ul style="text-align: left; display: inline-block">
+                <li>Créer un nouveau plan depuis la section Plans</li>
+                <li>Vérifier que le backend est bien connecté</li>
+                <li>Contacter l'administrateur</li>
+              </ul>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
       <!-- Section: Informations de base -->
       <div class="form-section">
         <h3 class="section-title">Informations de base</h3>

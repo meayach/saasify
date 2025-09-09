@@ -27,6 +27,9 @@ export class SaasApplicationService {
     const createdApplication = new this.applicationModel({
       ...createApplicationDto,
       ownerId,
+      defaultPlan: (createApplicationDto as any).defaultPlanId
+        ? (createApplicationDto as any).defaultPlanId
+        : undefined,
     });
 
     const savedApplication = await createdApplication.save();
@@ -134,6 +137,7 @@ export class SaasApplicationService {
       logoUrl: application.logoUrl,
       websiteUrl: application.websiteUrl,
       apiUrl: application.apiUrl,
+      defaultPlanId: application.defaultPlan ? application.defaultPlan.toString() : undefined,
       tags: application.tags,
       launchedAt: application.launchedAt,
       deployedAt: application.deployedAt,

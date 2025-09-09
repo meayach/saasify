@@ -19,6 +19,26 @@
   </div>
 
   <div class="form-container" *ngIf="!isLoading">
+    <!-- Section Plan sélectionné -->
+    <div class="form-section plan-info" *ngIf="selectedPlan">
+      <div class="plan-display">
+        <h3 class="section-title">
+          <i class="pi pi-check-circle" style="color: #28a745; margin-right: 8px"></i>
+          Plan sélectionné
+        </h3>
+        <div class="plan-card">
+          <div class="plan-details">
+            <h4>{{ selectedPlan.name }}</h4>
+            <p class="plan-price" *ngIf="selectedPlan.price">{{ selectedPlan.price }}€/mois</p>
+            <p class="plan-description">Votre application sera créée avec ce plan</p>
+          </div>
+          <button type="button" class="btn-change-plan" (click)="changePlan()">
+            Changer de plan
+          </button>
+        </div>
+      </div>
+    </div>
+
     <form (ngSubmit)="onSubmit()" class="application-form">
       <!-- Section: Activation/Désactivation -->
       <div class="form-section">

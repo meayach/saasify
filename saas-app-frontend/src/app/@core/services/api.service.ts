@@ -64,9 +64,13 @@ export interface Subscription {
   providedIn: 'root',
 })
 export class ApiService {
-  private baseUrl = environment.apiUrl || 'http://localhost:3001/api/v1';
+  // Ensure baseUrl always ends with /api/v1 regardless of environment.apiUrl value
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    const host = (environment.apiUrl || 'http://localhost:3001').replace(/\/+$/, '');
+    this.baseUrl = `${host}/api/v1`;
+  }
 
   // User API
   createUser(user: Partial<User>): Observable<any> {

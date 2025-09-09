@@ -1,0 +1,236 @@
+<div class="feature-values-container">
+  <div class="section-header">
+    <h3 class="section-title">
+      <i class="pi pi-cog"></i>
+      Configuration des fonctionnalités par plan
+    </h3>
+    <p class="section-description">
+      Définissez les limites et fonctionnalités pour chaque plan de votre application. Exemples :
+      emails/mois, stockage en GB, nombre d'utilisateurs, etc.
+    </p>
+  </div>
+
+  <div class="feature-examples">
+    <div class="example-cards">
+      <div class="example-card">
+        <div class="example-icon">📧</div>
+        <div class="example-content">
+          <strong>Emails</strong>
+          <span>Free: 10/mois, Premium: 200/mois, Enterprise: Illimité</span>
+        </div>
+      </div>
+      <div class="example-card">
+        <div class="example-icon">💾</div>
+        <div class="example-content">
+          <strong>Stockage</strong>
+          <span>Free: 1 GB, Premium: 50 GB, Enterprise: Illimité</span>
+        </div>
+      </div>
+      <div class="example-card">
+        <div class="example-icon">👥</div>
+        <div class="example-content">
+          <strong>Utilisateurs</strong>
+          <span>Free: 1, Premium: 10, Enterprise: Illimité</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-list">
+    <div class="feature-item" *ngFor="let feature of featureValues; let i = index">
+      <div class="feature-header">
+        <h4 class="feature-number">Fonctionnalité #{{ i + 1 }}</h4>
+        <button
+          type="button"
+          class="btn-remove-feature"
+          (click)="removeFeatureValue(i)"
+          [disabled]="featureValues.length <= 1"
+          title="Supprimer cette fonctionnalité">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+
+      <div class="feature-form">
+        <!-- Nom et description -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom de la fonctionnalité *</label>
+            <input
+              type="text"
+              [(ngModel)]="feature.featureName"
+              (ngModelChange)="onFeatureChange()"
+              placeholder="Ex: Emails par mois"
+              class="form-input"
+              required />
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input
+              type="text"
+              [(ngModel)]="feature.description"
+              (ngModelChange)="onFeatureChange()"
+              placeholder="Ex: Nombre d'emails pouvant être envoyés par mois"
+              class="form-input" />
+          </div>
+        </div>
+
+        <!-- Type et unité -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type de fonctionnalité *</label>
+            <select
+              [(ngModel)]="feature.featureType"
+              (ngModelChange)="onFeatureChange()"
+              class="form-select"
+              required>
+              <option *ngFor="let type of featureTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Unité de mesure *</label>
+            <select
+              [(ngModel)]="feature.unit"
+              (ngModelChange)="onFeatureChange()"
+              class="form-select"
+              required>
+              <option *ngFor="let unit of featureUnits" [value]="unit.value">
+                {{ unit.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Valeurs par plan -->
+        <div class="plans-configuration">
+          <h5 class="plans-title">Valeurs par plan</h5>
+          <div class="plans-grid">
+            <!-- Plan Free -->
+            <div class="plan-config">
+              <div class="plan-header free">
+                <i class="pi pi-gift"></i>
+                <span>Plan FREE</span>
+              </div>
+              <div class="plan-value">
+                <input
+                  type="number"
+                  [(ngModel)]="feature.values.free"
+                  (ngModelChange)="onFeatureChange()"
+                  placeholder="0"
+                  class="form-input plan-input"
+                  min="0" />
+                <span class="value-display">
+                  {{ formatDisplayValue(feature.values.free, feature.unit) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Plan Premium -->
+            <div class="plan-config">
+              <div class="plan-header premium">
+                <i class="pi pi-star"></i>
+                <span>Plan PREMIUM</span>
+              </div>
+              <div class="plan-value">
+                <input
+                  type="number"
+                  [(ngModel)]="feature.values.premium"
+                  (ngModelChange)="onFeatureChange()"
+                  placeholder="0"
+                  class="form-input plan-input"
+                  min="0" />
+                <span class="value-display">
+                  {{ formatDisplayValue(feature.values.premium, feature.unit) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Plan Enterprise -->
+            <div class="plan-config">
+              <div class="plan-header enterprise">
+                <i class="pi pi-building"></i>
+                <span>Plan ENTERPRISE</span>
+              </div>
+              <div class="plan-value">
+                <div class="enterprise-options">
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      [value]="false"
+                      [checked]="!isUnlimitedValue(feature.values.enterprise)"
+                      (change)="feature.values.enterprise = 0; onFeatureChange()"
+                      name="enterprise_type_{{ i }}" />
+                    <span>Nombre limité:</span>
+                  </label>
+                  <input
+                    type="number"
+                    [(ngModel)]="feature.values.enterprise"
+                    (ngModelChange)="onFeatureChange()"
+                    placeholder="0"
+                    class="form-input plan-input"
+                    [disabled]="isUnlimitedValue(feature.values.enterprise)"
+                    min="0" />
+                </div>
+                <div class="enterprise-options">
+                  <label class="radio-option">
+                    <input
+                      type="radio"
+                      [value]="true"
+                      [checked]="isUnlimitedValue(feature.values.enterprise)"
+                      (change)="feature.values.enterprise = 'Illimité'; onFeatureChange()"
+                      name="enterprise_type_{{ i }}" />
+                    <span>Illimité</span>
+                  </label>
+                </div>
+                <span class="value-display">
+                  {{ formatDisplayValue(feature.values.enterprise, feature.unit) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-actions">
+    <button type="button" class="btn btn-secondary btn-add-feature" (click)="addFeatureValue()">
+      <i class="pi pi-plus"></i>
+      Ajouter une fonctionnalité
+    </button>
+  </div>
+
+  <div class="feature-summary" *ngIf="featureValues.length > 0">
+    <h4>Résumé de votre configuration :</h4>
+    <div class="summary-grid">
+      <div class="summary-plan">
+        <h5>🎁 Plan FREE</h5>
+        <ul>
+          <li *ngFor="let feature of featureValues">
+            <strong>{{ feature.featureName }}:</strong>
+            {{ formatDisplayValue(feature.values.free, feature.unit) }}
+          </li>
+        </ul>
+      </div>
+      <div class="summary-plan">
+        <h5>⭐ Plan PREMIUM</h5>
+        <ul>
+          <li *ngFor="let feature of featureValues">
+            <strong>{{ feature.featureName }}:</strong>
+            {{ formatDisplayValue(feature.values.premium, feature.unit) }}
+          </li>
+        </ul>
+      </div>
+      <div class="summary-plan">
+        <h5>🏢 Plan ENTERPRISE</h5>
+        <ul>
+          <li *ngFor="let feature of featureValues">
+            <strong>{{ feature.featureName }}:</strong>
+            {{ formatDisplayValue(feature.values.enterprise, feature.unit) }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

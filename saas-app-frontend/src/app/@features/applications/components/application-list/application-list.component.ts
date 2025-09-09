@@ -377,7 +377,10 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
   }
 
   createNewApplication(): void {
-    this.router.navigate(['/applications/create-new']);
+    // Nouveau workflow : d'abord choisir le plan, puis créer l'application
+    this.router.navigate(['/subscriptions/plans'], {
+      queryParams: { returnTo: 'create-application' },
+    });
   }
 
   configureApplication(id: string): void {

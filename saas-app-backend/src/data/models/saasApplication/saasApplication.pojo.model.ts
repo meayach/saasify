@@ -50,6 +50,10 @@ export class SaasApplicationPOJO {
   @AutoMap()
   deployedAt?: Date;
 
+  @Prop()
+  @AutoMap()
+  defaultPlanId?: string;
+
   @AutoMap(() => SaasWorkspacePOJO)
   @Prop({
     required: false,

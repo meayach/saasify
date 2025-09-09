@@ -37,6 +37,11 @@ export class CreateSaasApplicationDto {
   @IsUrl()
   apiUrl?: string;
 
+  @ApiPropertyOptional({ description: 'Default plan id for this application' })
+  @IsOptional()
+  @IsString()
+  defaultPlanId?: string;
+
   @ApiPropertyOptional({ description: 'Application tags', type: [String] })
   @IsOptional()
   @IsArray()
@@ -84,6 +89,11 @@ export class UpdateSaasApplicationDto {
   @IsOptional()
   @IsUrl()
   apiUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Default plan id for this application' })
+  @IsOptional()
+  @IsString()
+  defaultPlanId?: string;
 
   @ApiPropertyOptional({ description: 'Application tags', type: [String] })
   @IsOptional()
@@ -141,6 +151,9 @@ export class SaasApplicationResponseDto {
 
   @ApiPropertyOptional({ description: 'Application deployed date' })
   deployedAt?: Date;
+
+  @ApiPropertyOptional({ description: 'Default plan id for this application' })
+  defaultPlanId?: string;
 
   @ApiProperty({ description: 'Application creation date' })
   createdAt: Date;

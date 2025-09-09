@@ -7,6 +7,7 @@ export interface Application {
   _id?: string;
   name: string;
   status: 'active' | 'maintenance' | 'inactive';
+  defaultPlanId?: string;
   deployedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -28,6 +29,7 @@ export class ApplicationService {
       _id: saasApp._id?.toString(),
       name: saasApp.applicationName || '',
       status: (saasApp.status as 'active' | 'maintenance' | 'inactive') || 'active',
+      defaultPlanId: saasApp.defaultPlanId,
       // Use the stored deployedAt if present; otherwise leave undefined
       deployedAt: saasApp.deployedAt ? new Date(saasApp.deployedAt) : undefined,
       createdAt: saasApp.createdAt || new Date(),
@@ -98,6 +100,11 @@ export class ApplicationService {
 
     if (applicationData.status !== undefined) {
       updateData.status = applicationData.status;
+    }
+
+    if (applicationData.defaultPlanId !== undefined) {
+      updateData.defaultPlanId = applicationData.defaultPlanId;
+      console.log('📋 Mise à jour du plan par défaut:', applicationData.defaultPlanId);
     }
 
     console.log('📝 Données de mise à jour:', updateData);

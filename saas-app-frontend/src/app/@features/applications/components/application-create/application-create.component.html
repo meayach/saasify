@@ -45,6 +45,30 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label for="plan" class="form-label">Plan par défaut (optionnel)</label>
+        <select
+          id="plan"
+          [(ngModel)]="selectedPlanId"
+          name="plan"
+          class="form-select"
+          [disabled]="isSubmitting">
+          <option value="">-- Aucun --</option>
+          <option *ngFor="let p of plans" [value]="getPlanId(p)">{{ p.name }}</option>
+        </select>
+        <p class="help-text">
+          Choisissez un plan existant à cloner pour cette nouvelle application.
+        </p>
+      </div>
+
+      <!-- Configuration des fonctionnalités -->
+      <div class="form-section">
+        <app-feature-values-config
+          [applicationId]="''"
+          (featureValuesChange)="onFeatureValuesChange($event)">
+        </app-feature-values-config>
+      </div>
+
       <div class="form-actions">
         <button
           type="button"

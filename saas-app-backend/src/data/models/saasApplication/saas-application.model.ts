@@ -42,6 +42,9 @@ export class SaasApplication extends Document {
   @Prop()
   apiUrl: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'SaasPlan', required: false })
+  defaultPlan?: Types.ObjectId;
+
   @Prop({ type: [String], default: [] })
   tags: string[];
 

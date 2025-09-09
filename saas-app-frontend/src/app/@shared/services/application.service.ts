@@ -6,6 +6,7 @@ export interface Application {
   _id?: string;
   name: string;
   logoUrl?: string;
+  defaultPlanId?: string;
   status: 'active' | 'maintenance' | 'inactive';
   isActive?: boolean;
   deployedAt?: Date;

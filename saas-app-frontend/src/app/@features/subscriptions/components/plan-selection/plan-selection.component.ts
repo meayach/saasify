@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PlanService } from '../../services/plan.service';
 import { SubscriptionService } from '../../services/subscription.service';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
@@ -27,12 +27,14 @@ export class PlanSelectionComponent implements OnInit {
   userRole = '';
   isDropdownOpen = false;
   activeProfileSection = '';
+  returnTo = ''; // Pour savoir d'où vient l'utilisateur
 
   constructor(
     private planService: PlanService,
     private billingService: BillingService,
     private subscriptionService: SubscriptionService,
     private router: Router,
+    private route: ActivatedRoute,
     private userService: UserService,
     private notificationService: NotificationService,
   ) {}
@@ -43,6 +45,16 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('🔄 PlanSelectionComponent - ngOnInit appelé');
+    console.log('🔄 selectedBillingCycle initial:', this.selectedBillingCycle);
+
+    // Vérifier si nous venons de la création d'application
+    this.route.queryParams.subscribe((params) => {
+      this.returnTo = params['returnTo'] || '';
+      console.log('🔄 Query params reçus:', params);
+      console.log('🔄 returnTo défini sur:', this.returnTo);
+    });
+
     // Charger le profil utilisateur pour le header, puis les plans
     this.userService.getCurrentUserProfile().subscribe({
       next: (profile: UserProfile) => {
@@ -107,7 +119,8 @@ export class PlanSelectionComponent implements OnInit {
         // Créer des plans par défaut si aucun n'existe (même logique que dashboard.component.ts)
         this.plans = [
           {
-            name: 'Plan Starter',
+            _id: 'plan-starter-monthly-2025',
+            name: 'Plan Starter 2025',
             description: 'Parfait pour débuter',
             price: 9.99,
             interval: 'month' as const,
@@ -120,6 +133,7 @@ export class PlanSelectionComponent implements OnInit {
             hasPrioritySupport: false,
           },
           {
+            _id: 'plan-starter-yearly-2025',
             name: 'Plan Starter',
             description: 'Parfait pour débuter',
             price: 99.99,
@@ -133,6 +147,7 @@ export class PlanSelectionComponent implements OnInit {
             hasPrioritySupport: false,
           },
           {
+            _id: 'plan-pro-monthly-2025',
             name: 'Plan Pro',
             description: 'Pour les professionnels',
             price: 29.99,
@@ -146,6 +161,7 @@ export class PlanSelectionComponent implements OnInit {
             hasPrioritySupport: true,
           },
           {
+            _id: 'plan-pro-yearly-2025',
             name: 'Plan Pro',
             description: 'Pour les professionnels',
             price: 299.99,
@@ -159,7 +175,8 @@ export class PlanSelectionComponent implements OnInit {
             hasPrioritySupport: true,
           },
         ];
-        console.log('📝 Plans par défaut créés');
+        console.log('📝 Plans par défaut créés:', this.plans);
+        console.log('📝 Nombre de plans:', this.plans.length);
       },
     });
   }
@@ -196,7 +213,21 @@ export class PlanSelectionComponent implements OnInit {
 
   // Méthodes pour le filtrage et affichage des plans
   getFilteredPlans(): Plan[] {
-    return this.plans.filter((plan) => plan.interval === this.selectedBillingCycle);
+    const filtered = this.plans.filter((plan) => plan.interval === this.selectedBillingCycle);
+    console.log('🔍 getFilteredPlans appelée:');
+    console.log('  - selectedBillingCycle:', this.selectedBillingCycle);
+    console.log('  - Total plans:', this.plans.length);
+    console.log('  - Plans filtrés:', filtered.length);
+    console.log('  - Plans filtrés:', filtered);
+
+    // Si aucun plan filtré, retourner tous les plans mensuels par défaut
+    if (filtered.length === 0 && this.plans.length > 0) {
+      console.log('🚨 Aucun plan filtré, retour des plans mensuels par défaut');
+      const monthlyPlans = this.plans.filter((plan) => plan.interval === 'month');
+      return monthlyPlans.length > 0 ? monthlyPlans : this.plans;
+    }
+
+    return filtered;
   }
 
   getPlanFeatures(plan: Plan): string[] {
@@ -208,9 +239,40 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   selectPlan(plan: Plan): void {
-    console.log('Plan sélectionné:', plan);
-    this.notificationService.success(`Plan ${plan.name} sélectionné !`);
-    // Ici vous pouvez ajouter la logique pour souscrire au plan
+    console.log('🔵 selectPlan appelée avec le plan:', plan);
+    console.log('🔵 returnTo:', this.returnTo);
+    console.log('🔵 plan._id:', plan._id);
+
+    // Stocker le plan sélectionné pour la création d'application
+    const planData = {
+      id: plan._id,
+      name: plan.name,
+      price: plan.price,
+    };
+
+    console.log('🔵 Données du plan à stocker:', planData);
+    localStorage.setItem('selectedPlan', JSON.stringify(planData));
+
+    if (this.returnTo === 'create-application') {
+      // Rediriger vers le formulaire de création d'application avec le plan sélectionné
+      console.log('🔵 Redirection vers create-new avec plan:', plan.name);
+      this.notificationService.success(
+        `Plan ${plan.name} sélectionné ! Créez maintenant votre application.`,
+      );
+      this.router.navigate(['/applications/create-new'], {
+        queryParams: { planId: plan._id, planName: plan.name },
+      });
+    } else {
+      // Comportement normal pour les abonnements
+      console.log('🔵 Mode abonnement normal');
+      this.notificationService.success(`Plan ${plan.name} sélectionné !`);
+      // Ici vous pouvez ajouter la logique pour souscrire au plan
+    }
+  }
+
+  testClick(plan: Plan): void {
+    console.log('🧪 TEST CLICK - Plan:', plan);
+    alert(`Test réussi pour le plan: ${plan.name}`);
   }
 
   // Méthodes utilitaires
