@@ -133,7 +133,7 @@ export class FeaturePlanConfigurationRepository {
       },
     }));
 
-    await this.configModel.bulkWrite(operations);
+    await this.configModel.bulkWrite(operations as any);
 
     // Retourner les configurations créées/mises à jour
     const planIds = [...new Set(configs.map((c) => c.planId))];
@@ -154,7 +154,7 @@ export class FeaturePlanConfigurationRepository {
       },
     }));
 
-    const result = await this.configModel.bulkWrite(bulkOps);
+    const result = await this.configModel.bulkWrite(bulkOps as any);
     return result.modifiedCount === sortUpdates.length;
   }
 

@@ -190,8 +190,24 @@ export class ApplicationConfigureComponent implements OnInit {
           this.selectedDefaultPlanId = this.currentApplication.defaultPlanId;
           console.log('🎯 Plan par défaut sélectionné:', this.selectedDefaultPlanId);
         }
-        // If application has no default but there's exactly one plan, preselect it
-        else if (!this.selectedDefaultPlanId && this.plans && this.plans.length === 1) {
+        // If application has no default plan, try to use selected plan from localStorage
+        if (!this.selectedDefaultPlanId) {
+          try {
+            const storedPlan = localStorage.getItem('selectedPlan');
+            if (storedPlan) {
+              const planData = JSON.parse(storedPlan);
+              const planId = planData?.id || planData?._id;
+              if (planId && this.plans.find((p) => this.getPlanId(p) === planId)) {
+                this.selectedDefaultPlanId = planId;
+                console.log('📌 Plan sélectionné récupéré depuis localStorage:', planId);
+              }
+            }
+          } catch (e) {
+            console.warn('Erreur lors de la lecture du plan depuis localStorage:', e);
+          }
+        }
+        // If still no plan selected and there's exactly one plan, preselect it
+        if (!this.selectedDefaultPlanId && this.plans && this.plans.length === 1) {
           const solePlanId = this.getPlanId(this.plans[0]);
           this.selectedDefaultPlanId = solePlanId;
           console.log('ℹ️ Un seul plan disponible — pré-sélection automatique:', solePlanId);

@@ -25,10 +25,7 @@ export class FeatureMigrationService {
     console.log(`🔄 Starting migration for application: ${applicationId}`);
 
     // Récupérer toutes les anciennes valeurs de fonctionnalités
-    const oldFeatureValues = await this.saasFeatureValueRepository.findAll({
-      saasApplication: applicationId,
-      isActive: true,
-    });
+    const oldFeatureValues = await this.saasFeatureValueRepository.findByApplication(applicationId);
 
     if (oldFeatureValues.length === 0) {
       console.log('ℹ️ No old feature values found to migrate');
@@ -46,7 +43,7 @@ export class FeatureMigrationService {
 
     // Créer les nouvelles fonctionnalités si elles n'existent pas
     for (const [featureName, values] of Object.entries(featureGroups)) {
-      await this.migrateFeature(applicationId, featureName, values);
+      await this.migrateFeature(applicationId, featureName, values as any[]);
     }
 
     console.log('✅ Migration completed successfully');
@@ -326,13 +323,12 @@ export class FeatureMigrationService {
   async cleanupOldFeatureValues(applicationId: string): Promise<void> {
     console.log(`🧹 Cleaning up old feature values for application: ${applicationId}`);
 
-    const oldValues = await this.saasFeatureValueRepository.findAll({
-      saasApplication: applicationId,
-      isActive: true,
-    });
+    const oldValues = await this.saasFeatureValueRepository.findByApplication(applicationId);
 
     for (const oldValue of oldValues) {
-      await this.saasFeatureValueRepository.update(oldValue._id, { isActive: false });
+      await this.saasFeatureValueRepository.updateFeatureValue(oldValue._id.toString(), {
+        isActive: false,
+      });
     }
 
     console.log(`✅ Deactivated ${oldValues.length} old feature values`);

@@ -24,5 +24,6 @@
       "@Gateway/*": ["src/gateway/*"],
       "@app/*": ["src/*"]
     }
-  }
+  },
+  "exclude": ["scripts.bak.disabled/**/*", "node_modules", "dist"]
 }

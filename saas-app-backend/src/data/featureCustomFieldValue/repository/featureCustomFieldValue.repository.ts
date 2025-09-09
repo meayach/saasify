@@ -128,7 +128,7 @@ export class FeatureCustomFieldValueRepository {
       },
     }));
 
-    await this.valueModel.bulkWrite(operations);
+    await this.valueModel.bulkWrite(operations as any);
 
     // Retourner les valeurs créées/mises à jour
     const configIds = [...new Set(values.map((v) => v.featurePlanConfigurationId))];

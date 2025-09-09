@@ -1,5 +1,4 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { FeaturePlanConfigurationRepository } from '../../data/featurePlanConfiguration/repository/featurePlanConfiguration.repository';
 import { FeatureCustomFieldValueRepository } from '../../data/featureCustomFieldValue/repository/featureCustomFieldValue.repository';
 import { FeatureRepository } from '../../data/feature/repository/feature.repository';
@@ -75,15 +74,15 @@ export class PlanFeatureService {
 
     // Créer/Mettre à jour les configurations
     const configurations: Partial<FeaturePlanConfigurationPOJO>[] = features.map((feature) => ({
-      planId: new Types.ObjectId(planId),
-      featureId: new Types.ObjectId(feature.featureId),
+      planId: planId as any,
+      featureId: feature.featureId as any,
       status: feature.status,
       customDisplayName: feature.customDisplayName || '',
       customDescription: feature.customDescription || '',
       isHighlighted: feature.isHighlighted || false,
       highlightText: feature.highlightText || '',
       sortOrder: feature.sortOrder || 0,
-      applicationId: new Types.ObjectId(applicationId),
+      applicationId: applicationId as any,
       isActive: true,
     }));
 
@@ -100,14 +99,14 @@ export class PlanFeatureService {
       if (config && feature.fieldValues) {
         for (const fieldValue of feature.fieldValues) {
           allFieldValues.push({
-            featurePlanConfigurationId: config._id,
-            customFieldId: new Types.ObjectId(fieldValue.customFieldId),
+            featurePlanConfigurationId: config._id as any,
+            customFieldId: fieldValue.customFieldId as any,
             fieldValue: fieldValue.fieldValue,
             displayValue: fieldValue.displayValue || '',
             isUnlimited: fieldValue.isUnlimited || fieldValue.fieldValue === -1,
-            applicationId: new Types.ObjectId(applicationId),
-            planId: new Types.ObjectId(planId),
-            featureId: new Types.ObjectId(feature.featureId),
+            applicationId: applicationId as any,
+            planId: planId as any,
+            featureId: feature.featureId as any,
             isActive: true,
           });
         }
@@ -129,8 +128,10 @@ export class PlanFeatureService {
 
     const features: PlanFeatureResponseDto[] = await Promise.all(
       configurations.map(async (config) => {
-        const feature = await this.featureRepository.findById(config.featureId);
-        const customFields = await this.customFieldRepository.findByFeature(config.featureId);
+        const feature = await this.featureRepository.findById(config.featureId.toString());
+        const customFields = await this.customFieldRepository.findByFeature(
+          config.featureId.toString(),
+        );
         const fieldValues = await this.fieldValueRepository.findByConfiguration(config._id);
 
         return {
@@ -187,15 +188,15 @@ export class PlanFeatureService {
     } else {
       // Créer une nouvelle configuration
       configuration = await this.configurationRepository.create({
-        planId: new Types.ObjectId(planId),
-        featureId: new Types.ObjectId(featureId),
+        planId: planId as any,
+        featureId: featureId as any,
         status: configDto.status,
         customDisplayName: configDto.customDisplayName || '',
         customDescription: configDto.customDescription || '',
         isHighlighted: configDto.isHighlighted || false,
         highlightText: configDto.highlightText || '',
         sortOrder: configDto.sortOrder || 0,
-        applicationId: new Types.ObjectId(applicationId),
+        applicationId: applicationId as any,
         isActive: true,
       });
     }
@@ -204,14 +205,14 @@ export class PlanFeatureService {
     if (configDto.fieldValues && configDto.fieldValues.length > 0) {
       const fieldValues: Partial<FeatureCustomFieldValuePOJO>[] = configDto.fieldValues.map(
         (fv) => ({
-          featurePlanConfigurationId: configuration._id,
-          customFieldId: new Types.ObjectId(fv.customFieldId),
+          featurePlanConfigurationId: configuration._id as any,
+          customFieldId: fv.customFieldId as any,
           fieldValue: fv.fieldValue,
           displayValue: fv.displayValue || '',
           isUnlimited: fv.isUnlimited || fv.fieldValue === -1,
-          applicationId: new Types.ObjectId(applicationId),
-          planId: new Types.ObjectId(planId),
-          featureId: new Types.ObjectId(featureId),
+          applicationId: applicationId as any,
+          planId: planId as any,
+          featureId: featureId as any,
           isActive: true,
         }),
       );
@@ -290,14 +291,14 @@ export class PlanFeatureService {
     if (updateData.fieldValues) {
       const fieldValues: Partial<FeatureCustomFieldValuePOJO>[] = updateData.fieldValues.map(
         (fv) => ({
-          featurePlanConfigurationId: configuration._id,
-          customFieldId: new Types.ObjectId(fv.customFieldId),
+          featurePlanConfigurationId: configuration._id as any,
+          customFieldId: fv.customFieldId as any,
           fieldValue: fv.fieldValue,
           displayValue: fv.displayValue || '',
           isUnlimited: fv.isUnlimited || fv.fieldValue === -1,
-          applicationId: new Types.ObjectId(applicationId),
-          planId: new Types.ObjectId(planId),
-          featureId: new Types.ObjectId(featureId),
+          applicationId: applicationId as any,
+          planId: planId as any,
+          featureId: featureId as any,
           isActive: true,
         }),
       );

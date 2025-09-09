@@ -30,7 +30,7 @@ import { SubscriptionConsumptionRepository } from '../subscriptionConsumption/re
 // Import services
 import { FeatureService } from '../../services/feature/feature.service';
 import { PlanFeatureService } from '../../services/planFeature/planFeature.service';
-import { FeatureMigrationService } from '../../services/featureMigration/featureMigration.service';
+import { FeatureMigrationService } from '../../services/migration/featureMigration.service';
 
 @Module({
   imports: [

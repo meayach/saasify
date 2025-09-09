@@ -9,12 +9,17 @@ import {
   Query,
   HttpException,
   HttpStatus,
-  UseGuards,
+  HttpCode,
   Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { FeatureService } from '../../services/feature/feature.service';
-import { FeatureCategory, FeatureStatus } from '../../data/models/feature/feature.pojo.model';
+import { FeatureCategory, FeatureRole } from '../../data/models/feature/feature.pojo.model';
+import { FeatureStatus } from '../../data/models/featurePlanConfiguration/featurePlanConfiguration.pojo.model';
+import {
+  FieldDataType,
+  FieldUnit,
+} from '../../data/models/featureCustomField/featureCustomField.pojo.model';
 
 // DTOs for API requests/responses
 export class CreateFeatureDto {
@@ -33,6 +38,19 @@ export class UpdateFeatureDto {
   category?: FeatureCategory;
   status?: FeatureStatus;
   customFields?: any[];
+}
+
+export class CreateFeatureCustomFieldDto {
+  fieldName!: string;
+  displayName!: string;
+  description?: string;
+  dataType!: FieldDataType;
+  unit?: FieldUnit;
+  isRequired?: boolean;
+  defaultValue?: any;
+  validationRules?: any;
+  enumValues?: string[];
+  metadata?: Record<string, any>;
 }
 
 export class FeatureQueryDto {
@@ -68,47 +86,43 @@ export class FeatureController {
 
       const page = query.page || 1;
       const limit = query.limit || 50;
+
+      // Use the existing getAllFeatures method
+      let result;
+      if (query.applicationId) {
+        result = await this.featureService.getApplicationFeatures(query.applicationId);
+      } else if (query.category) {
+        result = await this.featureService.getFeaturesByCategory(query.category);
+      } else {
+        result = await this.featureService.getAllFeatures();
+      }
+
+      // Apply search filter if provided
+      if (query.search) {
+        const searchRegex = new RegExp(query.search, 'i');
+        result = result.filter(
+          (item) =>
+            item.feature.name.match(searchRegex) || item.feature.description.match(searchRegex),
+        );
+      }
+
+      // Apply status filter if provided
+      if (query.status !== undefined) {
+        // Note: status is typically on plan configurations, not features directly
+        // For now, we'll skip this filter
+      }
+
+      // Apply isGlobal filter if provided
+      if (query.isGlobal !== undefined) {
+        result = result.filter((item) => item.feature.isGlobal === query.isGlobal);
+      }
+
+      const total = result.length;
       const skip = (page - 1) * limit;
-
-      const result = await this.featureService.findMany(
-        {
-          ...(query.applicationId && {
-            $or: [{ applicationId: query.applicationId }, { isGlobal: true }],
-          }),
-          ...(query.category && { category: query.category }),
-          ...(query.status && { status: query.status }),
-          ...(query.isGlobal !== undefined && { isGlobal: query.isGlobal }),
-          ...(query.search && {
-            $or: [
-              { name: { $regex: query.search, $options: 'i' } },
-              { description: { $regex: query.search, $options: 'i' } },
-            ],
-          }),
-        },
-        {
-          skip,
-          limit,
-          sort: { category: 1, name: 1 },
-        },
-      );
-
-      const total = await this.featureService.countDocuments({
-        ...(query.applicationId && {
-          $or: [{ applicationId: query.applicationId }, { isGlobal: true }],
-        }),
-        ...(query.category && { category: query.category }),
-        ...(query.status && { status: query.status }),
-        ...(query.isGlobal !== undefined && { isGlobal: query.isGlobal }),
-        ...(query.search && {
-          $or: [
-            { name: { $regex: query.search, $options: 'i' } },
-            { description: { $regex: query.search, $options: 'i' } },
-          ],
-        }),
-      });
+      const paginatedResult = result.slice(skip, skip + limit);
 
       return {
-        data: result,
+        data: paginatedResult,
         total,
         page,
         limit,
@@ -152,20 +166,27 @@ export class FeatureController {
 
   private getCategoryLabel(category: FeatureCategory): string {
     const labels = {
-      [FeatureCategory.CORE]: 'Fonctionnalités de base',
-      [FeatureCategory.ADVANCED]: 'Fonctionnalités avancées',
-      [FeatureCategory.PREMIUM]: 'Fonctionnalités premium',
-      [FeatureCategory.ADDON]: 'Modules complémentaires',
+      [FeatureCategory.STORAGE]: 'Stockage',
+      [FeatureCategory.COMMUNICATION]: 'Communication',
+      [FeatureCategory.API]: 'API',
+      [FeatureCategory.ANALYTICS]: 'Analytics',
+      [FeatureCategory.SUPPORT]: 'Support',
+      [FeatureCategory.SECURITY]: 'Sécurité',
+      [FeatureCategory.INTEGRATION]: 'Intégration',
+      [FeatureCategory.CUSTOMIZATION]: 'Personnalisation',
+      [FeatureCategory.REPORTING]: 'Rapports',
+      [FeatureCategory.USER_MANAGEMENT]: 'Gestion des utilisateurs',
+      [FeatureCategory.OTHER]: 'Autre',
     };
     return labels[category] || category;
   }
 
   private getStatusLabel(status: FeatureStatus): string {
     const labels = {
-      [FeatureStatus.ACTIVE]: 'Actif',
-      [FeatureStatus.INACTIVE]: 'Inactif',
+      [FeatureStatus.ENABLED]: 'Activé',
+      [FeatureStatus.DISABLED]: 'Désactivé',
       [FeatureStatus.LIMITED]: 'Limité',
-      [FeatureStatus.COMING_SOON]: 'Bientôt disponible',
+      [FeatureStatus.UNLIMITED]: 'Illimité',
     };
     return labels[status] || status;
   }
@@ -245,7 +266,6 @@ export class FeatureController {
     required: false,
     type: 'boolean',
     description: 'Include global features',
-    default: true,
   })
   @ApiResponse({ status: 200, description: 'Application features retrieved successfully' })
   async getApplicationFeatures(

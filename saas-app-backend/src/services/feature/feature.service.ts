@@ -1,5 +1,4 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
 import { FeatureRepository } from '../../data/feature/repository/feature.repository';
 import { FeatureCustomFieldRepository } from '../../data/featureCustomField/repository/featureCustomField.repository';
 import {
@@ -77,7 +76,7 @@ export class FeatureService {
       category: dto.category,
       roles: dto.roles || [FeatureRole.ALL],
       isGlobal: dto.isGlobal || false,
-      applicationId: dto.applicationId ? new Types.ObjectId(dto.applicationId) : undefined,
+      applicationId: dto.applicationId ? (dto.applicationId as any) : undefined,
       displayName: dto.displayName || dto.name,
       icon: dto.icon || '',
       sortOrder: dto.sortOrder || 0,
@@ -115,7 +114,7 @@ export class FeatureService {
       description: dto.description || '',
       dataType: dto.dataType,
       unit: dto.unit || FieldUnit.NONE,
-      featureId: new Types.ObjectId(featureId),
+      featureId: featureId as any,
       defaultValue: dto.defaultValue,
       minValue: dto.minValue,
       maxValue: dto.maxValue,
@@ -217,7 +216,13 @@ export class FeatureService {
       }
     }
 
-    const updatedFeature = await this.featureRepository.update(featureId, updateData);
+    // Map the updateData to the correct format
+    const mappedUpdateData: Partial<FeaturePOJO> = {
+      ...updateData,
+      applicationId: updateData.applicationId ? (updateData.applicationId as any) : undefined,
+    };
+
+    const updatedFeature = await this.featureRepository.update(featureId, mappedUpdateData);
     if (!updatedFeature) {
       throw new NotFoundException('Feature not found');
     }

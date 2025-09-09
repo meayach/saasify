@@ -121,7 +121,7 @@ export class FeatureCustomFieldRepository {
       },
     }));
 
-    const result = await this.featureCustomFieldModel.bulkWrite(bulkOps);
+    const result = await this.featureCustomFieldModel.bulkWrite(bulkOps as any);
     return result.modifiedCount === sortUpdates.length;
   }
 }
