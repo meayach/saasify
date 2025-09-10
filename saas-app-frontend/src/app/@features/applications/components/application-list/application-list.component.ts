@@ -85,6 +85,22 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
 
   refreshData() {
     console.log('🔄 Rafraîchissement des données...');
+    
+    // Sauvegarder les logos actuels avant de vider le tableau
+    const logoCache: { [key: string]: string } = {};
+    if (this.applications && this.applications.length > 0) {
+      console.log('💾 Sauvegarde des logos avant refresh...');
+      this.applications.forEach(app => {
+        const idKey = app._id || (app as any).id;
+        if (idKey && app.logoUrl) {
+          logoCache[idKey] = app.logoUrl;
+          // Aussi sauvegarder dans localStorage pour persistence
+          localStorage.setItem(`appLogo:${idKey}`, app.logoUrl);
+          console.log(`💾 Logo sauvé pour ${idKey}: ${app.logoUrl}`);
+        }
+      });
+    }
+    
     // Vider le tableau pour forcer la mise à jour visuelle
     this.applications = [];
     this.cdr.detectChanges();
@@ -231,9 +247,12 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
           this.applications = this.applications.map((app) => {
             const idKey = (app as any)._id || (app as any).id;
             const storedLogo = idKey ? localStorage.getItem(`appLogo:${idKey}`) : null;
+            if (storedLogo) {
+              console.log(`🔧 Logo restauré depuis localStorage pour ${idKey}: ${storedLogo}`);
+            }
             return {
               ...app,
-              logoUrl: app.logoUrl || storedLogo || app.logoUrl,
+              logoUrl: storedLogo || app.logoUrl,
             } as Application;
           });
 
@@ -316,6 +335,13 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
           }
           if ((config as any).logoPath) {
             app.logoUrl = this.backendBase() + (config as any).logoPath;
+            
+            // Stocker le logo dans localStorage pour éviter de le perdre lors des refresh
+            const idKey = app._id || (app as any).id;
+            if (idKey && app.logoUrl) {
+              localStorage.setItem(`appLogo:${idKey}`, app.logoUrl);
+            }
+            
             // force change detection
             this.applications = [...this.applications];
             this.cdr.detectChanges();
