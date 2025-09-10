@@ -39,6 +39,23 @@
       </div>
     </div>
 
+    <!-- Section Ajouter un plan (quand aucun plan n'est sélectionné) -->
+    <div class="form-section plan-info" *ngIf="!selectedPlan">
+      <div class="plan-display">
+        <h3 class="section-title">
+          <i class="pi pi-plus-circle" style="color: #007bff; margin-right: 8px"></i>
+          Choisir un plan
+        </h3>
+        <div class="plan-card no-plan">
+          <div class="plan-details">
+            <h4>Aucun plan sélectionné</h4>
+            <p class="plan-description">Sélectionnez un plan pour votre application</p>
+          </div>
+          <button type="button" class="btn-add-plan" (click)="addPlan()">Ajouter un plan</button>
+        </div>
+      </div>
+    </div>
+
     <form (ngSubmit)="onSubmit()" class="application-form">
       <!-- Section: Activation/Désactivation -->
       <div class="form-section">

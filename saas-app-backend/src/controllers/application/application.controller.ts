@@ -5,6 +5,16 @@ export interface Application {
   _id?: string;
   name: string;
   status: 'active' | 'maintenance' | 'inactive';
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    features: Array<{ name: string; value: string; type: string }>;
+    isActive: boolean;
+  };
   deployedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

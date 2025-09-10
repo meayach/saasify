@@ -30,6 +30,7 @@ export class SaasApplicationService {
       defaultPlan: (createApplicationDto as any).defaultPlanId
         ? (createApplicationDto as any).defaultPlanId
         : undefined,
+      selectedPlan: createApplicationDto.selectedPlan || undefined,
     });
 
     const savedApplication = await createdApplication.save();
@@ -138,6 +139,7 @@ export class SaasApplicationService {
       websiteUrl: application.websiteUrl,
       apiUrl: application.apiUrl,
       defaultPlanId: application.defaultPlan ? application.defaultPlan.toString() : undefined,
+      selectedPlan: application.selectedPlan || undefined,
       tags: application.tags,
       launchedAt: application.launchedAt,
       deployedAt: application.deployedAt,

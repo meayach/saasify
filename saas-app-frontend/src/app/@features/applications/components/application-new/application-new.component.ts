@@ -8,6 +8,7 @@ import {
 } from '../../../../@shared/constants/payment-methods';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
+import { LoggerService } from '../../../../@core/services/logger.service';
 
 export interface NewApplicationConfiguration {
   applicationName: string;
@@ -51,12 +52,22 @@ export class ApplicationNewComponent implements OnInit {
     private configurationService: ApplicationConfigurationService,
     private notificationService: NotificationService,
     private applicationRefreshService: ApplicationRefreshService,
+    private logger: LoggerService,
   ) {}
 
   ngOnInit(): void {
+    this.logger.log('🚀 ApplicationNew - ngOnInit');
+
     // Vérifier si nous venons de la sélection de plan
     this.route.queryParams.subscribe((params) => {
+      this.logger.log('📊 ApplicationNew - queryParams:', params);
+
       if (params['planId'] && params['planName']) {
+        this.logger.log(
+          '🎯 ApplicationNew - Plan reçu des queryParams:',
+          params['planId'],
+          params['planName'],
+        );
         this.selectedPlan = {
           id: params['planId'],
           name: params['planName'],
@@ -64,14 +75,19 @@ export class ApplicationNewComponent implements OnInit {
 
         // Aussi récupérer depuis localStorage si disponible
         const storedPlan = localStorage.getItem('selectedPlan');
+        this.logger.log('📦 ApplicationNew - localStorage selectedPlan:', storedPlan);
+
         if (storedPlan) {
           this.selectedPlan = { ...this.selectedPlan, ...JSON.parse(storedPlan) };
+          this.logger.log('✅ ApplicationNew - Plan final fusionné:', this.selectedPlan);
         }
 
         this.notificationService.info(
           `Plan ${this.selectedPlan.name} sélectionné. Finalisez maintenant la création de votre application.`,
           "Création d'application",
         );
+      } else {
+        this.logger.log('❌ ApplicationNew - Pas de plan dans les queryParams');
       }
     });
 
@@ -88,9 +104,24 @@ export class ApplicationNewComponent implements OnInit {
 
   // Méthode pour changer de plan
   changePlan(): void {
+    this.logger.log('🔄 ApplicationNew - changePlan() appelée');
     this.router.navigate(['/subscriptions/plans'], {
       queryParams: { returnTo: 'create-application' },
     });
+    this.logger.log(
+      '🔄 ApplicationNew - Navigation vers /subscriptions/plans avec returnTo=create-application',
+    );
+  }
+
+  // Méthode pour ajouter un plan (même logique que changePlan)
+  addPlan(): void {
+    this.logger.log('➕ ApplicationNew - addPlan() appelée');
+    this.router.navigate(['/subscriptions/plans'], {
+      queryParams: { returnTo: 'create-application' },
+    });
+    this.logger.log(
+      '➕ ApplicationNew - Navigation vers /subscriptions/plans avec returnTo=create-application',
+    );
   }
 
   // Générer automatiquement le domaine basé sur le nom de l'application
@@ -120,10 +151,16 @@ export class ApplicationNewComponent implements OnInit {
   }
 
   onSubmit(): void {
+    this.logger.log('🚀 onSubmit() - Début de la création');
+    this.logger.log('📝 Données du formulaire:', this.configurationForm);
+    this.logger.log('📋 Plan sélectionné:', this.selectedPlan);
+
     if (!this.validateForm()) {
+      this.logger.log('❌ Validation du formulaire échouée');
       return;
     }
 
+    this.logger.log('✅ Validation du formulaire réussie');
     this.isSubmitting = true;
 
     // Notification de début de création
@@ -132,10 +169,25 @@ export class ApplicationNewComponent implements OnInit {
     // Inclure les informations du plan dans la création
     const planInfo = this.selectedPlan
       ? {
-          selectedPlanId: this.selectedPlan.id,
-          selectedPlanName: this.selectedPlan.name,
+          defaultPlanId: this.selectedPlan.id || this.selectedPlan._id,
+          selectedPlan: {
+            id: this.selectedPlan.id || this.selectedPlan._id,
+            name: this.selectedPlan.name,
+            description: this.selectedPlan.description || '',
+            price: this.selectedPlan.price || 0,
+            currency: this.selectedPlan.currency || 'EUR',
+            billingCycle: this.selectedPlan.billingCycle || 'MONTHLY',
+            type: this.selectedPlan.type || 'STANDARD',
+            isActive: this.selectedPlan.isActive !== undefined ? this.selectedPlan.isActive : true,
+            isPopular: this.selectedPlan.isPopular || false,
+            features: this.selectedPlan.features || this.selectedPlan.includedFeatures || [],
+            createdAt: this.selectedPlan.createdAt || new Date(),
+            updatedAt: this.selectedPlan.updatedAt || new Date(),
+          },
         }
       : {};
+
+    this.logger.log('📦 Informations complètes du plan à inclure:', planInfo);
 
     // Étape 1: Créer l'application
     const newApplication: Partial<Application> = {
@@ -144,14 +196,21 @@ export class ApplicationNewComponent implements OnInit {
       ...planInfo, // Inclure les informations du plan
     };
 
+    this.logger.log("🏗️ Données de l'application à créer:", newApplication);
+
     this.applicationService.createApplication(newApplication).subscribe({
       next: (createdApp: Application) => {
+        this.logger.log('✅ Application créée avec succès:', createdApp);
+
         // Étape 2: Créer la configuration pour cette application
         if (!createdApp._id) {
+          this.logger.log("❌ ID de l'application manquant");
           this.notificationService.error("Erreur: ID de l'application manquant");
           this.isSubmitting = false;
           return;
         }
+
+        this.logger.log("🔧 Création de la configuration pour l'application:", createdApp._id);
 
         const configRequest = {
           applicationId: createdApp._id,
@@ -162,8 +221,12 @@ export class ApplicationNewComponent implements OnInit {
           logo: this.selectedLogo || undefined,
         };
 
+        this.logger.log('📝 Données de configuration à sauvegarder:', configRequest);
+
         this.configurationService.saveConfiguration(configRequest).subscribe({
           next: (savedConfig) => {
+            this.logger.log('✅ Configuration sauvegardée avec succès:', savedConfig);
+
             const successMessage = this.selectedPlan
               ? `Nouvelle application "${this.configurationForm.applicationName}" créée avec succès avec le plan ${this.selectedPlan.name} !`
               : `Nouvelle application "${this.configurationForm.applicationName}" créée avec succès !`;
@@ -173,8 +236,26 @@ export class ApplicationNewComponent implements OnInit {
             this.isSubmitting = false;
 
             // Nettoyer le plan sélectionné après création réussie
-            if (this.selectedPlan) {
-              localStorage.removeItem('selectedPlan');
+            if (this.selectedPlan && createdApp._id) {
+              // Sauvegarder le plan pour la page de configuration (format compatible)
+              try {
+                this.logger.log(
+                  "💾 Sauvegarde du plan pour la page de configuration de l'app:",
+                  createdApp._id,
+                );
+                // Sauvegarder avec les clés utilisées par le système de configuration
+                localStorage.setItem('selectedPlan', JSON.stringify(this.selectedPlan));
+                localStorage.setItem('selectedApplicationId', createdApp._id);
+
+                // Aussi sauvegarder avec l'ancien format pour compatibilité
+                localStorage.setItem(
+                  `appDefaultPlan:${createdApp._id}`,
+                  JSON.stringify(this.selectedPlan),
+                );
+              } catch (e) {
+                this.logger.warn('Erreur lors de la sauvegarde du plan dans localStorage:', e);
+              }
+              this.logger.log('✅ Plan sauvegardé pour configuration ultérieure');
             }
 
             // If backend returned a logoPath/logoUrl, persist it so the list can show it immediately
@@ -188,7 +269,7 @@ export class ApplicationNewComponent implements OnInit {
                 localStorage.setItem('lastConfiguredAppId', createdApp._id);
               }
             } catch (e) {
-              console.warn('Unable to persist app logo to localStorage', e);
+              this.logger.warn('Unable to persist app logo to localStorage', e);
             }
 
             // Déclencher le rafraîchissement de la liste des applications
@@ -198,7 +279,14 @@ export class ApplicationNewComponent implements OnInit {
             this.router.navigate(['/applications']);
           },
           error: (configError) => {
-            console.error('Erreur lors de la création de la configuration:', configError);
+            this.logger.error('❌ Erreur lors de la création de la configuration:', configError);
+            this.logger.error("📊 Détails de l'erreur de config:", {
+              message: configError.message,
+              status: configError.status,
+              statusText: configError.statusText,
+              error: configError.error,
+              url: configError.url,
+            });
             this.notificationService.error(
               'Application créée mais erreur lors de la configuration. Vous pouvez la configurer plus tard.',
               'Erreur partielle',
@@ -216,7 +304,14 @@ export class ApplicationNewComponent implements OnInit {
         });
       },
       error: (error) => {
-        console.error("Erreur lors de la création de l'application:", error);
+        this.logger.error("❌ Erreur lors de la création de l'application:", error);
+        this.logger.error("📊 Détails de l'erreur:", {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          url: error.url,
+        });
         this.notificationService.error(
           "Erreur lors de la création de l'application. Veuillez réessayer.",
           'Erreur de création',

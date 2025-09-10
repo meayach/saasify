@@ -42,6 +42,24 @@ export class CreateSaasApplicationDto {
   @IsString()
   defaultPlanId?: string;
 
+  @ApiPropertyOptional({ description: 'Selected plan details for this application' })
+  @IsOptional()
+  @IsObject()
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    type: string;
+    isActive: boolean;
+    isPopular: boolean;
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
   @ApiPropertyOptional({ description: 'Application tags', type: [String] })
   @IsOptional()
   @IsArray()
@@ -94,6 +112,24 @@ export class UpdateSaasApplicationDto {
   @IsOptional()
   @IsString()
   defaultPlanId?: string;
+
+  @ApiPropertyOptional({ description: 'Selected plan details for this application' })
+  @IsOptional()
+  @IsObject()
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    type: string;
+    isActive: boolean;
+    isPopular: boolean;
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
 
   @ApiPropertyOptional({ description: 'Application tags', type: [String] })
   @IsOptional()
@@ -154,6 +190,22 @@ export class SaasApplicationResponseDto {
 
   @ApiPropertyOptional({ description: 'Default plan id for this application' })
   defaultPlanId?: string;
+
+  @ApiPropertyOptional({ description: 'Selected plan details for this application' })
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    type: string;
+    isActive: boolean;
+    isPopular: boolean;
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
 
   @ApiProperty({ description: 'Application creation date' })
   createdAt: Date;

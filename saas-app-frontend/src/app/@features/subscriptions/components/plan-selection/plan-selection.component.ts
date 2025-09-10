@@ -5,6 +5,7 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { BillingService, Plan } from '../../../../@shared/services/billing.service';
+import { LoggerService } from '../../../../@core/services/logger.service';
 
 @Component({
   selector: 'app-plan-selection',
@@ -29,14 +30,20 @@ export class PlanSelectionComponent implements OnInit {
   activeProfileSection = '';
   returnTo = ''; // Pour savoir d'où vient l'utilisateur
 
+  // Variables de cache pour éviter les appels répétés
+  private _cachedFilteredPlans: Plan[] = [];
+  private _lastFilterKey: string = '';
+  private _lastFilterCheck: number = 0;
+
   constructor(
-    private planService: PlanService,
-    private billingService: BillingService,
-    private subscriptionService: SubscriptionService,
     private router: Router,
     private route: ActivatedRoute,
+    private planService: PlanService,
+    private subscriptionService: SubscriptionService,
     private userService: UserService,
     private notificationService: NotificationService,
+    private billingService: BillingService,
+    private logger: LoggerService,
   ) {}
 
   // Public helper to navigate to dashboard (used from template)
@@ -45,14 +52,19 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('🔄 PlanSelectionComponent - ngOnInit appelé');
-    console.log('🔄 selectedBillingCycle initial:', this.selectedBillingCycle);
+    this.logger.log('🚀 PlanSelection - ngOnInit');
 
-    // Vérifier si nous venons de la création d'application
+    // Récupérer les paramètres de query pour la redirection
     this.route.queryParams.subscribe((params) => {
+      this.logger.log('📊 PlanSelection - queryParams:', params);
       this.returnTo = params['returnTo'] || '';
-      console.log('🔄 Query params reçus:', params);
-      console.log('🔄 returnTo défini sur:', this.returnTo);
+      this.logger.log('🔍 PlanSelection - returnTo:', this.returnTo);
+
+      // Stocker l'applicationId s'il est fourni
+      if (params['applicationId']) {
+        localStorage.setItem('selectedApplicationId', params['applicationId']);
+        this.logger.log('💾 ApplicationId stocké:', params['applicationId']);
+      }
     });
 
     // Charger le profil utilisateur pour le header, puis les plans
@@ -70,7 +82,15 @@ export class PlanSelectionComponent implements OnInit {
               : profile.role || 'Customer User';
         }
       },
-      error: () => {
+      error: (err) => {
+        // Si erreur 401/403, informer l'utilisateur (token manquant/expiré)
+        if (err && (err.status === 401 || err.status === 403)) {
+          this.notificationService.warning(
+            'Session expirée ou non authentifiée. Certaines informations peuvent ne pas être disponibles.',
+          );
+        }
+        // fallback: tenter de construire le profil depuis localStorage
+
         try {
           const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
           if (currentUser) {
@@ -100,21 +120,23 @@ export class PlanSelectionComponent implements OnInit {
     });
 
     // Utiliser la même logique que dans dashboard.component.ts pour charger les plans
-    console.log('Chargement des plans avec BillingService...');
     this.loadPlans();
   }
 
   // Même méthode que dans dashboard.component.ts pour charger les plans
   loadPlans(): void {
+    // Invalider le cache quand on recharge les plans
+    this._lastFilterCheck = 0;
+    this._cachedFilteredPlans = [];
+
     this.loadingPlans = true;
     this.billingService.getPlans().subscribe({
       next: (plans) => {
         this.plans = plans;
         this.loadingPlans = false;
-        console.log('✅ Plans chargés:', plans.length, 'plans trouvés');
       },
       error: (error) => {
-        console.error('Erreur lors du chargement des plans:', error);
+        this.logger.error('Erreur lors du chargement des plans:', error);
         this.loadingPlans = false;
         // Créer des plans par défaut si aucun n'existe (même logique que dashboard.component.ts)
         this.plans = [
@@ -175,20 +197,16 @@ export class PlanSelectionComponent implements OnInit {
             hasPrioritySupport: true,
           },
         ];
-        console.log('📝 Plans par défaut créés:', this.plans);
-        console.log('📝 Nombre de plans:', this.plans.length);
       },
     });
   }
 
   // Header user dropdown methods
   toggleDropdown(): void {
-    console.log('=== toggleDropdown appelée, isDropdownOpen:', this.isDropdownOpen);
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
   setActiveProfileSection(section: string): void {
-    console.log('=== setActiveProfileSection appelée avec section:', section);
     this.isDropdownOpen = false;
     this.activeProfileSection = section;
 
@@ -202,7 +220,6 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   logout(): void {
-    console.log('=== logout appelée');
     this.isDropdownOpen = false;
     localStorage.removeItem('currentUser');
     localStorage.removeItem('authToken');
@@ -213,21 +230,34 @@ export class PlanSelectionComponent implements OnInit {
 
   // Méthodes pour le filtrage et affichage des plans
   getFilteredPlans(): Plan[] {
-    const filtered = this.plans.filter((plan) => plan.interval === this.selectedBillingCycle);
-    console.log('🔍 getFilteredPlans appelée:');
-    console.log('  - selectedBillingCycle:', this.selectedBillingCycle);
-    console.log('  - Total plans:', this.plans.length);
-    console.log('  - Plans filtrés:', filtered.length);
-    console.log('  - Plans filtrés:', filtered);
+    const now = Date.now();
+    const filterKey = `${this.selectedBillingCycle}-${this.plans.length}`;
 
-    // Si aucun plan filtré, retourner tous les plans mensuels par défaut
-    if (filtered.length === 0 && this.plans.length > 0) {
-      console.log('🚨 Aucun plan filtré, retour des plans mensuels par défaut');
-      const monthlyPlans = this.plans.filter((plan) => plan.interval === 'month');
-      return monthlyPlans.length > 0 ? monthlyPlans : this.plans;
+    // Utiliser le cache si disponible et récent (moins de 1 seconde)
+    if (
+      this._lastFilterCheck > 0 &&
+      now - this._lastFilterCheck < 1000 &&
+      this._lastFilterKey === filterKey &&
+      this._cachedFilteredPlans.length > 0
+    ) {
+      return this._cachedFilteredPlans;
     }
 
-    return filtered;
+    const filtered = this.plans.filter((plan) => plan.interval === this.selectedBillingCycle);
+
+    // Si aucun plan filtré, retourner tous les plans mensuels par défaut
+    let result = filtered;
+    if (filtered.length === 0 && this.plans.length > 0) {
+      const monthlyPlans = this.plans.filter((plan) => plan.interval === 'month');
+      result = monthlyPlans.length > 0 ? monthlyPlans : this.plans;
+    }
+
+    // Mettre à jour le cache
+    this._cachedFilteredPlans = result;
+    this._lastFilterKey = filterKey;
+    this._lastFilterCheck = now;
+
+    return result;
   }
 
   getPlanFeatures(plan: Plan): string[] {
@@ -239,49 +269,90 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   selectPlan(plan: Plan): void {
-    console.log('🔵 selectPlan appelée avec le plan:', plan);
-    console.log('🔵 returnTo:', this.returnTo);
-    console.log('🔵 plan._id:', plan._id);
+    this.logger.log('🎯 selectPlan appelée avec le plan:', plan);
+    this.logger.log('🎯 returnTo:', this.returnTo);
 
-    // Stocker le plan sélectionné pour la création d'application
+    // Stocker TOUTES les données du plan pour la création d'application
+    const planAny = plan as any; // Cast pour accéder aux propriétés supplémentaires de l'API
     const planData = {
       id: plan._id,
+      _id: plan._id, // Ajouter aussi _id pour compatibilité
       name: plan.name,
+      description: plan.description,
       price: plan.price,
+      currency: planAny.currency || 'EUR', // Propriété de l'API
+      billingCycle: planAny.billingCycle || plan.interval || 'MONTHLY', // Mapper interval vers billingCycle
+      type: planAny.type || 'STANDARD',
+      isActive: plan.isActive,
+      isPopular: planAny.isPopular || false,
+      includedFeatures: planAny.includedFeatures || plan.features || [],
+      features: plan.features || planAny.includedFeatures || [], // Compatibilité
+      createdAt: plan.createdAt,
+      updatedAt: plan.updatedAt,
+      // Propriétés supplémentaires pour compatibilité
+      interval: plan.interval,
+      maxUsers: plan.maxUsers,
+      maxApplications: plan.maxApplications,
+      hasApiAccess: plan.hasApiAccess,
+      hasAdvancedAnalytics: plan.hasAdvancedAnalytics,
+      hasPrioritySupport: plan.hasPrioritySupport,
     };
 
-    console.log('🔵 Données du plan à stocker:', planData);
+    this.logger.log('💾 Données du plan à stocker:', planData);
     localStorage.setItem('selectedPlan', JSON.stringify(planData));
+    this.logger.log('✅ Plan stocké dans localStorage');
+
+    // Vérifier immédiatement que c'est bien stocké
+    const storedPlan = localStorage.getItem('selectedPlan');
+    this.logger.log('🔍 Vérification - Plan stocké:', storedPlan);
 
     if (this.returnTo === 'create-application') {
-      // Rediriger vers le formulaire de création d'application avec le plan sélectionné
-      console.log('🔵 Redirection vers create-new avec plan:', plan.name);
-      this.notificationService.success(
-        `Plan ${plan.name} sélectionné ! Créez maintenant votre application.`,
-      );
-      this.router.navigate(['/applications/create-new'], {
-        queryParams: { planId: plan._id, planName: plan.name },
-      });
+      // Vérifier s'il y a un applicationId (pour configuration) ou création nouvelle
+      const applicationId = localStorage.getItem('selectedApplicationId');
+
+      if (applicationId) {
+        // Rediriger vers la page de configuration de l'application existante
+        this.notificationService.success(
+          `Plan ${plan.name} sélectionné ! Configuration de votre application en cours...`,
+        );
+        localStorage.removeItem('selectedApplicationId'); // Nettoyer après utilisation
+        this.router.navigate(['/applications/configure', applicationId]);
+      } else {
+        // Rediriger vers le formulaire de création d'application avec le plan sélectionné
+        this.notificationService.success(
+          `Plan ${plan.name} sélectionné ! Créez maintenant votre application.`,
+        );
+        this.router.navigate(['/applications/create-new'], {
+          queryParams: { planId: plan._id, planName: plan.name },
+        });
+      }
     } else {
       // Comportement normal pour les abonnements
-      console.log('🔵 Mode abonnement normal');
       this.notificationService.success(`Plan ${plan.name} sélectionné !`);
       // Ici vous pouvez ajouter la logique pour souscrire au plan
     }
   }
 
   testClick(plan: Plan): void {
-    console.log('🧪 TEST CLICK - Plan:', plan);
+    this.logger.log('🧪 DEBUG testClick - Plan:', plan);
     alert(`Test réussi pour le plan: ${plan.name}`);
+  }
+
+  debugAlert(message: string): void {
+    alert(message);
   }
 
   // Méthodes utilitaires
   changeBillingCycle(cycle: string): void {
+    // Invalider le cache quand le cycle change
+    this._lastFilterCheck = 0;
+    this._cachedFilteredPlans = [];
     this.selectedBillingCycle = cycle;
   }
 
   onBillingCycleChange(): void {
-    // Actualiser la vue lorsque le cycle de facturation change
-    console.log('Cycle de facturation changé vers:', this.selectedBillingCycle);
+    // Invalider le cache quand le cycle change
+    this._lastFilterCheck = 0;
+    this._cachedFilteredPlans = [];
   }
 }

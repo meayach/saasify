@@ -84,11 +84,8 @@ export class SecurityService {
 
   // Récupérer les paramètres de sécurité
   getSecuritySettings(): Observable<SecuritySettings> {
-    console.log('SecurityService: Récupération des paramètres depuis:', `${this.baseUrl}/settings`);
-
     return this.http.get<ApiResponse<SecuritySettings>>(`${this.baseUrl}/settings`).pipe(
       map((response) => {
-        console.log('SecurityService: Réponse reçue:', response);
         if (response.success) {
           return response.data;
         } else {
@@ -102,10 +99,6 @@ export class SecurityService {
 
   // Mettre à jour les paramètres de sécurité
   updateSecuritySettings(settings: Partial<SecuritySettings>): Observable<SecuritySettings> {
-    console.log('SecurityService: Démarrage de la mise à jour...');
-    console.log('SecurityService: URL cible:', `${this.baseUrl}/settings`);
-    console.log('SecurityService: Données reçues:', settings);
-
     // Validation côté client
     const validationError = this.validateSecuritySettings(settings);
     if (validationError) {
@@ -113,14 +106,9 @@ export class SecurityService {
       return throwError(() => new Error(validationError));
     }
 
-    console.log('SecurityService: Validation réussie');
-    console.log('SecurityService: Envoi de la requête HTTP PUT...');
-
     return this.http.put<ApiResponse<SecuritySettings>>(`${this.baseUrl}/settings`, settings).pipe(
       map((response) => {
-        console.log('SecurityService: Réponse HTTP reçue:', response);
         if (response.success) {
-          console.log('SecurityService: Succès - données extraites:', response.data);
           return response.data;
         } else {
           console.error('SecurityService: Échec selon la réponse:', response.message);

@@ -79,10 +79,6 @@ export class BillingService {
   }
 
   updateBillingSettings(settings: Partial<BillingSettings>): Observable<BillingSettings> {
-    console.log('BillingService: Démarrage de la mise à jour...');
-    console.log('BillingService: URL cible:', `${this.baseUrl}/settings`);
-    console.log('BillingService: Données envoyées:', settings);
-
     return this.http.put<BillingSettings>(`${this.baseUrl}/settings`, settings);
   }
 

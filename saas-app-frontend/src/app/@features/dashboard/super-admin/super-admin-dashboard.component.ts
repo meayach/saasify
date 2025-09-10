@@ -474,7 +474,6 @@ export class SuperAdminDashboardComponent implements OnInit {
       next: (response: any) => {
         this.saving = false;
         if (response.success) {
-          console.log('Paramètres sauvegardés avec succès!');
           // Optionnel: afficher une notification de succès
         }
       },
@@ -491,10 +490,8 @@ export class SuperAdminDashboardComponent implements OnInit {
     if (file) {
       this.organizationService.uploadLogo(file).subscribe({
         next: (response: any) => {
-          console.log('Upload response:', response);
           if (response.success) {
             this.organizationSettings.logoUrl = response.data.logoUrl;
-            console.log('Logo uploadé avec succès!');
           } else {
             console.error('Erreur upload:', response.message || "Erreur lors de l'upload du logo");
           }
@@ -520,7 +517,6 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   generateMonthlyReport(): void {
-    console.log('Génération du rapport mensuel...');
     // Logique pour générer le rapport mensuel
   }
 
@@ -537,7 +533,6 @@ export class SuperAdminDashboardComponent implements OnInit {
   }
 
   createNewPlan(): void {
-    console.log("Création d'un nouveau plan de facturation...");
     // Logique pour créer un nouveau plan
   }
 }

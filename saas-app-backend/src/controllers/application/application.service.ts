@@ -8,6 +8,16 @@ export interface Application {
   name: string;
   status: 'active' | 'maintenance' | 'inactive';
   defaultPlanId?: string;
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    features: Array<{ name: string; value: string; type: string }>;
+    isActive: boolean;
+  };
   deployedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -30,6 +40,18 @@ export class ApplicationService {
       name: saasApp.applicationName || '',
       status: (saasApp.status as 'active' | 'maintenance' | 'inactive') || 'active',
       defaultPlanId: saasApp.defaultPlanId,
+      selectedPlan: saasApp.selectedPlan
+        ? {
+            id: saasApp.selectedPlan.id,
+            name: saasApp.selectedPlan.name,
+            description: saasApp.selectedPlan.description,
+            price: saasApp.selectedPlan.price,
+            currency: saasApp.selectedPlan.currency,
+            billingCycle: saasApp.selectedPlan.billingCycle,
+            features: saasApp.selectedPlan.features || [],
+            isActive: saasApp.selectedPlan.isActive,
+          }
+        : undefined,
       // Use the stored deployedAt if present; otherwise leave undefined
       deployedAt: saasApp.deployedAt ? new Date(saasApp.deployedAt) : undefined,
       createdAt: saasApp.createdAt || new Date(),

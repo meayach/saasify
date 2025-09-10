@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test localStorage Plan</title>
+  </head>
+  <body>
+    <h1>Test localStorage Plan</h1>
+    <div id="result"></div>
+
+    <script>
+      // Tester le localStorage
+      const selectedPlan = localStorage.getItem("selectedPlan");
+      const resultDiv = document.getElementById("result");
+
+      if (selectedPlan) {
+        try {
+          const planData = JSON.parse(selectedPlan);
+          resultDiv.innerHTML = `
+                    <h2>Plan trouvé dans localStorage:</h2>
+                    <pre>${JSON.stringify(planData, null, 2)}</pre>
+                `;
+        } catch (e) {
+          resultDiv.innerHTML = `<h2>Erreur de parsing:</h2><p>${e}</p>`;
+        }
+      } else {
+        resultDiv.innerHTML = `<h2>Aucun plan trouvé dans localStorage</h2>`;
+      }
+
+      // Créer un plan de test avec toutes les propriétés nécessaires
+      function createTestPlan() {
+        const testPlan = {
+          id: "68bf677bdf8ea2b424543a01",
+          _id: "68bf677bdf8ea2b424543a01",
+          name: "Plan Pro",
+          description: "Plan professionnel avec plus de fonctionnalités",
+          price: 29.99,
+          currency: "EUR",
+          billingCycle: "MONTHLY",
+          type: "PRO",
+          isActive: true,
+          isPopular: false,
+          includedFeatures: [
+            "5 Applications",
+            "Support prioritaire",
+            "Analytics avancées",
+          ],
+          features: [
+            "5 Applications",
+            "Support prioritaire",
+            "Analytics avancées",
+          ],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          interval: "month",
+          maxUsers: 10,
+          maxApplications: 5,
+          hasApiAccess: true,
+          hasAdvancedAnalytics: true,
+          hasPrioritySupport: true,
+        };
+
+        localStorage.setItem("selectedPlan", JSON.stringify(testPlan));
+        alert("Plan créé dans localStorage !");
+        location.reload();
+      }
+
+      // Ajouter un bouton pour créer un plan de test
+      document.body.innerHTML += `
+            <br><br>
+            <button onclick="createTestPlan()">Créer un plan de test dans localStorage</button>
+            <br><br>
+            <button onclick="localStorage.removeItem('selectedPlan'); location.reload();">Supprimer le plan du localStorage</button>
+        `;
+
+      // Fonction pour créer un plan de test
+      window.createTestPlan = createTestPlan;
+    </script>
+  </body>
+</html>

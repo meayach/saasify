@@ -11,7 +11,6 @@ import {
 } from '../../../../@shared/constants/payment-methods';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
-import { ApiService, Plan } from '../../../../@core/services/api.service';
 
 export interface ApplicationConfiguration {
   applicationName: string;
@@ -33,10 +32,6 @@ export class ApplicationConfigureComponent implements OnInit {
 
   currentApplication: Application | null = null;
   existingConfiguration: ApplicationConfigurationResponse | null = null;
-  plans: Plan[] = [];
-  selectedDefaultPlanId: string | null = null;
-  isChangingPlan = false;
-  tempSelectedPlanId: string | null = null;
 
   configurationForm: ApplicationConfiguration = {
     applicationName: '',
@@ -54,6 +49,12 @@ export class ApplicationConfigureComponent implements OnInit {
 
   selectedLogo: File | null = null;
   logoPreview: string | null = null;
+  selectedDefaultPlanId: string | null = null;
+  selectedPlanObject: any = null; // Objet complet du plan sélectionné pour l'affichage
+  planCheckCompleted: boolean = false; // Flag pour indiquer que la vérification du plan est terminée
+  isChangingPlan: boolean = false;
+  tempSelectedPlanId: string | null = null;
+  plans: any[] = [];
 
   constructor(
     public router: Router,
@@ -62,11 +63,11 @@ export class ApplicationConfigureComponent implements OnInit {
     private configurationService: ApplicationConfigurationService,
     private notificationService: NotificationService,
     private applicationRefreshService: ApplicationRefreshService,
-    private apiService: ApiService,
   ) {}
 
   ngOnInit(): void {
     this.applicationId = this.route.snapshot.paramMap.get('id');
+
     if (this.applicationId) {
       this.loadApplication();
     } else {
@@ -75,7 +76,6 @@ export class ApplicationConfigureComponent implements OnInit {
 
     // Écouter les changements d'applications pour synchroniser le toggle
     this.applicationRefreshService.refreshNeeded$.subscribe(() => {
-      console.log("🔄 Changement d'application détecté, rechargement...");
       if (this.applicationId) {
         this.loadApplicationData();
       }
@@ -106,23 +106,11 @@ export class ApplicationConfigureComponent implements OnInit {
           this.configurationForm.isActive =
             app.isActive !== undefined ? app.isActive : app.status === 'active';
 
-          // 🎯 Récupérer le plan par défaut de l'application
-          this.selectedDefaultPlanId = app.defaultPlanId || null;
-          console.log(
-            "🎯 Plan par défaut chargé depuis l'application:",
-            this.selectedDefaultPlanId,
-          );
+          // Prioriser selectedPlan.id sur defaultPlanId
+          this.selectedDefaultPlanId = app.selectedPlan?.id || app.defaultPlanId || null;
 
-          console.log(
-            '📋 Application chargée:',
-            app.name,
-            'Status:',
-            app.status,
-            'isActive:',
-            this.configurationForm.isActive,
-            'defaultPlanId:',
-            this.selectedDefaultPlanId,
-          );
+          // Récupérer le plan sélectionné depuis localStorage (provenant de la sélection de plan)
+          this.checkForSelectedPlanFromStorage();
 
           // Charger la configuration existante
           this.loadExistingConfiguration();
@@ -153,8 +141,6 @@ export class ApplicationConfigureComponent implements OnInit {
         // this.configurationForm.isActive = config.isActive;
         this.configurationForm.paymentMethods = { ...config.paymentMethods };
         this.isLoading = false;
-        // Charger les plans associés à cette application
-        this.loadPlans();
       },
       error: (error) => {
         // Si aucune configuration n'existe, ce n'est pas une erreur
@@ -162,111 +148,8 @@ export class ApplicationConfigureComponent implements OnInit {
           "Aucune configuration existante trouvée, création d'une nouvelle configuration",
         );
         this.isLoading = false;
-        // charger les plans même si pas de configuration
-        this.loadPlans();
       },
     });
-  }
-
-  loadPlans(): void {
-    if (!this.applicationId) return;
-
-    // Charger TOUS les plans disponibles au lieu de seulement ceux liés à l'application
-    this.apiService.getPlans().subscribe({
-      next: (response: any) => {
-        // Gérer la réponse qui peut être un objet avec des plans ou directement un tableau
-        this.plans = response?.plans || response || [];
-        console.log('🔍 Tous les plans chargés:', this.plans.length);
-        console.log('📋 Plans disponibles:', this.plans);
-
-        // Si aucun plan n'est trouvé, utiliser des plans par défaut
-        if (this.plans.length === 0) {
-          console.log('⚠️ Aucun plan trouvé, utilisation des plans par défaut');
-          this.loadDefaultPlans();
-        }
-
-        // Preselect default plan if application has one
-        if (this.currentApplication && this.currentApplication.defaultPlanId) {
-          this.selectedDefaultPlanId = this.currentApplication.defaultPlanId;
-          console.log('🎯 Plan par défaut sélectionné:', this.selectedDefaultPlanId);
-        }
-        // If application has no default plan, try to use selected plan from localStorage
-        if (!this.selectedDefaultPlanId) {
-          try {
-            const storedPlan = localStorage.getItem('selectedPlan');
-            if (storedPlan) {
-              const planData = JSON.parse(storedPlan);
-              const planId = planData?.id || planData?._id;
-              if (planId && this.plans.find((p) => this.getPlanId(p) === planId)) {
-                this.selectedDefaultPlanId = planId;
-                console.log('📌 Plan sélectionné récupéré depuis localStorage:', planId);
-              }
-            }
-          } catch (e) {
-            console.warn('Erreur lors de la lecture du plan depuis localStorage:', e);
-          }
-        }
-        // If still no plan selected and there's exactly one plan, preselect it
-        if (!this.selectedDefaultPlanId && this.plans && this.plans.length === 1) {
-          const solePlanId = this.getPlanId(this.plans[0]);
-          this.selectedDefaultPlanId = solePlanId;
-          console.log('ℹ️ Un seul plan disponible — pré-sélection automatique:', solePlanId);
-        }
-      },
-      error: (err: any) => {
-        console.warn('Erreur lors du chargement des plans:', err);
-        console.log('🔄 Chargement des plans par défaut...');
-        this.loadDefaultPlans();
-      },
-    });
-  }
-
-  // Méthode pour charger des plans par défaut si l'API ne fonctionne pas
-  loadDefaultPlans(): void {
-    this.plans = [
-      {
-        id: 'plan-starter-2025',
-        name: 'Plan Starter',
-        description: 'Parfait pour débuter',
-        price: 9.99,
-        currency: 'EUR',
-        billingCycle: 'MONTHLY',
-        features: ['1 Application', 'Support email', 'Analytics de base'],
-        applicationId: '',
-        isActive: true,
-        limitations: {},
-      },
-      {
-        id: 'plan-pro-2025',
-        name: 'Plan Pro',
-        description: 'Pour les professionnels',
-        price: 29.99,
-        currency: 'EUR',
-        billingCycle: 'MONTHLY',
-        features: ['5 Applications', 'Support prioritaire', 'Analytics avancées'],
-        applicationId: '',
-        isActive: true,
-        limitations: {},
-      },
-      {
-        id: 'plan-enterprise-2025',
-        name: 'Plan Enterprise',
-        description: 'Pour les grandes entreprises',
-        price: 99.99,
-        currency: 'EUR',
-        billingCycle: 'MONTHLY',
-        features: ['Applications illimitées', 'Support 24/7', 'Analytics complètes'],
-        applicationId: '',
-        isActive: true,
-        limitations: {},
-      },
-    ];
-    console.log('✅ Plans par défaut chargés:', this.plans.length);
-  }
-
-  // Helper pour récupérer un id de plan compatible (_id ou id)
-  getPlanId(plan: Plan | any): string {
-    return plan && (plan.id || plan._id) ? plan.id || plan._id : '';
   }
 
   onLogoSelected(event: any): void {
@@ -326,11 +209,8 @@ export class ApplicationConfigureComponent implements OnInit {
           const needsStatusUpdate =
             this.currentApplication.status !==
             (this.configurationForm.isActive ? 'active' : 'inactive');
-          const needsPlanUpdate =
-            this.selectedDefaultPlanId &&
-            this.currentApplication.defaultPlanId !== this.selectedDefaultPlanId;
 
-          if (needsNameUpdate || needsStatusUpdate || needsPlanUpdate) {
+          if (needsNameUpdate || needsStatusUpdate) {
             // Créer l'objet de mise à jour avec le nom et le statut
             const updateData: any = {};
 
@@ -343,19 +223,9 @@ export class ApplicationConfigureComponent implements OnInit {
               updateData.isActive = this.configurationForm.isActive;
             }
 
-            // Ajouter le plan par défaut s'il est sélectionné
-            if (this.selectedDefaultPlanId) {
-              updateData.defaultPlanId = this.selectedDefaultPlanId;
-              console.log('💾 Sauvegarde du plan par défaut:', this.selectedDefaultPlanId);
-            }
-
             this.applicationService.updateApplication(this.applicationId!, updateData).subscribe({
               next: () => {
-                console.log('Application mise à jour avec succès:', updateData);
-                // Mettre à jour l'application locale immédiatement
-                if (this.currentApplication && this.selectedDefaultPlanId) {
-                  this.currentApplication.defaultPlanId = this.selectedDefaultPlanId;
-                }
+                // Application mise à jour avec succès
               },
               error: (error) => {
                 console.error("Erreur lors de la mise à jour de l'application:", error);
@@ -446,19 +316,9 @@ export class ApplicationConfigureComponent implements OnInit {
           // Mettre à jour seulement le statut actif, garder le reste de la configuration
           const newIsActive = app.isActive !== undefined ? app.isActive : app.status === 'active';
 
-          console.log(
-            '🔄 Rechargement données app:',
-            app.name,
-            'Status:',
-            app.status,
-            'isActive:',
-            newIsActive,
-          );
-
           // Mettre à jour seulement si c'est différent pour éviter les boucles
           if (this.configurationForm.isActive !== newIsActive) {
             this.configurationForm.isActive = newIsActive;
-            console.log('✅ Toggle synchronisé:', newIsActive);
           }
         }
       },
@@ -470,13 +330,11 @@ export class ApplicationConfigureComponent implements OnInit {
 
   onToggleChange(event: any): void {
     const isActive = event.target.checked;
-    console.log('🔄 Toggle configuration changé:', isActive);
 
     if (this.applicationId && this.currentApplication) {
       // Mettre à jour immédiatement l'état de l'application pour synchroniser avec les cartes
       this.applicationService.updateApplicationStatus(this.applicationId, isActive).subscribe({
         next: () => {
-          console.log("✅ Statut de l'application mis à jour immédiatement");
           // Mettre à jour l'objet application local
           this.currentApplication!.status = isActive ? 'active' : 'inactive';
           this.currentApplication!.isActive = isActive;
@@ -493,57 +351,152 @@ export class ApplicationConfigureComponent implements OnInit {
     }
   }
 
-  // Plan management methods
+  hasSelectedPlan(): boolean {
+    // Si la vérification n'est pas encore terminée, retourner false
+    if (!this.planCheckCompleted) {
+      return false;
+    }
+
+    // Vérifier s'il y a un plan sélectionné (soit depuis localStorage soit défini manuellement)
+    return (
+      (this.selectedDefaultPlanId !== null && this.selectedDefaultPlanId !== undefined) ||
+      (this.selectedPlanObject !== null && this.selectedPlanObject !== undefined)
+    );
+  }
+
   getCurrentSelectedPlan(): any {
-    if (!this.selectedDefaultPlanId || !this.plans) {
+    if (!this.hasSelectedPlan()) {
       return null;
     }
-    return this.plans.find((plan) => this.getPlanId(plan) === this.selectedDefaultPlanId);
+
+    // Si on a selectedPlanObject, l'utiliser (depuis localStorage ou API)
+    if (this.selectedPlanObject) {
+      return this.selectedPlanObject;
+    }
+
+    // Si on a selectedPlan dans currentApplication, l'utiliser
+    if (this.currentApplication?.selectedPlan) {
+      return this.currentApplication.selectedPlan;
+    }
+
+    // Sinon retourner un objet simple avec l'ID disponible
+    return {
+      id: this.selectedDefaultPlanId,
+      name: 'Plan sélectionné',
+      description: 'Chargement des détails...',
+      price: 0,
+      currency: 'EUR',
+      billingCycle: 'monthly',
+    };
+  }
+
+  getPlanId(plan: any): string {
+    return plan?.id || plan?._id || '';
+  }
+
+  getPlanCycleLabel(cycle: string): string {
+    const labels: { [key: string]: string } = {
+      monthly: 'mois',
+      yearly: 'an',
+      daily: 'jour',
+      weekly: 'semaine',
+    };
+    return labels[cycle] || cycle;
   }
 
   startChangingPlan(): void {
-    console.log('🔄 Début du changement de plan');
     this.isChangingPlan = true;
     this.tempSelectedPlanId = null;
   }
 
-  selectPlan(plan: any): void {
-    const planId = this.getPlanId(plan);
-    console.log('🎯 Plan sélectionné:', plan.name, 'ID:', planId);
-
-    if (this.isChangingPlan) {
-      // En mode changement, utiliser tempSelectedPlanId
-      this.tempSelectedPlanId = planId;
-    } else {
-      // Sélection directe (premier choix)
-      this.selectedDefaultPlanId = planId;
-    }
-  }
-
-  confirmPlanChange(): void {
-    if (this.tempSelectedPlanId) {
-      console.log('✅ Confirmation du changement de plan vers:', this.tempSelectedPlanId);
-      this.selectedDefaultPlanId = this.tempSelectedPlanId;
-      this.cancelPlanChange();
-
-      // Sauvegarder automatiquement le changement
-      this.onSubmit();
+  navigateToPlanSelection(): void {
+    // Naviguer vers la page de sélection de plan avec l'ID de l'application
+    if (this.applicationId) {
+      this.router.navigate(['/subscriptions/plans'], {
+        queryParams: {
+          returnTo: 'create-application',
+          applicationId: this.applicationId,
+        },
+      });
     }
   }
 
   cancelPlanChange(): void {
-    console.log('❌ Annulation du changement de plan');
     this.isChangingPlan = false;
     this.tempSelectedPlanId = null;
   }
 
-  getPlanCycleLabel(cycle: string): string {
-    const cycles: { [key: string]: string } = {
-      MONTHLY: 'mois',
-      YEARLY: 'an',
-      WEEKLY: 'semaine',
-      DAILY: 'jour',
-    };
-    return cycles[cycle] || 'mois';
+  confirmPlanChange(): void {
+    if (this.tempSelectedPlanId) {
+      this.selectedDefaultPlanId = this.tempSelectedPlanId;
+      this.isChangingPlan = false;
+      this.tempSelectedPlanId = null;
+      // Optionnel: sauvegarder automatiquement
+      this.onSubmit();
+    }
+  }
+
+  selectPlan(plan: any): void {
+    const planId = this.getPlanId(plan);
+    if (this.isChangingPlan) {
+      this.tempSelectedPlanId = planId;
+    } else {
+      this.selectedDefaultPlanId = planId;
+    }
+  }
+
+  clearStoredPlans(): void {
+    // Vider les plans stockés localement si nécessaire
+    this.plans = [];
+    this.selectedDefaultPlanId = null;
+    // Vous pouvez ajouter ici la logique pour nettoyer localStorage si nécessaire
+  }
+
+  autoSelectFirstPlan(): void {
+    if (this.plans && this.plans.length > 0) {
+      const firstPlan = this.plans[0];
+      this.selectedDefaultPlanId = this.getPlanId(firstPlan);
+      // Sauvegarder automatiquement
+      this.onSubmit();
+    }
+  }
+
+  checkForSelectedPlanFromStorage(): void {
+    try {
+      // D'abord chercher avec la clé globale
+      let storedPlan = localStorage.getItem('selectedPlan');
+      let storedAppId = localStorage.getItem('selectedApplicationId');
+
+      // Si trouvé et correspond à cette application
+      if (storedPlan && storedAppId === this.applicationId) {
+        const planData = JSON.parse(storedPlan);
+        this.selectedPlanObject = planData;
+
+        if (planData.id || planData._id) {
+          this.selectedDefaultPlanId = planData.id || planData._id;
+          // Nettoyer le localStorage après utilisation
+          localStorage.removeItem('selectedPlan');
+          localStorage.removeItem('selectedApplicationId');
+        }
+      } else {
+        // Sinon, chercher avec la clé spécifique à l'application
+        const appSpecificPlan = localStorage.getItem(`appDefaultPlan:${this.applicationId}`);
+        if (appSpecificPlan) {
+          const planData = JSON.parse(appSpecificPlan);
+          this.selectedPlanObject = planData;
+
+          if (planData.id || planData._id) {
+            this.selectedDefaultPlanId = planData.id || planData._id;
+            // Nettoyer le localStorage après utilisation
+            localStorage.removeItem(`appDefaultPlan:${this.applicationId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Erreur lors de la récupération du plan depuis localStorage:', error);
+    } finally {
+      // Marquer la vérification comme terminée dans tous les cas
+      this.planCheckCompleted = true;
+    }
   }
 }

@@ -6,4 +6,6 @@ export const environment = {
     realm: 'saas-platform',
     clientId: 'saas-frontend',
   },
+  // 🎯 Configuration des logs de débogage - DÉSACTIVÉS en production
+  enableDebugLogs: false,
 };

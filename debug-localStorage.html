@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Debug localStorage</title>
+  </head>
+  <body>
+    <h1>Debug localStorage</h1>
+    <div id="output"></div>
+
+    <script>
+      function debugLocalStorage() {
+        const output = document.getElementById("output");
+        let html = "<h2>État actuel du localStorage:</h2>";
+
+        // Afficher tous les éléments du localStorage
+        html += "<h3>Tous les éléments:</h3>";
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          html += `<p><strong>${key}:</strong> ${value}</p>`;
+        }
+
+        // Afficher spécifiquement les plans
+        html += "<h3>Plans spécifiques:</h3>";
+        const selectedPlan = localStorage.getItem("selectedPlan");
+        html += `<p><strong>selectedPlan:</strong> ${selectedPlan}</p>`;
+
+        // Chercher tous les appDefaultPlan
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("appDefaultPlan:")) {
+            const value = localStorage.getItem(key);
+            html += `<p><strong>${key}:</strong> ${value}</p>`;
+          }
+        }
+
+        output.innerHTML = html;
+      }
+
+      // Exécuter au chargement
+      debugLocalStorage();
+
+      // Bouton pour rafraîchir
+      document.body.innerHTML +=
+        '<br><button onclick="debugLocalStorage()">Rafraîchir</button>';
+    </script>
+  </body>
+</html>

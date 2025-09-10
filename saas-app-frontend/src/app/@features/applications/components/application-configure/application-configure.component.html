@@ -47,12 +47,12 @@
         </div>
       </div>
 
-      <!-- Section: Plans disponibles -->
+      <!-- Section: Plan sélectionné -->
       <div class="form-section">
-        <h3 class="section-title">Plans disponibles pour cette application</h3>
+        <h3 class="section-title">Plan sélectionné pour cette application</h3>
 
         <!-- Affichage du plan actuellement sélectionné -->
-        <div class="current-plan-section" *ngIf="selectedDefaultPlanId">
+        <div class="current-plan-section" *ngIf="hasSelectedPlan()">
           <h4 class="current-plan-title">📋 Plan actuellement sélectionné</h4>
           <div class="current-plan-card" *ngIf="getCurrentSelectedPlan() as selectedPlan">
             <div class="current-plan-header">
@@ -62,17 +62,23 @@
               </div>
               <div class="plan-price-badge">
                 <span class="price">{{
-                  selectedPlan.price | currency : 'EUR' : 'symbol' : '1.2-2'
+                  selectedPlan.price
+                    | currency : selectedPlan.currency || 'EUR' : 'symbol' : '1.2-2'
                 }}</span>
                 <span class="cycle">/ {{ getPlanCycleLabel(selectedPlan.billingCycle) }}</span>
               </div>
             </div>
             <div
               class="current-plan-features"
-              *ngIf="selectedPlan.features && selectedPlan.features.length > 0">
+              *ngIf="
+                (selectedPlan.features || selectedPlan.includedFeatures) &&
+                (selectedPlan.features || selectedPlan.includedFeatures).length > 0
+              ">
               <h6>Fonctionnalités incluses :</h6>
               <div class="features-list">
-                <span class="feature-tag" *ngFor="let feature of selectedPlan.features">
+                <span
+                  class="feature-tag"
+                  *ngFor="let feature of selectedPlan.features || selectedPlan.includedFeatures">
                   ✓ {{ feature }}
                 </span>
               </div>
@@ -80,6 +86,21 @@
             <div class="current-plan-actions">
               <button type="button" class="btn btn-warning btn-sm" (click)="startChangingPlan()">
                 🔄 Changer de plan
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm ml-2"
+                (click)="navigateToPlanSelection()"
+                style="margin-left: 0.5rem">
+                📋 Sélectionner un plan
+              </button>
+              <!-- Bouton de débogage temporaire -->
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm ml-2"
+                (click)="clearStoredPlans()"
+                style="margin-left: 0.5rem">
+                🧹 Nettoyer localStorage
               </button>
             </div>
           </div>
@@ -97,26 +118,37 @@
           ">
           <p>
             <strong>ℹ️ Information :</strong>
-            <span *ngIf="!selectedDefaultPlanId"
+            <span *ngIf="!hasSelectedPlan()"
               >Aucun plan sélectionné. Vous pouvez choisir un plan par défaut pour cette application
-              ci-dessous.</span
-            >
-            <span *ngIf="selectedDefaultPlanId && !isChangingPlan"
-              >Plan par défaut configuré. Vous pouvez le changer à tout moment.</span
+              ci-dessous ou
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                (click)="autoSelectFirstPlan()"
+                style="margin-left: 0.5rem">
+                🎯 Auto-sélectionner le premier plan
+              </button>
+            </span>
+            <span
+              *ngIf="
+                hasSelectedPlan() && !isChangingPlan && getCurrentSelectedPlan() as selectedPlan
+              "
+              >Cette application utilise le plan <strong>{{ selectedPlan.name }}</strong> ({{
+                selectedPlan.price | currency : selectedPlan.currency || 'EUR' : 'symbol' : '1.2-2'
+              }}/{{ getPlanCycleLabel(selectedPlan.billingCycle) }}). Utilisez le bouton "🔄 Changer
+              de plan" pour le modifier.</span
             >
             <span *ngIf="isChangingPlan"
               >Sélectionnez un nouveau plan ci-dessous et confirmez votre choix.</span
             >
           </p>
-          <small>Plans disponibles: {{ plans?.length || 0 }}</small>
+          <small>Plans disponibles: {{ plans.length || 0 }}</small>
         </div>
 
         <!-- Section de changement de plan (affichée seulement si pas de plan sélectionné ou en mode changement) -->
-        <div *ngIf="!selectedDefaultPlanId || isChangingPlan" class="plan-selection-section">
+        <div *ngIf="!hasSelectedPlan() || isChangingPlan" class="plan-selection-section">
           <h4 class="section-subtitle" *ngIf="isChangingPlan">Choisir un nouveau plan</h4>
-          <h4 class="section-subtitle" *ngIf="!selectedDefaultPlanId">
-            Choisir un plan par défaut
-          </h4>
+          <h4 class="section-subtitle" *ngIf="!hasSelectedPlan()">Choisir un plan par défaut</h4>
 
           <div *ngIf="plans && plans.length > 0; else noPlansTemplate">
             <div class="plans-grid">

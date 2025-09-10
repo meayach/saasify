@@ -54,6 +54,37 @@ export class SaasApplicationPOJO {
   @AutoMap()
   defaultPlanId?: string;
 
+  @Prop({
+    required: false,
+    type: {
+      id: String,
+      name: String,
+      description: String,
+      price: Number,
+      currency: String,
+      billingCycle: String,
+      features: [
+        {
+          name: String,
+          value: String,
+          type: String,
+        },
+      ],
+      isActive: Boolean,
+    },
+  })
+  @AutoMap()
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    features: Array<{ name: string; value: string; type: string }>;
+    isActive: boolean;
+  };
+
   @AutoMap(() => SaasWorkspacePOJO)
   @Prop({
     required: false,

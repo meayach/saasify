@@ -45,6 +45,38 @@ export class SaasApplication extends Document {
   @Prop({ type: Types.ObjectId, ref: 'SaasPlan', required: false })
   defaultPlan?: Types.ObjectId;
 
+  @Prop({
+    type: {
+      id: String,
+      name: String,
+      description: String,
+      price: Number,
+      currency: String,
+      billingCycle: String,
+      type: String,
+      isActive: Boolean,
+      isPopular: Boolean,
+      features: [String],
+      createdAt: Date,
+      updatedAt: Date,
+    },
+    required: false,
+  })
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    type: string;
+    isActive: boolean;
+    isPopular: boolean;
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
   @Prop({ type: [String], default: [] })
   tags: string[];
 

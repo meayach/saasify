@@ -65,10 +65,22 @@ export class UserService {
             throw new Error(response.message || 'Erreur lors de la récupération du profil');
           }),
           catchError((err) => {
-            // If protected profile endpoint returns 404 (not found), try fallback by email
-            const isNotFound = err && (err.status === 404 || err === 'Utilisateur non trouvé');
-            if (isNotFound) {
+            // If protected profile endpoint returns 404 (not found) OR token is invalid (401/403),
+            // try fallback by email using the public endpoint or data in localStorage.
+            const isRecoverable =
+              err &&
+              (err.status === 404 ||
+                err.status === 401 ||
+                err.status === 403 ||
+                err === 'Utilisateur non trouvé');
+
+            if (isRecoverable) {
               try {
+                // If token is invalid or unauthorized, clear it from localStorage to avoid repeated 401s
+                if (err && (err.status === 401 || err.status === 403)) {
+                  localStorage.removeItem('authToken');
+                  localStorage.removeItem('isLoggedIn');
+                }
                 const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 const email = currentUser?.email;
                 if (email) {

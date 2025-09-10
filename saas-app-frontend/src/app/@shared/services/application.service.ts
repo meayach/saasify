@@ -7,6 +7,20 @@ export interface Application {
   name: string;
   logoUrl?: string;
   defaultPlanId?: string;
+  selectedPlan?: {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    billingCycle: string;
+    type: string;
+    isActive: boolean;
+    isPopular: boolean;
+    features: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
   status: 'active' | 'maintenance' | 'inactive';
   isActive?: boolean;
   deployedAt?: Date;
