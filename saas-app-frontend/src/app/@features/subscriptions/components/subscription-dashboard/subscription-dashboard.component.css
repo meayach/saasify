@@ -62,11 +62,6 @@
   margin: 2rem 0;
 }
 
-.error-icon {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
 .error-message {
   color: #c53030;
   font-weight: 600;
@@ -265,11 +260,6 @@
   margin-bottom: 2rem;
 }
 
-.no-subscription-content .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
 .no-subscription-content h2 {
   font-size: 1.5rem;
   color: #2d3748;
@@ -379,11 +369,6 @@
   border-color: #3182ce;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.action-icon {
-  font-size: 2rem;
-  margin-bottom: 1rem;
 }
 
 .action-card h4 {

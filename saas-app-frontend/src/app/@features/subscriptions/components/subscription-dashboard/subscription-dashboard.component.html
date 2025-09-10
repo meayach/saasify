@@ -149,7 +149,6 @@
 
   <!-- Error State -->
   <div *ngIf="error" class="error-container">
-    <div class="error-icon">⚠️</div>
     <p class="error-message">{{ error }}</p>
     <button (click)="loadSubscriptions()" class="retry-button">Réessayer</button>
   </div>
@@ -218,7 +217,6 @@
     <!-- Aucun abonnement actif -->
     <div *ngIf="!currentSubscription" class="no-subscription-card">
       <div class="no-subscription-content">
-        <div class="empty-icon">📋</div>
         <h2>Aucun abonnement actif</h2>
         <p>Vous n'avez pas d'abonnement actif. Choisissez une offre pour commencer&nbsp;!</p>
         <button (click)="navigateToPlans()" class="btn btn-primary btn-large">
@@ -255,19 +253,16 @@
       <h3 class="section-title">Actions rapides</h3>
       <div class="action-grid">
         <div class="action-card" (click)="navigateToPlans()">
-          <div class="action-icon">📦</div>
           <h4>Parcourir les offres</h4>
           <p>Découvrez les offres d'abonnement disponibles</p>
         </div>
 
         <div class="action-card" (click)="navigateToPaymentMethods()">
-          <div class="action-icon">💳</div>
           <h4>Moyens de paiement</h4>
           <p>Gérez vos moyens de paiement</p>
         </div>
 
         <div class="action-card" (click)="navigateToBillingHistory()">
-          <div class="action-icon">📊</div>
           <h4>Historique de facturation</h4>
           <p>Consultez l'historique de vos paiements</p>
         </div>
