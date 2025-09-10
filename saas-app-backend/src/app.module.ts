@@ -68,6 +68,7 @@ import { SaasApplicationDataModule } from './data/saasApplication/saasApplicatio
 
 // Import services
 import { UserService } from './services/user/user.service';
+import { UserManagementService } from './services/user-management.service';
 import { SaasApplicationService } from './services/application/saas-application.service';
 import { SaasPlanService } from './services/plan/saas-plan.service';
 import { SaasSubscriptionService } from './services/subscription/saas-subscription.service';
@@ -76,6 +77,7 @@ import { SaasOfferService } from './services/offer/saas-offer.service';
 
 // Import controllers
 import { UserController } from './controllers/user/user.controller';
+import { UserManagementController } from './controllers/user-management.controller';
 import { SaasApplicationController } from './controllers/application/saas-application.controller';
 import { SaasPlanController } from './controllers/plan/saas-plan.controller';
 import { SaasSubscriptionController } from './controllers/subscription/saas-subscription.controller';
@@ -148,6 +150,7 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
   controllers: [
     AppController,
     UserController,
+    UserManagementController,
     SaasApplicationController,
     SaasPlanController,
     SaasSubscriptionController,
@@ -158,6 +161,7 @@ import { SaasCustomerAdminModule } from './data/saasCustomerAdmin/saasCustomerAd
   providers: [
     AppService,
     UserService,
+    UserManagementService,
     SaasApplicationService,
     SaasPlanService,
     SaasSubscriptionService,

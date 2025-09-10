@@ -364,8 +364,8 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/subscriptions']);
   }
 
-  navigateToAnalytics(): void {
-    this.router.navigate(['/analytics']);
+  navigateToUserManagement(): void {
+    this.router.navigate(['/user-management']);
   }
 
   navigateToSettings(): void {

@@ -1,14 +1,26 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "type": "shell",
-      "label": "Start NestJS Backend",
-      "command": "npm run start:dev",
-      "group": "build",
-      "isBackground": true,
-      "problemMatcher": ["$tsc"],
-      "args": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Start NestJS Backend",
+			"command": "npm run start:dev",
+			"group": "build",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"args": []
+		},
+		{
+			"label": "Start NestJS Backend (Fixed)",
+			"type": "shell",
+			"command": "cd saas-app-backend && npm run start:dev",
+			"isBackground": true,
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		}
+	]
 }

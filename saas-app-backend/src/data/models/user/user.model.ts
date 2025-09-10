@@ -16,7 +16,10 @@ export enum UserStatus {
   SUSPENDED = 'SUSPENDED',
 }
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  collection: 'saasCustomerAdmins', // Spécifier la collection MongoDB
+})
 export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;

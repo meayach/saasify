@@ -24,6 +24,7 @@ async function bootstrap() {
       configService.get('FRONTEND_URL', 'http://localhost:4200'),
       'http://localhost:4200',
       'http://localhost:4201', // Add port 4201 for Angular dev server
+      'http://localhost:56281', // Add port 56281 for current Angular dev server
     ],
     credentials: true,
   });
@@ -72,11 +73,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = configService.get('PORT', 3000);
-  // Listen on all interfaces to avoid binding issues between localhost/127.0.0.1/::1
-  await app.listen(port, '0.0.0.0');
+  const port = configService.get('PORT', 3001);
+  // Listen on localhost to avoid binding issues
+  await app.listen(port, 'localhost');
 
-  console.log(`Application is running on: http://0.0.0.0:${port}`);
-  console.log(`📚 Swagger documentation: http://0.0.0.0:${port}/api/docs`);
+  console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
 }
 bootstrap();

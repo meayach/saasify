@@ -1,0 +1,509 @@
+<div class="user-management-container">
+  <div class="header">
+    <h1>Gestion des Utilisateurs</h1>
+    <p class="subtitle">Gérez tous les utilisateurs de votre plateforme</p>
+  </div>
+
+  <!-- Messages d'erreur et de chargement -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+    <button class="close-btn" (click)="error = ''">&times;</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <span>Chargement...</span>
+  </div>
+
+  <!-- Barre d'outils -->
+  <div class="toolbar">
+    <div class="search-section">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        placeholder="Rechercher par nom, email ou téléphone..."
+        class="search-input" />
+    </div>
+
+    <div class="filters-section">
+      <select [(ngModel)]="selectedRole" (change)="onFilterChange()" class="filter-select">
+        <option value="">Tous les rôles</option>
+        <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+      </select>
+
+      <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="filter-select">
+        <option value="">Tous les statuts</option>
+        <option *ngFor="let status of statuses" [value]="status.value">{{ status.label }}</option>
+      </select>
+
+      <button class="btn btn-secondary" (click)="clearFilters()">Effacer les filtres</button>
+    </div>
+
+    <div class="actions-section">
+      <button class="btn btn-primary" (click)="openUserModal('add')">
+        <i class="fa fa-plus"></i> Ajouter un utilisateur
+      </button>
+    </div>
+  </div>
+
+  <!-- Tableau des utilisateurs -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="users-table" *ngIf="getPaginatedUsers().length > 0; else noUsers">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Rôle</th>
+          <th>Statut</th>
+          <th>Plan</th>
+          <th>Date de création</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of getPaginatedUsers()">
+          <td>{{ user.firstName }} {{ user.lastName }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phoneNumber }}</td>
+          <td>
+            <span class="role-badge">{{ getRoleLabel(user.role) }}</span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(user.status)">
+              {{ getStatusLabel(user.status) }}
+            </span>
+          </td>
+          <td>{{ user.plan }}</td>
+          <td>{{ user.createdAt | date : 'short' }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <button
+                class="btn btn-sm btn-info"
+                (click)="openUserModal('view', user)"
+                title="Voir les détails">
+                <i class="fa fa-eye"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-primary"
+                (click)="openUserModal('edit', user)"
+                title="Modifier">
+                <i class="fa fa-edit"></i>
+              </button>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-secondary dropdown-toggle" data-toggle="dropdown">
+                  Statut
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" (click)="changeUserStatus(user, 'ACTIVE')">Activer</a>
+                  <a class="dropdown-item" (click)="changeUserStatus(user, 'SUSPENDED')"
+                    >Suspendre</a
+                  >
+                  <a class="dropdown-item" (click)="changeUserStatus(user, 'PENDING')"
+                    >En attente</a
+                  >
+                </div>
+              </div>
+              <button
+                class="btn btn-sm btn-warning"
+                (click)="resetPassword(user)"
+                title="Réinitialiser mot de passe">
+                <i class="fa fa-key"></i>
+              </button>
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="openDeleteModal(user)"
+                title="Supprimer">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Message quand aucun utilisateur trouvé -->
+    <ng-template #noUsers>
+      <div class="no-users-message">
+        <div class="icon">
+          <i class="fa fa-users fa-3x"></i>
+        </div>
+        <h3>Aucun utilisateur trouvé</h3>
+        <p>Aucun utilisateur ne correspond à vos critères de recherche.</p>
+        <button class="btn btn-primary" (click)="clearFilters()">Voir tous les utilisateurs</button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="previousPage()">Précédent</a>
+        </li>
+
+        <li
+          *ngFor="let page of getPaginationPages()"
+          class="page-item"
+          [class.active]="page === currentPage">
+          <a class="page-link" (click)="goToPage(page)">{{ page }}</a>
+        </li>
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="nextPage()">Suivant</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="pagination-info">
+      Affichage {{ (currentPage - 1) * itemsPerPage + 1 }} à
+      {{ Math.min(currentPage * itemsPerPage, filteredUsers.length) }}
+      sur {{ filteredUsers.length }} utilisateurs
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour ajouter/modifier/voir un utilisateur -->
+<div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span *ngIf="modalMode === 'add'">Ajouter un utilisateur</span>
+          <span *ngIf="modalMode === 'edit'">Modifier l'utilisateur</span>
+          <span *ngIf="modalMode === 'view'">Détails de l'utilisateur</span>
+        </h4>
+        <button type="button" class="close" (click)="closeUserModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="userForm" *ngIf="modalMode !== 'view'">
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="firstName">Prénom *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="firstName"
+                formControlName="firstName"
+                [class.is-invalid]="
+                  userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched
+                " />
+              <div
+                *ngIf="userForm.get('firstName')?.invalid && userForm.get('firstName')?.touched"
+                class="invalid-feedback">
+                Le prénom est requis (minimum 2 caractères)
+              </div>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="lastName">Nom *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="lastName"
+                formControlName="lastName"
+                [class.is-invalid]="
+                  userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched
+                " />
+              <div
+                *ngIf="userForm.get('lastName')?.invalid && userForm.get('lastName')?.touched"
+                class="invalid-feedback">
+                Le nom est requis (minimum 2 caractères)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              formControlName="email"
+              [class.is-invalid]="
+                userForm.get('email')?.invalid && userForm.get('email')?.touched
+              " />
+            <div
+              *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+              class="invalid-feedback">
+              Veuillez entrer une adresse email valide
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phoneNumber">Téléphone *</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="phoneNumber"
+              formControlName="phoneNumber"
+              [class.is-invalid]="
+                userForm.get('phoneNumber')?.invalid && userForm.get('phoneNumber')?.touched
+              " />
+            <div
+              *ngIf="userForm.get('phoneNumber')?.invalid && userForm.get('phoneNumber')?.touched"
+              class="invalid-feedback">
+              Le numéro de téléphone est requis
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="streetAddress">Adresse *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="streetAddress"
+              formControlName="streetAddress"
+              [class.is-invalid]="
+                userForm.get('streetAddress')?.invalid && userForm.get('streetAddress')?.touched
+              " />
+            <div
+              *ngIf="
+                userForm.get('streetAddress')?.invalid && userForm.get('streetAddress')?.touched
+              "
+              class="invalid-feedback">
+              L'adresse est requise
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-8">
+              <label for="city">Ville *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="city"
+                formControlName="city"
+                [class.is-invalid]="
+                  userForm.get('city')?.invalid && userForm.get('city')?.touched
+                " />
+              <div
+                *ngIf="userForm.get('city')?.invalid && userForm.get('city')?.touched"
+                class="invalid-feedback">
+                La ville est requise
+              </div>
+            </div>
+
+            <div class="form-group col-md-4">
+              <label for="zipCode">Code postal *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="zipCode"
+                formControlName="zipCode"
+                [class.is-invalid]="
+                  userForm.get('zipCode')?.invalid && userForm.get('zipCode')?.touched
+                " />
+              <div
+                *ngIf="userForm.get('zipCode')?.invalid && userForm.get('zipCode')?.touched"
+                class="invalid-feedback">
+                Le code postal est requis
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="role">Rôle *</label>
+              <select
+                class="form-control"
+                id="role"
+                formControlName="role"
+                [class.is-invalid]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+                <option *ngFor="let role of roles" [value]="role.value">{{ role.label }}</option>
+              </select>
+              <div
+                *ngIf="userForm.get('role')?.invalid && userForm.get('role')?.touched"
+                class="invalid-feedback">
+                Le rôle est requis
+              </div>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="plan">Plan *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="plan"
+                formControlName="plan"
+                [class.is-invalid]="
+                  userForm.get('plan')?.invalid && userForm.get('plan')?.touched
+                " />
+              <div
+                *ngIf="userForm.get('plan')?.invalid && userForm.get('plan')?.touched"
+                class="invalid-feedback">
+                Le plan est requis
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="modalMode === 'add'">
+            <label for="password">Mot de passe *</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              formControlName="password"
+              [class.is-invalid]="
+                userForm.get('password')?.invalid && userForm.get('password')?.touched
+              " />
+            <div
+              *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched"
+              class="invalid-feedback">
+              Le mot de passe est requis (minimum 6 caractères)
+            </div>
+          </div>
+
+          <div class="form-group" *ngIf="modalMode === 'edit'">
+            <label for="password">Nouveau mot de passe (optionnel)</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              formControlName="password"
+              placeholder="Laissez vide pour ne pas changer" />
+            <small class="form-text text-muted">
+              Laissez ce champ vide si vous ne souhaitez pas changer le mot de passe
+            </small>
+          </div>
+        </form>
+
+        <!-- Vue en lecture seule -->
+        <div *ngIf="modalMode === 'view' && currentUser" class="user-details">
+          <div class="detail-row">
+            <strong>Nom complet:</strong>
+            <span>{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Email:</strong>
+            <span>{{ currentUser.email }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Téléphone:</strong>
+            <span>{{ currentUser.phoneNumber }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Adresse:</strong>
+            <span
+              >{{ currentUser.streetAddress }}, {{ currentUser.city }}
+              {{ currentUser.zipCode }}</span
+            >
+          </div>
+          <div class="detail-row">
+            <strong>Rôle:</strong>
+            <span class="role-badge">{{ getRoleLabel(currentUser.role) }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Statut:</strong>
+            <span class="status-badge" [ngClass]="getStatusClass(currentUser.status)">
+              {{ getStatusLabel(currentUser.status) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <strong>Plan:</strong>
+            <span>{{ currentUser.plan }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Date de création:</strong>
+            <span>{{ currentUser.createdAt | date : 'full' }}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Dernière modification:</strong>
+            <span>{{ currentUser.updatedAt | date : 'full' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Fermer</button>
+        <button
+          *ngIf="modalMode !== 'view'"
+          type="button"
+          class="btn btn-primary"
+          (click)="saveUser()"
+          [disabled]="!userForm.valid || loading">
+          <span *ngIf="loading">Enregistrement...</span>
+          <span *ngIf="!loading">{{ modalMode === 'add' ? 'Ajouter' : 'Modifier' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmation de suppression -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Confirmer la suppression</h4>
+        <button type="button" class="close" (click)="closeDeleteModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Êtes-vous sûr de vouloir supprimer l'utilisateur
+          <strong>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</strong> ?
+        </p>
+        <p class="text-warning"><i class="fa fa-warning"></i> Cette action est irréversible.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          Annuler
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="loading">
+          <span *ngIf="loading">Suppression...</span>
+          <span *ngIf="!loading">Supprimer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour afficher le mot de passe temporaire -->
+<div class="modal-overlay" *ngIf="showPasswordModal" (click)="closePasswordModal()">
+  <div class="modal-dialog modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Mot de passe temporaire</h4>
+        <button type="button" class="close" (click)="closePasswordModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p>
+          Le mot de passe a été réinitialisé pour
+          <strong>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</strong
+          >.
+        </p>
+        <div class="temp-password">
+          <label>Mot de passe temporaire:</label>
+          <div class="password-display">
+            <code>{{ temporaryPassword }}</code>
+            <button
+              class="btn btn-sm btn-outline-primary"
+              (click)="navigator.clipboard.writeText(temporaryPassword)">
+              <i class="fa fa-copy"></i> Copier
+            </button>
+          </div>
+        </div>
+        <p class="text-info">
+          <i class="fa fa-info-circle"></i> L'utilisateur devra changer ce mot de passe lors de sa
+          prochaine connexion.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="closePasswordModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>

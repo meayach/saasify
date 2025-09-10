@@ -3,16 +3,12 @@ import { RouterModule, Routes } from '@angular/router';
 import { SignupComponent } from './@shared/signup/components/signup.component';
 import { LoginComponent } from './@shared/login/components/login.component';
 import { DashboardComponent } from './@shared/dashboard/components/dashboard.component';
-import { TestNotificationComponent } from './test-notification.component';
-import { TestApiComponent } from './test-api.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'dashboard', component: DashboardComponent },
-  { path: 'test-notifications', component: TestNotificationComponent },
-  { path: 'test-api', component: TestApiComponent },
   { path: 'customer/dashboard', component: DashboardComponent },
   { path: 'admin/dashboard', component: DashboardComponent },
   { path: 'manager/dashboard', component: DashboardComponent },
@@ -34,7 +30,13 @@ const routes: Routes = [
     path: 'subscriptions/plans',
     loadChildren: () => import('./@features/plans/plans.module').then((m) => m.PlansModule),
   },
-  { path: 'analytics', component: DashboardComponent },
+  {
+    path: 'user-management',
+    loadChildren: () =>
+      import('./@features/user-management/user-management.module').then(
+        (m) => m.UserManagementModule,
+      ),
+  },
   { path: 'settings', component: DashboardComponent },
 ];
 

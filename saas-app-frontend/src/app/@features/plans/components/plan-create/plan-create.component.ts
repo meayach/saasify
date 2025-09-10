@@ -37,9 +37,12 @@ export class PlanCreateComponent implements OnInit {
       currency: ['EUR', Validators.required],
       maxUsers: [100, [Validators.required, Validators.min(-1)]],
       maxApps: [1, [Validators.required, Validators.min(-1)]],
+      billingCycle: ['', Validators.required],
+      type: ['', Validators.required],
       isPopular: [false],
       status: ['active', Validators.required],
       features: this.fb.array([]),
+      customFeatures: this.fb.array([]),
     });
   }
 
@@ -63,12 +66,25 @@ export class PlanCreateComponent implements OnInit {
   }
 
   addCustomFeature(): void {
-    this.featuresArray.push(
+    const customFeatures = this.getCustomFeatures();
+    customFeatures.push(
       this.fb.group({
         name: ['', Validators.required],
-        included: [true],
       }),
     );
+  }
+
+  getCustomFeatures(): FormArray {
+    return this.planForm.get('customFeatures') as FormArray;
+  }
+
+  removeCustomFeature(index: number): void {
+    const customFeatures = this.getCustomFeatures();
+    customFeatures.removeAt(index);
+  }
+
+  onFeatureChange(index: number, event: any): void {
+    this.predefinedFeatures[index].included = event.target.checked;
   }
 
   removeFeature(index: number): void {

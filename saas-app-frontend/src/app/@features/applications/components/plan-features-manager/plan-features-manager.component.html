@@ -1,0 +1,136 @@
+<div class="plan-features-manager">
+  <div class="manager-header">
+    <h3>🎯 Gestion des Features du Plan</h3>
+    <p>Configurez les fonctionnalités et leurs limites pour ce plan</p>
+  </div>
+
+  <div class="features-container" *ngIf="!loading; else loadingTemplate">
+    
+    <!-- Section des features disponibles -->
+    <div class="available-features-section">
+      <h4>📦 Features Disponibles</h4>
+      <div class="features-grid">
+        <div 
+          *ngFor="let feature of availableFeatures; let i = index"
+          class="feature-card available"
+          [class.already-added]="isFeatureSelected(feature._id)"
+          (click)="addFeature(feature)"
+          [attr.data-testid]="'feature-' + i">
+          
+          <div class="feature-icon">
+            {{ getCategoryIcon(feature.category) }}
+          </div>
+          <div class="feature-info">
+            <h5>{{ feature.name }}</h5>
+            <p>{{ feature.description }}</p>
+            <span class="feature-category">{{ feature.category }}</span>
+          </div>
+          <div class="add-button" *ngIf="!isFeatureSelected(feature._id)">
+            <span>+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section des features sélectionnées -->
+    <div class="selected-features-section" *ngIf="selectedFeatures.length > 0">
+      <h4>⚙️ Features du Plan ({{ selectedFeatures.length }})</h4>
+      
+      <div class="selected-features-list">
+        <div 
+          *ngFor="let selectedFeature of selectedFeatures; let i = index"
+          class="selected-feature-card"
+          [attr.data-testid]="'selected-feature-' + i">
+          
+          <div class="feature-header">
+            <div class="feature-details">
+              <h5>{{ getFeatureName(selectedFeature.featureId) }}</h5>
+              <p>{{ getFeatureDescription(selectedFeature.featureId) }}</p>
+            </div>
+            
+            <button 
+              type="button"
+              class="remove-feature-btn"
+              (click)="removeFeature(i)"
+              [disabled]="readonly">
+              ❌
+            </button>
+          </div>
+
+          <!-- Sélection du statut -->
+          <div class="status-selection">
+            <label>🎛️ Statut de la Feature</label>
+            <div class="status-buttons">
+              <button
+                *ngFor="let status of featureStatuses"
+                type="button"
+                class="status-btn"
+                [class.selected]="selectedFeature.status === status.value"
+                [style.border-color]="selectedFeature.status === status.value ? status.color : '#e5e7eb'"
+                (click)="updateFeatureStatus(i, status.value)"
+                [disabled]="readonly">
+                
+                <span [style.color]="status.color">{{ status.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Priorité -->
+          <div class="priority-section">
+            <label>📊 Priorité d'affichage</label>
+            <input
+              type="number"
+              [(ngModel)]="selectedFeature.priority"
+              (change)="onPriorityChange(i, $event)"
+              min="1"
+              max="100"
+              [readonly]="readonly"
+              class="priority-input">
+          </div>
+
+          <!-- Champs personnalisés (version simplifiée) -->
+          <div class="custom-fields-section" *ngIf="hasCustomFields(selectedFeature.featureId)">
+            <h6>🔧 Configuration Avancée</h6>
+            <div class="custom-fields-placeholder">
+              <p>Champs personnalisés disponibles pour cette feature</p>
+              <small>Configuration détaillée à implémenter</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- État vide -->
+    <div class="empty-state" *ngIf="selectedFeatures.length === 0">
+      <div class="empty-icon">📋</div>
+      <h4>Aucune feature sélectionnée</h4>
+      <p>Cliquez sur les features disponibles ci-dessus pour les ajouter à ce plan</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section" *ngIf="selectedFeatures.length > 0 && !readonly">
+      <button 
+        type="button" 
+        class="save-btn primary"
+        (click)="saveConfiguration()"
+        [disabled]="loading">
+        💾 Sauvegarder la Configuration
+      </button>
+      
+      <button 
+        type="button" 
+        class="reset-btn secondary"
+        (click)="resetConfiguration()">
+        🔄 Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Template de chargement -->
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Chargement des features...</p>
+    </div>
+  </ng-template>
+</div>
