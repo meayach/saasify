@@ -11,6 +11,7 @@ import {
 } from '../../../../@shared/constants/payment-methods';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
+import { ApiService } from '../../../../@core/services/api.service';
 
 export interface ApplicationConfiguration {
   applicationName: string;
@@ -63,6 +64,7 @@ export class ApplicationConfigureComponent implements OnInit {
     private configurationService: ApplicationConfigurationService,
     private notificationService: NotificationService,
     private applicationRefreshService: ApplicationRefreshService,
+    private apiService: ApiService,
   ) {}
 
   ngOnInit(): void {
@@ -109,8 +111,21 @@ export class ApplicationConfigureComponent implements OnInit {
           // Prioriser selectedPlan.id sur defaultPlanId
           this.selectedDefaultPlanId = app.selectedPlan?.id || app.defaultPlanId || null;
 
+          // Si l'application a déjà un selectedPlan complet, l'utiliser
+          if (app.selectedPlan && app.selectedPlan.name) {
+            this.selectedPlanObject = app.selectedPlan;
+          }
+
           // Récupérer le plan sélectionné depuis localStorage (provenant de la sélection de plan)
           this.checkForSelectedPlanFromStorage();
+
+          // Si on a un ID de plan mais pas les détails complets, les charger depuis l'API
+          if (this.selectedDefaultPlanId && !this.selectedPlanObject) {
+            this.loadPlanDetails(this.selectedDefaultPlanId);
+          } else {
+            // Marquer la vérification comme terminée si pas besoin de charger depuis l'API
+            this.planCheckCompleted = true;
+          }
 
           // Charger la configuration existante
           this.loadExistingConfiguration();
@@ -305,6 +320,24 @@ export class ApplicationConfigureComponent implements OnInit {
     this.router.navigate(['/applications']);
   }
 
+  loadPlanDetails(planId: string): void {
+    this.apiService.getPlanById(planId).subscribe({
+      next: (plan) => {
+        if (plan) {
+          this.selectedPlanObject = plan;
+          console.log('Plan details loaded from API:', plan);
+        }
+      },
+      error: (error) => {
+        console.warn('Erreur lors du chargement des détails du plan:', error);
+      },
+      complete: () => {
+        // Marquer la vérification comme terminée même en cas d'erreur
+        this.planCheckCompleted = true;
+      },
+    });
+  }
+
   loadApplicationData(): void {
     if (!this.applicationId) return;
 
@@ -410,11 +443,11 @@ export class ApplicationConfigureComponent implements OnInit {
   }
 
   navigateToPlanSelection(): void {
-    // Naviguer vers la page de sélection de plan avec l'ID de l'application
+    // Naviguer vers la page de sélection de plan pour modifier le plan existant
     if (this.applicationId) {
       this.router.navigate(['/subscriptions/plans'], {
         queryParams: {
-          returnTo: 'create-application',
+          returnTo: 'configure-application',
           applicationId: this.applicationId,
         },
       });
@@ -474,29 +507,40 @@ export class ApplicationConfigureComponent implements OnInit {
 
         if (planData.id || planData._id) {
           this.selectedDefaultPlanId = planData.id || planData._id;
-          // Nettoyer le localStorage après utilisation
+
+          // IMPORTANT: Sauvegarder le plan dans la clé spécifique à l'application pour persistance
+          localStorage.setItem(`appDefaultPlan:${this.applicationId}`, JSON.stringify(planData));
+          console.log(
+            `💾 Plan sauvegardé pour persistance avec la clé appDefaultPlan:${this.applicationId}`,
+          );
+
+          // Nettoyer le localStorage après utilisation SEULEMENT pour la clé globale
           localStorage.removeItem('selectedPlan');
           localStorage.removeItem('selectedApplicationId');
         }
-      } else {
-        // Sinon, chercher avec la clé spécifique à l'application
-        const appSpecificPlan = localStorage.getItem(`appDefaultPlan:${this.applicationId}`);
-        if (appSpecificPlan) {
-          const planData = JSON.parse(appSpecificPlan);
-          this.selectedPlanObject = planData;
+        return; // Plan trouvé, pas besoin de chercher ailleurs
+      }
 
-          if (planData.id || planData._id) {
-            this.selectedDefaultPlanId = planData.id || planData._id;
-            // Nettoyer le localStorage après utilisation
-            localStorage.removeItem(`appDefaultPlan:${this.applicationId}`);
-          }
+      // Sinon, chercher avec la clé spécifique à l'application (ne pas nettoyer pour permettre la persistance)
+      const appSpecificPlan = localStorage.getItem(`appDefaultPlan:${this.applicationId}`);
+      if (appSpecificPlan) {
+        const planData = JSON.parse(appSpecificPlan);
+        this.selectedPlanObject = planData;
+
+        if (planData.id || planData._id) {
+          this.selectedDefaultPlanId = planData.id || planData._id;
+          console.log(`✅ Plan récupéré depuis la clé spécifique à l'application:`, planData);
+          // NE PAS nettoyer la clé spécifique à l'application pour persistance
+          // localStorage.removeItem(`appDefaultPlan:${this.applicationId}`);
         }
       }
     } catch (error) {
       console.warn('Erreur lors de la récupération du plan depuis localStorage:', error);
     } finally {
-      // Marquer la vérification comme terminée dans tous les cas
-      this.planCheckCompleted = true;
+      // Marquer la vérification comme terminée dans tous les cas seulement si on ne charge pas depuis l'API
+      if (!this.selectedDefaultPlanId || this.selectedPlanObject) {
+        this.planCheckCompleted = true;
+      }
     }
   }
 }

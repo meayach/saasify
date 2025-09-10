@@ -788,6 +788,67 @@ h1 {
   font-size: 0.8rem;
 }
 
+/* No Plan Section Styles */
+.no-plan-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fef7f7 0%, #fef2f2 100%);
+  border: 2px dashed #f87171;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(248, 113, 113, 0.1);
+}
+
+.no-plan-card {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.no-plan-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.no-plan-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: #f3f4f6;
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.no-plan-info h5 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.no-plan-info p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+  max-width: 400px;
+}
+
+.no-plan-actions {
+  margin-top: 1.5rem;
+}
+
+.no-plan-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+}
+
 /* Responsive enhancements for current plan */
 @media (max-width: 768px) {
   .current-plan-header {
@@ -805,5 +866,13 @@ h1 {
 
   .plans-grid {
     grid-template-columns: 1fr;
+  }
+
+  .no-plan-card {
+    padding: 1.5rem;
+  }
+
+  .no-plan-info p {
+    font-size: 0.9rem;
   }
 }

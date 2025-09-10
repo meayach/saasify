@@ -326,16 +326,32 @@ export class PlanSelectionComponent implements OnInit {
           queryParams: { planId: plan._id, planName: plan.name },
         });
       }
+    } else if (this.returnTo === 'configure-application') {
+      // Cas spécifique pour le changement de plan d'une application existante
+      const applicationId = this.route.snapshot.queryParams['applicationId'];
+
+      if (applicationId) {
+        // Sauvegarder l'ID de l'application pour la page de configuration
+        localStorage.setItem('selectedApplicationId', applicationId);
+
+        // IMPORTANT: Sauvegarder aussi le plan avec la clé spécifique à l'application pour persistance
+        localStorage.setItem(`appDefaultPlan:${applicationId}`, JSON.stringify(planData));
+        this.logger.log(`💾 Plan sauvegardé pour l'application ${applicationId}:`, planData);
+
+        this.notificationService.success(
+          `Plan ${plan.name} sélectionné ! Retour à la configuration...`,
+        );
+        this.router.navigate(['/applications/configure', applicationId]);
+      } else {
+        // Fallback si pas d'applicationId
+        this.notificationService.warning('Erreur: ID application manquant');
+        this.router.navigate(['/applications']);
+      }
     } else {
       // Comportement normal pour les abonnements
       this.notificationService.success(`Plan ${plan.name} sélectionné !`);
       // Ici vous pouvez ajouter la logique pour souscrire au plan
     }
-  }
-
-  testClick(plan: Plan): void {
-    this.logger.log('🧪 DEBUG testClick - Plan:', plan);
-    alert(`Test réussi pour le plan: ${plan.name}`);
   }
 
   debugAlert(message: string): void {

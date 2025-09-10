@@ -49,11 +49,10 @@
 
       <!-- Section: Plan sélectionné -->
       <div class="form-section">
-        <h3 class="section-title">Plan sélectionné pour cette application</h3>
+        <h3 class="section-title">Plan actuellement sélectionné</h3>
 
         <!-- Affichage du plan actuellement sélectionné -->
         <div class="current-plan-section" *ngIf="hasSelectedPlan()">
-          <h4 class="current-plan-title">📋 Plan actuellement sélectionné</h4>
           <div class="current-plan-card" *ngIf="getCurrentSelectedPlan() as selectedPlan">
             <div class="current-plan-header">
               <div class="plan-info">
@@ -84,73 +83,48 @@
               </div>
             </div>
             <div class="current-plan-actions">
-              <button type="button" class="btn btn-warning btn-sm" (click)="startChangingPlan()">
-                🔄 Changer de plan
-              </button>
               <button
                 type="button"
                 class="btn btn-primary btn-sm ml-2"
                 (click)="navigateToPlanSelection()"
                 style="margin-left: 0.5rem">
-                📋 Sélectionner un plan
-              </button>
-              <!-- Bouton de débogage temporaire -->
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm ml-2"
-                (click)="clearStoredPlans()"
-                style="margin-left: 0.5rem">
-                🧹 Nettoyer localStorage
+                Changer le plan
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Message d'information sur le chargement des plans -->
-        <div
-          class="info-message"
-          style="
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: #f0f9ff;
-            border-left: 4px solid #0ea5e9;
-            border-radius: 4px;
-          ">
-          <p>
-            <strong>ℹ️ Information :</strong>
-            <span *ngIf="!hasSelectedPlan()"
-              >Aucun plan sélectionné. Vous pouvez choisir un plan par défaut pour cette application
-              ci-dessous ou
+        <!-- Section pour ajouter un plan (affichée quand aucun plan n'est sélectionné) -->
+        <div class="no-plan-section" *ngIf="!hasSelectedPlan() && planCheckCompleted">
+          <div class="no-plan-card">
+            <div class="no-plan-content">
+              <div class="no-plan-icon">
+                <i class="pi pi-info-circle" style="font-size: 2rem; color: #6c757d"></i>
+              </div>
+              <div class="no-plan-info">
+                <h5>Aucun plan sélectionné</h5>
+                <p>
+                  Votre application n'a pas encore de plan associé. Sélectionnez un plan pour
+                  définir les fonctionnalités et la tarification.
+                </p>
+              </div>
+            </div>
+            <div class="no-plan-actions">
               <button
                 type="button"
-                class="btn btn-primary btn-sm"
-                (click)="autoSelectFirstPlan()"
-                style="margin-left: 0.5rem">
-                🎯 Auto-sélectionner le premier plan
+                class="btn btn-success btn-lg"
+                (click)="navigateToPlanSelection()"
+                style="margin-top: 1rem">
+                <i class="pi pi-plus" style="margin-right: 0.5rem"></i>
+                Ajouter un plan
               </button>
-            </span>
-            <span
-              *ngIf="
-                hasSelectedPlan() && !isChangingPlan && getCurrentSelectedPlan() as selectedPlan
-              "
-              >Cette application utilise le plan <strong>{{ selectedPlan.name }}</strong> ({{
-                selectedPlan.price | currency : selectedPlan.currency || 'EUR' : 'symbol' : '1.2-2'
-              }}/{{ getPlanCycleLabel(selectedPlan.billingCycle) }}). Utilisez le bouton "🔄 Changer
-              de plan" pour le modifier.</span
-            >
-            <span *ngIf="isChangingPlan"
-              >Sélectionnez un nouveau plan ci-dessous et confirmez votre choix.</span
-            >
-          </p>
-          <small>Plans disponibles: {{ plans.length || 0 }}</small>
+            </div>
+          </div>
         </div>
 
         <!-- Section de changement de plan (affichée seulement si pas de plan sélectionné ou en mode changement) -->
         <div *ngIf="!hasSelectedPlan() || isChangingPlan" class="plan-selection-section">
-          <h4 class="section-subtitle" *ngIf="isChangingPlan">Choisir un nouveau plan</h4>
-          <h4 class="section-subtitle" *ngIf="!hasSelectedPlan()">Choisir un plan par défaut</h4>
-
-          <div *ngIf="plans && plans.length > 0; else noPlansTemplate">
+          <div *ngIf="plans && plans.length > 0">
             <div class="plans-grid">
               <div
                 class="plan-card"
@@ -213,27 +187,6 @@
               </button>
             </div>
           </div>
-
-          <ng-template #noPlansTemplate>
-            <div
-              class="no-plans-message"
-              style="
-                text-align: center;
-                padding: 2rem;
-                background: #fef2f2;
-                border: 1px solid #fecaca;
-                border-radius: 8px;
-              ">
-              <h4>😔 Aucun plan disponible</h4>
-              <p>Il semble qu'aucun plan ne soit disponible pour le moment.</p>
-              <p>Vous pouvez :</p>
-              <ul style="text-align: left; display: inline-block">
-                <li>Créer un nouveau plan depuis la section Plans</li>
-                <li>Vérifier que le backend est bien connecté</li>
-                <li>Contacter l'administrateur</li>
-              </ul>
-            </div>
-          </ng-template>
         </div>
       </div>
 
