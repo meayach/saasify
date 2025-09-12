@@ -17,10 +17,11 @@ export class PlanSelectionComponent implements OnInit {
   loading = false;
   loadingPlans = false;
   error: string | null = null;
+  isAdmin = false;
   selectedBillingCycle = 'month';
   billingCycles = [
-    { value: 'month', label: 'Monthly' },
-    { value: 'year', label: 'Yearly' },
+    { value: 'month', label: 'Mensuel' },
+    { value: 'year', label: 'Annuel' },
   ];
   // Header user dropdown properties
   userName = 'Utilisateur';
@@ -80,6 +81,8 @@ export class PlanSelectionComponent implements OnInit {
               : profile.role === 'manager'
               ? 'Customer Manager'
               : profile.role || 'Customer User';
+          // flag used to display admin-only controls on public pages
+          this.isAdmin = profile.role === 'admin';
         }
       },
       error: (err) => {
@@ -112,6 +115,7 @@ export class PlanSelectionComponent implements OnInit {
                 : currentUser.role === 'manager'
                 ? 'Customer Manager'
                 : currentUser.role || currentUser.userRole || 'Customer User';
+            this.isAdmin = currentUser.role === 'admin';
           }
         } catch (e) {
           // ignore
@@ -265,7 +269,8 @@ export class PlanSelectionComponent implements OnInit {
   }
 
   formatPrice(plan: Plan): string {
-    return `€${plan.price.toFixed(2)}`;
+    const price = typeof plan.price === 'number' ? plan.price.toFixed(0) : '0';
+    return `$${price}`;
   }
 
   selectPlan(plan: Plan): void {
@@ -352,6 +357,75 @@ export class PlanSelectionComponent implements OnInit {
       this.notificationService.success(`Plan ${plan.name} sélectionné !`);
       // Ici vous pouvez ajouter la logique pour souscrire au plan
     }
+  }
+
+  onEditPlan(plan: Plan): void {
+    const planId = (plan as any)._id || (plan as any).id || (plan as any).planId;
+    if (!planId) {
+      this.logger.warn('onEditPlan: plan id missing', plan);
+      return;
+    }
+    this.router.navigate(['/subscriptions', 'plans', 'edit', planId]);
+  }
+
+  isRecommended(plan: Plan): boolean {
+    const p = plan as any;
+    if (p.isRecommended || p.recommended || p.isPopular) return true;
+    const name = (p.name || '').toString().toLowerCase();
+    const displayName = this.displayPlanName(plan).toString().toLowerCase();
+
+    // Make ChatGPT-like 'Plus' plan show as popular
+    if (name.includes('plus') || displayName.includes('plus')) return true;
+
+    // Fallback: originally we highlighted growth plans
+    return name.includes('growth');
+  }
+
+  displayPlanName(plan: Plan): string {
+    const name = ((plan as any).name || '').toString();
+    // Remove leading 'Plan ' or 'plan ' if present
+    const base = name.replace(/^\s*plan\s+/i, '').trim();
+    const lower = base.toLowerCase();
+    // Map known English names to French equivalents
+    if (lower.startsWith('starter')) return 'Basique';
+    if (lower.includes('growth')) return 'Croissance';
+    if (lower.includes('enterprise') || lower.includes('entreprise')) return 'Entreprise';
+    // Default: capitalize first letter
+    return base.charAt(0).toUpperCase() + base.slice(1);
+  }
+
+  // Return true for plan names that should be displayed larger (38px)
+  isLargeName(plan: Plan): boolean {
+    const dn = this.displayPlanName(plan).toString().toLowerCase();
+    return (
+      dn.includes('essentiel') ||
+      dn.includes('plus') ||
+      dn.includes('pro') ||
+      dn.includes('business')
+    );
+  }
+
+  isFeatured(plan: Plan): boolean {
+    const p = plan as any;
+    const nameRaw = (p.name || '').toString();
+    const name = nameRaw.toLowerCase();
+    const displayName = this.displayPlanName(plan).toString().toLowerCase();
+    const interval = (p.interval || '').toString().toLowerCase();
+
+    // Explicit flags from the API take priority
+    if (p.featured || p.isFeatured) return true;
+
+    // Center any plan explicitly named or mapped to 'business'
+    if (name.includes('business') || displayName.includes('business')) return true;
+
+    // Fallback: make 'growth' annual the featured card (legacy behavior)
+    if (
+      name.includes('growth') &&
+      (interval === 'year' || interval === 'annual' || p.interval === 'year')
+    )
+      return true;
+
+    return false;
   }
 
   debugAlert(message: string): void {

@@ -85,12 +85,12 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
 
   refreshData() {
     console.log('🔄 Rafraîchissement des données...');
-    
+
     // Sauvegarder les logos actuels avant de vider le tableau
     const logoCache: { [key: string]: string } = {};
     if (this.applications && this.applications.length > 0) {
       console.log('💾 Sauvegarde des logos avant refresh...');
-      this.applications.forEach(app => {
+      this.applications.forEach((app) => {
         const idKey = app._id || (app as any).id;
         if (idKey && app.logoUrl) {
           logoCache[idKey] = app.logoUrl;
@@ -100,7 +100,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
         }
       });
     }
-    
+
     // Vider le tableau pour forcer la mise à jour visuelle
     this.applications = [];
     this.cdr.detectChanges();
@@ -335,13 +335,13 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
           }
           if ((config as any).logoPath) {
             app.logoUrl = this.backendBase() + (config as any).logoPath;
-            
+
             // Stocker le logo dans localStorage pour éviter de le perdre lors des refresh
             const idKey = app._id || (app as any).id;
             if (idKey && app.logoUrl) {
               localStorage.setItem(`appLogo:${idKey}`, app.logoUrl);
             }
-            
+
             // force change detection
             this.applications = [...this.applications];
             this.cdr.detectChanges();

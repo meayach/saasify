@@ -128,8 +128,8 @@
 
   <!-- Header -->
   <div class="plan-header">
-    <h1 class="plan-title">Choose Your Plan</h1>
-    <p class="plan-subtitle">Select the plan that best fits your needs</p>
+    <h1 class="plan-title">Choisissez votre offre</h1>
+    <p class="plan-subtitle">Sélectionnez l'offre qui correspond le mieux à vos besoins</p>
   </div>
 
   <!-- Billing Cycle Toggle -->
@@ -141,7 +141,7 @@
         [class.active]="selectedBillingCycle === cycle.value"
         class="toggle-button">
         {{ cycle.label }}
-        <span *ngIf="cycle.value === 'YEARLY'" class="discount-badge">Save 20%</span>
+        <span *ngIf="cycle.value === 'year'" class="discount-badge">Économisez 20%</span>
       </button>
     </div>
   </div>
@@ -149,40 +149,73 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading-spinner"></div>
-    <p>Loading available plans...</p>
+    <p>Chargement des offres...</p>
   </div>
 
   <!-- Error State -->
   <div *ngIf="error" class="error-container">
     <div class="error-icon">⚠️</div>
     <p class="error-message">{{ error }}</p>
-    <button (click)="loadPlans()" class="retry-button">Try Again</button>
+    <button (click)="loadPlans()" class="retry-button">Réessayer</button>
   </div>
 
   <!-- Plans Grid -->
   <div *ngIf="!loading && !error" class="plans-grid">
-    <div *ngFor="let plan of getFilteredPlans()" class="plan-card">
+    <div
+      *ngFor="let plan of getFilteredPlans()"
+      class="plan-card"
+      [class.featured]="isFeatured(plan)">
+      <!-- Admin edit (pencil) placed top-right for easy access -->
+      <button
+        *ngIf="isAdmin"
+        class="edit-plan-button"
+        (click)="onEditPlan(plan)"
+        aria-label="Modifier le plan">
+        <svg
+          class="icon-pencil"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" />
+        </svg>
+      </button>
       <!-- Plan Header -->
       <div class="plan-card-header">
-        <h3 class="plan-name">{{ plan.name }}</h3>
+        <div class="plan-name-row">
+          <h3 class="plan-name" [class.plan-name-large]="isLargeName(plan)">
+            {{ displayPlanName(plan) }}
+          </h3>
+          <div *ngIf="isRecommended(plan)" class="popular-badge">POPULAIRE</div>
+        </div>
         <p class="plan-description">{{ plan.description }}</p>
 
         <div class="plan-pricing">
           <div class="price-container">
-            <span class="price">{{ formatPrice(plan) }}</span>
-            <span class="billing-period">/ {{ plan.interval.toLowerCase() }}</span>
+            <span class="price"
+              ><span class="currency">$</span
+              >{{ plan.price ? (plan.price | number : '1.0-0') : '0' }}</span
+            >
+            <span class="billing-period"
+              >/
+              {{
+                plan.interval
+                  ? plan.interval.toLowerCase() === 'month'
+                    ? 'mois'
+                    : plan.interval.toLowerCase()
+                  : ''
+              }}</span
+            >
           </div>
         </div>
       </div>
 
       <!-- Plan Features -->
       <div class="plan-features">
-        <h4 class="features-title">What's included:</h4>
-
-        <!-- Plan Features from BillingService -->
         <ul class="features-list" *ngIf="getPlanFeatures(plan).length > 0">
           <li *ngFor="let feature of getPlanFeatures(plan)" class="feature-item">
-            <span class="feature-icon">✓</span>
+            <span class="feature-icon">◦</span>
             <span>{{ feature }}</span>
           </li>
         </ul>
@@ -190,21 +223,18 @@
 
       <!-- Plan Footer -->
       <div class="plan-card-footer">
-        <button
-          (click)="selectPlan(plan)"
-          class="select-plan-button"
-          [attr.data-plan-name]="plan.name"
-          style="
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-          ">
-          Choose {{ plan.name }}
-        </button>
-        <p class="plan-note">14-day free trial included</p>
+        <div class="cta-row">
+          <button
+            (click)="selectPlan(plan)"
+            class="btn relative btn-purple btn-large w-full font-semibold"
+            [attr.data-plan-name]="displayPlanName(plan)"
+            data-testid="select-plan-button-plus-upgrade"
+            style="width: 256px; height: 44px">
+            <div class="flex items-center justify-center">Choisir {{ displayPlanName(plan) }}</div>
+          </button>
+        </div>
+
+        <p class="plan-note">14 jours d'essai inclus</p>
       </div>
     </div>
   </div>
@@ -213,43 +243,46 @@
   <div *ngIf="!loading && !error && getFilteredPlans().length === 0" class="no-plans-container">
     <div class="no-plans-content">
       <div class="empty-icon">📦</div>
-      <h2>No Plans Available</h2>
-      <p>No plans are available for the selected billing cycle.</p>
-      <button (click)="loadPlans()" class="retry-button">Refresh</button>
+      <h2>Aucune offre disponible</h2>
+      <p>Aucune offre n'est disponible pour le cycle de facturation sélectionné.</p>
+      <button (click)="loadPlans()" class="retry-button">Actualiser</button>
     </div>
   </div>
 
   <!-- FAQ Section -->
   <div class="faq-section">
-    <h2 class="faq-title">Frequently Asked Questions</h2>
+    <h2 class="faq-title">Questions fréquentes</h2>
 
     <div class="faq-grid">
       <div class="faq-item">
-        <h3>Can I change my plan later?</h3>
+        <h3>Puis-je changer d'offre plus tard ?</h3>
         <p>
-          Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your
-          next billing cycle.
+          Oui, vous pouvez passer à une offre supérieure ou inférieure à tout moment. Les
+          modifications seront prises en compte lors du prochain cycle de facturation.
         </p>
       </div>
 
       <div class="faq-item">
-        <h3>What payment methods do you accept?</h3>
-        <p>We accept all major credit cards, PayPal, and bank transfers for annual plans.</p>
-      </div>
-
-      <div class="faq-item">
-        <h3>Can I cancel anytime?</h3>
+        <h3>Quels moyens de paiement acceptez-vous ?</h3>
         <p>
-          Yes, you can cancel your subscription at any time. You'll continue to have access until
-          the end of your current billing period.
+          Nous acceptons les principales cartes bancaires, PayPal et les virements bancaires (pour
+          les offres annuelles).
         </p>
       </div>
 
       <div class="faq-item">
-        <h3>Is there a free trial?</h3>
+        <h3>Puis-je résilier à tout moment ?</h3>
         <p>
-          Yes, all paid plans come with a 14-day free trial. No credit card required for the free
-          plan.
+          Oui, vous pouvez résilier votre abonnement à tout moment. Vous conserverez l'accès jusqu'à
+          la fin de votre période de facturation en cours.
+        </p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Y a-t-il un essai gratuit ?</h3>
+        <p>
+          Oui, tous les plans payants bénéficient d'un essai gratuit de 14 jours. Le plan gratuit ne
+          nécessite pas de carte bancaire.
         </p>
       </div>
     </div>

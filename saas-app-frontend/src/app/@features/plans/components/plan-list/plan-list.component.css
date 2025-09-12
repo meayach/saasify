@@ -169,7 +169,7 @@
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -295,6 +295,24 @@
   justify-content: center;
   width: 36px;
   height: 36px;
+}
+
+/* Ensure action buttons have a visible currentColor for inline SVG icons */
+.btn-action {
+  color: #374151; /* neutral dark for icons */
+}
+
+/* Inline SVG icon styling */
+.icon-pencil {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  display: block;
+}
+
+/* Slightly enlarge on hover like the icon font would */
+.btn-action.btn-edit:hover .icon-pencil {
+  color: #3b82f6;
 }
 
 .btn-edit:hover {

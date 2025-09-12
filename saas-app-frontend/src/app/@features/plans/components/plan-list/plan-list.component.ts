@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 interface Plan {
   id: string;
+  _id?: string;
   name: string;
   description: string;
   price: number;
@@ -121,7 +122,9 @@ export class PlanListComponent implements OnInit {
   }
 
   onEditPlan(plan: Plan): void {
-    this.router.navigate(['/subscriptions', 'plans', 'edit', plan.id]);
+    // some plans come from API with `_id` while others use `id` (mock data).
+    const planId = (plan as any)._id || plan.id;
+    this.router.navigate(['/subscriptions', 'plans', 'edit', planId]);
   }
 
   onToggleStatus(plan: Plan): void {
