@@ -26,6 +26,7 @@ export class DashboardSubscriptionController {
     try {
       // Récupérer toutes les statistiques d'abonnements
       const stats = await this.subscriptionService.getSubscriptionStats();
+      console.log('DEBUG /dashboard-subscriptions/stats ->', stats);
 
       return {
         statusCode: HttpStatus.OK,

@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SaasPlan } from '../../data/models/saasPlan/saas-plan.model';
@@ -47,16 +48,41 @@ export class SaasPlanService {
   }
 
   async findOne(id: string): Promise<SaasPlanResponseDto> {
-    const plan = await this.planModel
-      .findById(id)
-      .populate('currencyId', 'code symbol name')
-      .exec();
+    // Try model lookup first
+    try {
+      const plan = await this.planModel
+        .findById(id)
+        .populate('currencyId', 'code symbol name')
+        .exec();
 
-    if (!plan) {
-      throw new NotFoundException(`Plan with ID ${id} not found`);
+      if (plan) return this.mapToResponseDto(plan);
+    } catch (err) {
+      // continue to raw lookup
     }
 
-    return this.mapToResponseDto(plan);
+    // Fallback: read directly from raw 'plans' collection
+    try {
+      const conn = this.planModel.db;
+
+      let raw = null;
+      try {
+        raw = await conn.collection('plans').findOne({ _id: new ObjectId(id) });
+      } catch (err) {
+        console.warn('[SaasPlanService] ObjectId lookup failed for id=', id, err?.message || err);
+      }
+
+      if (!raw) {
+        raw = await conn.collection('plans').findOne({ _id: id });
+      }
+
+      if (!raw) {
+        throw new NotFoundException(`Plan with ID ${id} not found`);
+      }
+
+      return this.mapToResponseDto(raw);
+    } catch (err) {
+      throw new NotFoundException(`Plan with ID ${id} not found`);
+    }
   }
 
   async findByApplication(applicationId: string): Promise<SaasPlanResponseDto[]> {
