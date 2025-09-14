@@ -21,7 +21,7 @@ import { DashboardStatsService, DashboardMetrics } from '../../services/dashboar
   styleUrls: ['./dashboard.component.css'],
 })
 export class DashboardComponent implements OnInit {
-  userRole = 'Customer Admin';
+  userRole = 'Admin';
   userName = '';
   userEmail = '';
   isDropdownOpen = false;
@@ -137,7 +137,7 @@ export class DashboardComponent implements OnInit {
     activeApplications: 3,
     totalUsers: 20,
     monthlyRevenue: 2847,
-    conversionRate: 3.8,
+    annualRevenue: 2847 * 12,
   };
 
   // Données pour les statistiques (seront mises à jour dynamiquement)
@@ -229,7 +229,7 @@ export class DashboardComponent implements OnInit {
       this.userEmail = user.email || '';
       this.userRole =
         user.role === 'admin'
-          ? 'Customer Admin'
+          ? 'Admin'
           : user.role === 'manager'
           ? 'Customer Manager'
           : 'Customer User';
@@ -948,8 +948,8 @@ Détails par Plan:
             icon: 'pi pi-euro',
           },
           {
-            title: 'Taux de Conversion',
-            value: this.dashboardStatsService.formatPercentage(metrics.conversionRate),
+            title: 'Revenus Annuels',
+            value: this.dashboardStatsService.formatCurrency(metrics.annualRevenue),
             icon: 'pi pi-chart-line',
           },
         ];

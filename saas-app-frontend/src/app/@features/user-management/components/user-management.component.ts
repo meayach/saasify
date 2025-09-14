@@ -86,7 +86,7 @@ export class UserManagementComponent implements OnInit {
           // Map role like in dashboard component
           this.userRole =
             profile.role === 'admin'
-              ? 'Administrateur'
+              ? 'Admin'
               : profile.role === 'customer'
               ? 'Client'
               : profile.role === 'manager'

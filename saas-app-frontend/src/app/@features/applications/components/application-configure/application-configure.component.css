@@ -1,7 +1,8 @@
 .application-configure-container {
-  max-width: 1000px;
+  /* Match dashboard sizing for consistent header width */
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
   background: #f8fafc;
   min-height: 100vh;
 }

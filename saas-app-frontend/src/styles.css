@@ -2,3 +2,338 @@
 
 /* PrimeIcons */
 @import 'primeicons/primeicons.css';
+
+/* Dark Mode Global Styles */
+body.dark-mode {
+  background: #1b1924;
+  transition: background-color 0.3s ease;
+}
+
+/* Dashboard specific dark mode styles - only backgrounds, keep original text colors */
+body.dark-mode .dashboard-container,
+body.dark-mode .stat-card,
+body.dark-mode .actions-grid .action-btn,
+body.dark-mode .activities-list,
+body.dark-mode .status-items,
+body.dark-mode .dropdown-menu {
+  background: #1b1924 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Stat cards in dark mode */
+body.dark-mode .stat-card {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .stat-icon {
+  background: linear-gradient(135deg, #4a4a6a 0%, #5a5a7a 100%) !important;
+}
+
+/* Action buttons in dark mode */
+body.dark-mode .action-btn {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .action-btn:hover {
+  background: #3d3a4e !important;
+  transform: translateY(-2px);
+}
+
+/* Activities list in dark mode */
+body.dark-mode .activities-list {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .activity-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Input fields in dark mode */
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Override sticky header background in dark mode */
+body.dark-mode [style*='background: white'] {
+  background: #1b1924 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Specific overrides for settings sections */
+body.dark-mode .settings-section [style*='background: white'] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .settings-section input,
+body.dark-mode .settings-section select,
+body.dark-mode .settings-section textarea {
+  background: #0b1220 !important;
+  color: #e6eef8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .settings-section h2,
+body.dark-mode .settings-section h3,
+body.dark-mode .settings-section h4,
+body.dark-mode .settings-section label,
+body.dark-mode .settings-section span {
+  color: #e6eef8 !important;
+}
+
+/* Force override for any div with inline white background in settings */
+body.dark-mode .settings-section div[style] {
+  background: #0f1724 !important;
+  color: #e6eef8 !important;
+}
+
+/* Override all inline styles in settings sections during dark mode */
+body.dark-mode .settings-section * {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode .settings-section div {
+  background: transparent !important;
+}
+
+/* Extra specific targeting for Angular generated content */
+body.dark-mode [_ngcontent-uvs-c62] {
+  background: #0f1724 !important;
+  color: #e6eef8 !important;
+}
+
+body.dark-mode [_ngcontent-uvs-c62] * {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode [_ngcontent-flb-c62] {
+  background: #0f1724 !important;
+  color: #e6eef8 !important;
+}
+
+body.dark-mode [_ngcontent-flb-c62] * {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode [_ngcontent-vtv-c62] {
+  background: #0f1724 !important;
+  color: #e6eef8 !important;
+}
+
+body.dark-mode [_ngcontent-vtv-c62] * {
+  color: #e6eef8 !important;
+}
+
+/* Target specific containers in settings */
+body.dark-mode div[style*='background: white'][style*='padding: 24px'] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Target specific colored backgrounds in settings sections */
+body.dark-mode div[style*='background: #f0fff4'] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(72, 187, 120, 0.3) !important;
+  border-left: 4px solid #48bb78 !important;
+}
+
+body.dark-mode div[style*='background: #fffaf0'] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(237, 137, 54, 0.3) !important;
+  border-left: 4px solid #ed8936 !important;
+}
+
+/* Dark mode styling for floating toggle */
+/* Ensure the floating toggle container remains transparent in dark mode
+   (we only want the switch/slider visible). */
+body.dark-mode .floating-dark-mode-toggle {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Text colors for dark mode - maintaining same contrast ratio 12.63 */
+body.dark-mode {
+  color: #e2e8f0 !important; /* Default light text for readability */
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #f8fafc !important; /* Light text for headers */
+}
+
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode div {
+  color: #e2e8f0 !important; /* Light text for content */
+}
+
+body.dark-mode .stat-content h3 {
+  color: #f8fafc !important; /* Light text for main stats */
+}
+
+body.dark-mode .stat-content p {
+  color: #c2c7ca !important; /* Subtitle color for stat descriptions */
+}
+
+/* Secondary text elements in #C2C7CA */
+body.dark-mode .item-description,
+body.dark-mode .dashboard-header p,
+body.dark-mode small,
+body.dark-mode .text-secondary,
+body.dark-mode .subtitle,
+body.dark-mode .description {
+  color: #c2c7ca !important; /* Subtitle/secondary text color */
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+  color: #f8fafc !important; /* Light text for inputs */
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #c2c7ca !important; /* Subtitle color for placeholders */
+}
+
+/* Applications page dark mode styles */
+body.dark-mode .application-list-container {
+  background: #1b1924 !important;
+}
+
+/* Header styles for applications page */
+body.dark-mode .application-list-container > div[style*='background: white'] {
+  background: #1b1924 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Application cards and containers */
+body.dark-mode .application-card,
+body.dark-mode .app-card,
+body.dark-mode .application-item {
+  background: #2d2a3e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Dropdown menus in applications page */
+body.dark-mode div[style*='background: white'][style*='position: absolute'] {
+  background: #2d2a3e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Login/User dropdown dark mode styles */
+body.dark-mode div[style*="background: white"][style*="border-radius: 12px"][style*="position: absolute"] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] div[style*="color: #1a202c"] {
+  color: #f8fafc !important;
+}
+
+body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] div[style*="color: #64748b"] {
+  color: #c2c7ca !important;
+}
+
+body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] a[style*="color: #374151"] {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] a[style*="color: #ef4444"] {
+  color: #ff6b6b !important;
+}
+
+/* Dropdown borders and dividers in dark mode */
+body.dark-mode div[style*="border-bottom: 1px solid #f1f5f9"] {
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+body.dark-mode div[style*="border-top: 1px solid #f1f5f9"] {
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Override hover effects for dropdown items */
+body.dark-mode a[onmouseover*="backgroundColor='#f8fafc'"] {
+  transition: background-color 0.2s !important;
+}
+
+body.dark-mode a[onmouseover*="backgroundColor='#fef2f2'"] {
+  transition: background-color 0.2s !important;
+}
+
+/* Text colors for applications page */
+body.dark-mode .application-list-container h1,
+body.dark-mode .application-list-container h2,
+body.dark-mode .application-list-container h3,
+body.dark-mode .application-card h3,
+body.dark-mode .application-card h4 {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .application-list-container p,
+body.dark-mode .application-card p,
+body.dark-mode .application-description {
+  color: #c2c7ca !important;
+}
+
+/* Subscriptions page cards */
+body.dark-mode .no-subscription-card,
+body.dark-mode .action-card {
+  background: #2d2a3e !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode .no-subscription-card .no-subscription-content h2,
+body.dark-mode .action-card h4 {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .no-subscription-card .no-subscription-content p,
+body.dark-mode .action-card p {
+  color: #c2c7ca !important;
+}
+
+/* Stronger overrides: make inner elements of subscription cards dark in dark mode */
+body.dark-mode .no-subscription-card,
+body.dark-mode .no-subscription-card *,
+body.dark-mode .no-subscription-card .plan-quick-card,
+body.dark-mode .no-subscription-card .plan-quick-card *,
+body.dark-mode .action-card,
+body.dark-mode .action-card * {
+  background: transparent !important;
+  color: inherit !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: none !important;
+}
+
+/* Specifically style quick plan cards inside no-subscription-card */
+body.dark-mode .no-subscription-card .plan-quick-card {
+  background: #2d2a3e !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode .no-subscription-card .plan-quick-card h4,
+body.dark-mode .no-subscription-card .plan-quick-card .plan-description,
+body.dark-mode .action-card h4,
+body.dark-mode .action-card p {
+  color: #f8fafc !important;
+}

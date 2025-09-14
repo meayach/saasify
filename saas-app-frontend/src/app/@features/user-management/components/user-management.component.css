@@ -11,6 +11,132 @@
   min-height: 100vh;
 }
 
+/* Header sticky styles */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 24px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-link {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.logo-img {
+  height: 40px;
+}
+
+.user-dropdown-container {
+  position: relative;
+}
+
+.user-dropdown-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+}
+
+.user-dropdown-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.user-avatar-text {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-name {
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.user-role {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.dropdown-arrow {
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  min-width: 200px;
+  margin-top: 8px;
+  z-index: 1000;
+  border: 1px solid #e2e8f0;
+}
+
+.dropdown-user-info {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dropdown-user-name {
+  font-weight: 600;
+  color: #1a202c;
+  font-size: 14px;
+}
+
+.dropdown-user-email {
+  color: #64748b;
+  font-size: 12px;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -551,4 +677,287 @@
     max-width: none;
     width: calc(100% - 20px);
   }
+}
+
+/* Dark Mode Styles */
+:host-context(body.dark-mode) .user-management-container {
+  background: #1b1924 !important;
+  color: #f8fafc;
+}
+
+/* Header styles in dark mode */
+:host-context(body.dark-mode) .sticky-header {
+  background: #1b1924 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .dropdown-menu {
+  background: #2d2a3e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .dropdown-user-info {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .dropdown-user-name {
+  color: #f8fafc !important;
+}
+
+:host-context(body.dark-mode) .dropdown-user-email {
+  color: #c2c7ca !important;
+}
+
+/* Header section dark mode */
+:host-context(body.dark-mode) .header-section {
+  background: #1b1924 !important;
+}
+
+:host-context(body.dark-mode) .header-section h1 {
+  color: #f8fafc !important;
+}
+
+:host-context(body.dark-mode) .subtitle {
+  color: #c2c7ca !important;
+}
+
+/* Tables dark mode */
+:host-context(body.dark-mode) .users-table-container {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(body.dark-mode) .users-table {
+  background: #2d2a3e !important;
+}
+
+:host-context(body.dark-mode) .users-table th {
+  background: #1b1924 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .users-table td {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .users-table tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(body.dark-mode) .users-table tr:hover td {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(body.dark-mode) .user-table {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* User info elements in table dark mode */
+:host-context(body.dark-mode) .user-info {
+  color: #f8fafc !important;
+}
+
+:host-context(body.dark-mode) .user-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+:host-context(body.dark-mode) .user-name {
+  color: #f8fafc !important;
+}
+
+:host-context(body.dark-mode) .user-id {
+  color: #c2c7ca !important;
+}
+
+:host-context(body.dark-mode) .user-details {
+  color: #f8fafc !important;
+}
+
+/* Role badges dark mode */
+:host-context(body.dark-mode) .role-badge {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .role-admin {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+:host-context(body.dark-mode) .role-user {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+:host-context(body.dark-mode) .role-moderator {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #4ade80 !important;
+  border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+/* Action buttons in table dark mode */
+:host-context(body.dark-mode) .actions-menu {
+  background: transparent !important;
+}
+
+:host-context(body.dark-mode) .action-btn {
+  background: #3d3a4e !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .action-btn:hover {
+  background: #4d4a5e !important;
+}
+
+:host-context(body.dark-mode) .edit-btn:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+}
+
+:host-context(body.dark-mode) .deactivate-btn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+}
+
+:host-context(body.dark-mode) .activate-btn:hover {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #4ade80 !important;
+}
+
+:host-context(body.dark-mode) .reset-btn:hover {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+}
+
+:host-context(body.dark-mode) .user-table thead th {
+  background: #1b1924 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .user-table tbody td {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .user-table tbody tr:nth-child(even) td {
+  background: #252233 !important;
+}
+
+:host-context(body.dark-mode) .user-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* PrimeNG Table dark mode */
+:host-context(body.dark-mode) .p-datatable .p-datatable-table {
+  background: #2d2a3e !important;
+}
+
+:host-context(body.dark-mode) .p-datatable .p-datatable-thead th {
+  background: #1b1924 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .p-datatable .p-datatable-tbody td {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .p-datatable .p-datatable-tbody tr:nth-child(even) td {
+  background: #252233 !important;
+}
+
+:host-context(body.dark-mode) .p-datatable .p-datatable-tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Action buttons dark mode */
+:host-context(body.dark-mode) .btn,
+:host-context(body.dark-mode) .action-button {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .btn:hover,
+:host-context(body.dark-mode) .action-button:hover {
+  background: #3d3a4e !important;
+}
+
+:host-context(body.dark-mode) .btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Forms and inputs dark mode */
+:host-context(body.dark-mode) .search-bar input,
+:host-context(body.dark-mode) .p-inputtext,
+:host-context(body.dark-mode) .p-dropdown,
+:host-context(body.dark-mode) .p-multiselect {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+:host-context(body.dark-mode) .search-bar input::placeholder,
+:host-context(body.dark-mode) .p-inputtext::placeholder {
+  color: #c2c7ca !important;
+}
+
+/* Filter section dark mode */
+:host-context(body.dark-mode) .filters {
+  background: transparent !important;
+}
+
+:host-context(body.dark-mode) .filter-dropdown {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+}
+
+/* Status badges dark mode */
+:host-context(body.dark-mode) .status-badge {
+  background: #2d2a3e !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(body.dark-mode) .status-active {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #22c55e !important;
+  border-color: rgba(34, 197, 94, 0.2) !important;
+}
+
+:host-context(body.dark-mode) .status-inactive {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Loading spinner dark mode */
+:host-context(body.dark-mode) .loading-container {
+  background: #1b1924 !important;
+  color: #f8fafc !important;
+}
+
+/* Cards dark mode */
+:host-context(body.dark-mode) .user-card,
+:host-context(body.dark-mode) .info-card {
+  background: #2d2a3e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }

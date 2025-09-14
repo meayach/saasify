@@ -1,18 +1,10 @@
 <div class="application-list-container">
   <!-- Global header (logo + user dropdown), copied from dashboard -->
-  <div
-    style="
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 16px 24px;
-    ">
-    <div style="display: flex; justify-content: space-between; align-items: center">
-      <div style="display: flex; align-items: center; gap: 16px">
-        <a (click)="router.navigate(['/dashboard'])" style="display: inline-block; cursor: pointer">
-          <img src="assets/logo-saasify.svg" alt="Saasify Logo" style="height: 40px" />
+  <div class="sticky-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <a (click)="router.navigate(['/dashboard'])" class="logo-link">
+          <img src="assets/logo-saasify.svg" alt="Saasify Logo" class="logo-img" />
         </a>
       </div>
       <div style="position: relative">
@@ -128,8 +120,8 @@
 
   <!-- Statistiques -->
   <!-- Page title -->
-  <div style="padding: 20px 24px; background: #ffffff; border-bottom: 1px solid #eef2f7">
-    <h2 style="margin: 0; color: #2d3748">Gestion des Applications</h2>
+  <div class="page-title-container">
+    <h2 class="page-title">Gestion des Applications</h2>
   </div>
 
   <div class="stats-row">

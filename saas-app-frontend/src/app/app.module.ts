@@ -33,6 +33,10 @@ import { LoginModule } from './@shared/login/login.module';
 import { DashboardModule } from './@shared/dashboard/dashboard.module';
 import { SharedModule } from './@shared/shared.module';
 
+// Theme
+import { ThemeService } from './@core/services/theme.service';
+import { ThemeToggleComponent } from './@shared/components/theme-toggle/theme-toggle.component';
+
 // Store
 import { appReducers } from './@store/app.reducer';
 import { AppEffects } from './@store/app.effects';
@@ -56,7 +60,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
 }
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, ThemeToggleComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -96,6 +100,7 @@ function initializeKeycloak(keycloak: KeycloakService) {
   ],
   providers: [
     MessageService,
+    ThemeService,
     {
       provide: 'APP_INIT',
       useFactory: initializeKeycloak,

@@ -82,13 +82,13 @@
 }
 
 .stat-card {
-  background: white;
+  background: linear-gradient(180deg, #f7f6ff, #faf9ff);
   border-radius: 12px;
-  padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
 .stat-icon {
@@ -148,6 +148,16 @@
   position: relative;
   transition: all 0.2s;
   border: 2px solid transparent;
+}
+
+/* Annual billing variant: apply gradient only when billingCycle === 'yearly' */
+.plan-card.annual {
+  background: linear-gradient(180deg, #f7f6ff, #faf9ff);
+}
+
+/* Business style: apply the same gradient to named plans (Business / Essentiel / Pro / Plus) */
+.plan-card.business-style {
+  background: linear-gradient(180deg, #f7f6ff, #faf9ff);
 }
 
 .plan-card:hover {
@@ -397,4 +407,199 @@
   .plan-actions {
     flex-wrap: wrap;
   }
+}
+
+/* Dark Mode Styles */
+:host-context(body.dark-mode) .plans-container {
+  background: transparent;
+  color: #e6eef8;
+}
+
+:host-context(body.dark-mode) .breadcrumb-item {
+  color: #60a5fa;
+}
+
+:host-context(body.dark-mode) .breadcrumb-item:hover {
+  color: #3b82f6;
+}
+
+:host-context(body.dark-mode) .breadcrumb-separator {
+  color: #64748b;
+}
+
+:host-context(body.dark-mode) .breadcrumb-current {
+  color: #94a3b8;
+}
+
+:host-context(body.dark-mode) .header-info h1 {
+  color: #f8fafc;
+}
+
+:host-context(body.dark-mode) .subtitle {
+  color: #c2c7ca;
+}
+
+:host-context(body.dark-mode) .btn-primary {
+  background: #2563eb;
+}
+
+:host-context(body.dark-mode) .btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Statistics Cards */
+:host-context(body.dark-mode) .stat-card {
+  background: #0f1724;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(body.dark-mode) .stat-card.annual,
+:host-context(body.dark-mode) .stat-card.business-style {
+  background: linear-gradient(180deg, #0f1724, #1a1d29);
+}
+
+:host-context(body.dark-mode) .stat-icon {
+  background: rgba(100, 116, 139, 0.1);
+  color: #94a3b8;
+}
+
+:host-context(body.dark-mode) .stat-icon.active {
+  background: rgba(5, 150, 105, 0.1);
+  color: #10b981;
+}
+
+:host-context(body.dark-mode) .stat-icon.subscriptions {
+  background: rgba(2, 132, 199, 0.1);
+  color: #0ea5e9;
+}
+
+:host-context(body.dark-mode) .stat-icon.revenue {
+  background: rgba(217, 119, 6, 0.1);
+  color: #f59e0b;
+}
+
+:host-context(body.dark-mode) .stat-number {
+  color: #f8fafc;
+}
+
+:host-context(body.dark-mode) .stat-label {
+  color: #c2c7ca;
+}
+
+/* Plan Cards */
+:host-context(body.dark-mode) .plan-card {
+  background: #0f1724;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(body.dark-mode) .plan-card.annual,
+:host-context(body.dark-mode) .plan-card.business-style {
+  background: linear-gradient(180deg, #0f1724, #1a1d29);
+}
+
+:host-context(body.dark-mode) .plan-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+:host-context(body.dark-mode) .plan-card.popular {
+  border-color: #f59e0b;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+}
+
+:host-context(body.dark-mode) .plan-name {
+  color: #f8fafc;
+}
+
+:host-context(body.dark-mode) .plan-price {
+  color: #60a5fa;
+}
+
+:host-context(body.dark-mode) .plan-description {
+  color: #c2c7ca;
+}
+
+:host-context(body.dark-mode) .feature-item {
+  color: #e6eef8;
+}
+
+:host-context(body.dark-mode) .feature-item i {
+  color: #10b981;
+}
+
+:host-context(body.dark-mode) .plan-limits {
+  background: rgba(15, 23, 36, 0.5);
+  border-color: rgba(255,255,255,0.06);
+}
+
+:host-context(body.dark-mode) .limit-label {
+  color: #c2c7ca;
+}
+
+:host-context(body.dark-mode) .limit-value {
+  color: #f8fafc;
+}
+
+:host-context(body.dark-mode) .status-active {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+:host-context(body.dark-mode) .status-inactive {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+:host-context(body.dark-mode) .plan-date {
+  color: #64748b;
+}
+
+:host-context(body.dark-mode) .plan-actions {
+  border-color: rgba(255,255,255,0.06);
+}
+
+:host-context(body.dark-mode) .btn-action {
+  background: rgba(15, 23, 36, 0.8);
+  border-color: rgba(255,255,255,0.06);
+  color: #e6eef8;
+}
+
+:host-context(body.dark-mode) .btn-edit:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+:host-context(body.dark-mode) .btn-toggle:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+:host-context(body.dark-mode) .btn-toggle.active {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+:host-context(body.dark-mode) .btn-subscribers:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+:host-context(body.dark-mode) .btn-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+:host-context(body.dark-mode) .loading-container,
+:host-context(body.dark-mode) .empty-state {
+  color: #c2c7ca;
+}
+
+:host-context(body.dark-mode) .empty-state h3 {
+  color: #f8fafc;
 }

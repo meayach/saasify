@@ -129,7 +129,6 @@
   <!-- Header -->
   <div class="plan-header">
     <h1 class="plan-title">Choisissez votre offre</h1>
-    <p class="plan-subtitle">Sélectionnez l'offre qui correspond le mieux à vos besoins</p>
   </div>
 
   <!-- Billing Cycle Toggle -->
@@ -164,7 +163,8 @@
     <div
       *ngFor="let plan of getFilteredPlans()"
       class="plan-card"
-      [class.featured]="isFeatured(plan)">
+      [class.featured]="isFeatured(plan)"
+      [class.business-style]="isBusinessLike(plan)">
       <!-- Admin edit (pencil) placed top-right for easy access -->
       <button
         *ngIf="isAdmin"
@@ -249,42 +249,5 @@
     </div>
   </div>
 
-  <!-- FAQ Section -->
-  <div class="faq-section">
-    <h2 class="faq-title">Questions fréquentes</h2>
-
-    <div class="faq-grid">
-      <div class="faq-item">
-        <h3>Puis-je changer d'offre plus tard ?</h3>
-        <p>
-          Oui, vous pouvez passer à une offre supérieure ou inférieure à tout moment. Les
-          modifications seront prises en compte lors du prochain cycle de facturation.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>Quels moyens de paiement acceptez-vous ?</h3>
-        <p>
-          Nous acceptons les principales cartes bancaires, PayPal et les virements bancaires (pour
-          les offres annuelles).
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>Puis-je résilier à tout moment ?</h3>
-        <p>
-          Oui, vous pouvez résilier votre abonnement à tout moment. Vous conserverez l'accès jusqu'à
-          la fin de votre période de facturation en cours.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>Y a-t-il un essai gratuit ?</h3>
-        <p>
-          Oui, tous les plans payants bénéficient d'un essai gratuit de 14 jours. Le plan gratuit ne
-          nécessite pas de carte bancaire.
-        </p>
-      </div>
-    </div>
-  </div>
+  <!-- FAQ Section removed as requested -->
 </div>

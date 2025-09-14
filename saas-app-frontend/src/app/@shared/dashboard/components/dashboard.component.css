@@ -513,3 +513,36 @@
   background-color: #d4edda;
   color: #155724;
 }
+
+/* Dark mode overrides for settings sections */
+:host-context(body.dark-mode) .settings-section {
+  color: #e6eef8;
+}
+
+:host-context(body.dark-mode) .settings-section h2,
+:host-context(body.dark-mode) .settings-section h3,
+:host-context(body.dark-mode) .settings-section h4,
+:host-context(body.dark-mode) .settings-section label,
+:host-context(body.dark-mode) .settings-section span {
+  color: #e6eef8 !important;
+}
+
+:host-context(body.dark-mode) .settings-section div[style*='background: white'] {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(body.dark-mode) .settings-section input,
+:host-context(body.dark-mode) .settings-section select,
+:host-context(body.dark-mode) .settings-section textarea {
+  background: #0b1220 !important;
+  color: #e6eef8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+:host-context(body.dark-mode) .settings-section button {
+  background: linear-gradient(135deg, #334155 0%, #1f2937 100%) !important;
+  color: #e6eef8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}

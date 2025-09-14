@@ -12,6 +12,7 @@ import {
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
 import { ApiService } from '../../../../@core/services/api.service';
+import { UserService, UserProfile } from '../../../../@shared/services/user.service';
 
 export interface ApplicationConfiguration {
   applicationName: string;
@@ -27,6 +28,25 @@ export interface ApplicationConfiguration {
   styleUrls: ['./application-configure.component.css'],
 })
 export class ApplicationConfigureComponent implements OnInit {
+  // User / header state (copied from dashboard for consistent header behavior)
+  userRole = 'Admin';
+  userName = '';
+  userEmail = '';
+  isDropdownOpen = false;
+  userDropdownVisible = false;
+  activeProfileSection = ''; // 'edit' | 'password'
+
+  // Données du profil utilisateur pour édition
+  userProfile: any = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    streetAddress: '',
+    city: '',
+    zipCode: '',
+  };
+
   applicationId: string | null = null;
   isLoading = true;
   isSubmitting = false;
@@ -65,10 +85,14 @@ export class ApplicationConfigureComponent implements OnInit {
     private notificationService: NotificationService,
     private applicationRefreshService: ApplicationRefreshService,
     private apiService: ApiService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
     this.applicationId = this.route.snapshot.paramMap.get('id');
+
+    // Charger les infos utilisateur pour le header
+    this.loadUserInfo();
 
     if (this.applicationId) {
       this.loadApplication();
@@ -90,6 +114,98 @@ export class ApplicationConfigureComponent implements OnInit {
         'Configuration prête',
       );
     }, 1000);
+  }
+
+  loadUserInfo(): void {
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (currentUser) {
+      const user = JSON.parse(currentUser);
+
+      if (user.firstName && user.lastName) {
+        this.userName = `${user.firstName} ${user.lastName}`;
+      } else if (user.firstname && user.lastname) {
+        this.userName = `${user.firstname} ${user.lastname}`;
+      } else if (user.name) {
+        this.userName = user.name;
+      } else if (user.fullName) {
+        this.userName = user.fullName;
+      } else if (user.email) {
+        this.userName = user.email.split('@')[0];
+      } else {
+        this.userName = 'Utilisateur';
+      }
+
+      this.userEmail = user.email || '';
+      this.userRole =
+        user.role === 'admin'
+          ? 'Admin'
+          : user.role === 'manager'
+          ? 'Customer Manager'
+          : 'Customer User';
+
+      this.userProfile = {
+        firstName: user.firstName || user.firstname || '',
+        lastName: user.lastName || user.lastname || '',
+        email: user.email || '',
+        phoneNumber: user.phoneNumber || user.phone || '',
+        streetAddress: user.streetAddress || user.address || '',
+        city: user.city || '',
+        zipCode: user.zipCode || user.zip || '',
+      };
+    } else {
+      this.userName = 'Utilisateur';
+    }
+  }
+
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  editProfile(): void {
+    this.userDropdownVisible = false;
+    this.loadUserProfileFromServer();
+    this.activeProfileSection = 'edit';
+  }
+
+  loadUserProfileFromServer(): void {
+    this.userService.getCurrentUserProfile().subscribe({
+      next: (profile) => {
+        this.userProfile = {
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          email: profile.email || '',
+          phoneNumber: profile.phoneNumber || '',
+          streetAddress: profile.streetAddress || '',
+          city: profile.city || '',
+          zipCode: profile.zipCode || '',
+        };
+
+        try {
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          const updated = { ...currentUser, ...this.userProfile };
+          localStorage.setItem('currentUser', JSON.stringify(updated));
+        } catch (e) {
+          // ignore localStorage errors
+        }
+      },
+      error: (err) => {
+        console.warn('Erreur récupération profil, utilisation des données locales.', err);
+      },
+    });
+  }
+
+  changePassword(): void {
+    this.userDropdownVisible = false;
+    this.activeProfileSection = 'password';
+  }
+
+  logout(): void {
+    this.isDropdownOpen = false;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isLoggedIn');
+    this.router.navigate(['/login']);
+    this.notificationService.success('Déconnexion réussie');
   }
 
   loadApplication(): void {
@@ -465,6 +581,17 @@ export class ApplicationConfigureComponent implements OnInit {
       this.isChangingPlan = false;
       this.tempSelectedPlanId = null;
       // Optionnel: sauvegarder automatiquement
+      // Persist the selected default plan to the backend for authoritative stats
+      const planForPersist = this.plans.find(
+        (p) => this.getPlanId(p) === this.selectedDefaultPlanId,
+      );
+      try {
+        this.persistSelectedPlanToServer(planForPersist).catch((err) => {
+          console.warn('Failed to persist plan on confirm:', err);
+        });
+      } catch (e) {
+        console.warn('persistSelectedPlanToServer threw synchronously:', e);
+      }
       this.onSubmit();
     }
   }
@@ -475,6 +602,14 @@ export class ApplicationConfigureComponent implements OnInit {
       this.tempSelectedPlanId = planId;
     } else {
       this.selectedDefaultPlanId = planId;
+      // Persist immediately when user selects a plan outside of 'change' flow
+      try {
+        this.persistSelectedPlanToServer(plan).catch((err) => {
+          console.warn('Failed to persist plan on select:', err);
+        });
+      } catch (e) {
+        console.warn('persistSelectedPlanToServer threw synchronously:', e);
+      }
     }
   }
 
@@ -514,6 +649,15 @@ export class ApplicationConfigureComponent implements OnInit {
             `💾 Plan sauvegardé pour persistance avec la clé appDefaultPlan:${this.applicationId}`,
           );
 
+          // Persist to backend so server can compute authoritative revenue
+          try {
+            this.persistSelectedPlanToServer(planData).catch((err) => {
+              console.warn('Unable to persist selected plan to server:', err);
+            });
+          } catch (e) {
+            console.warn('Persist call failed synchronously:', e);
+          }
+
           // Nettoyer le localStorage après utilisation SEULEMENT pour la clé globale
           localStorage.removeItem('selectedPlan');
           localStorage.removeItem('selectedApplicationId');
@@ -542,5 +686,51 @@ export class ApplicationConfigureComponent implements OnInit {
         this.planCheckCompleted = true;
       }
     }
+  }
+
+  /**
+   * Persist the selected/default plan for this application to the backend so
+   * the server can compute authoritative monthly revenue.
+   * Accepts either a full plan object or will read current component state.
+   */
+  async persistSelectedPlanToServer(planObj?: any): Promise<void> {
+    if (!this.applicationId) return;
+
+    const payload: any = {};
+
+    // If a full plan object is provided, use its id as defaultPlanId and also send lightweight selectedPlan
+    const plan = planObj || this.selectedPlanObject;
+    if (plan) {
+      const id = plan.id || plan._id || this.selectedDefaultPlanId;
+      if (id) payload.defaultPlanId = id;
+
+      // include a minimal selectedPlan object to help the backend if needed
+      payload.selectedPlan = {
+        id: plan.id || plan._id || null,
+        name: plan.name || plan.title || null,
+        price: plan.price || 0,
+        currency: plan.currency || 'EUR',
+        billingCycle: plan.billingCycle || 'monthly',
+      };
+    } else if (this.selectedDefaultPlanId) {
+      payload.defaultPlanId = this.selectedDefaultPlanId;
+    }
+
+    // If nothing to persist, skip
+    if (Object.keys(payload).length === 0) return;
+
+    return new Promise((resolve, reject) => {
+      // Use ApplicationService which targets the `dashboard-applications` controller
+      this.applicationService.updateApplication(this.applicationId!, payload).subscribe({
+        next: () => {
+          console.debug('Persisted selected plan to server for app', this.applicationId, payload);
+          resolve();
+        },
+        error: (err) => {
+          console.warn('Error persisting selected plan to server via ApplicationService:', err);
+          reject(err);
+        },
+      });
+    });
   }
 }

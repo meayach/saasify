@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 export interface SubscriptionStats {
   activeSubscriptions: number;
@@ -35,48 +35,26 @@ export class SubscriptionService {
 
   // Obtenir les statistiques des abonnements
   getSubscriptionStats(): Observable<SubscriptionStats> {
-    // Données réelles fixes simulant une vraie base de données
-    const realStats: SubscriptionStats = {
-      activeSubscriptions: 34,
-      monthlyRevenue: 2847,
-      pendingSubscriptions: 7,
-      newClients: 5,
-      totalSubscriptions: 47,
-      cancelledSubscriptions: 6,
-    };
-
-    // Retourner les données réelles fixes
-    return of(realStats).pipe(
-      catchError((error) => {
-        console.error("Erreur lors de la récupération des statistiques d'abonnements:", error);
-        // Retourner des données par défaut en cas d'erreur
-        return of({
-          activeSubscriptions: 0,
-          monthlyRevenue: 0,
-          pendingSubscriptions: 0,
-          newClients: 0,
-          totalSubscriptions: 0,
-          cancelledSubscriptions: 0,
-        });
-      }),
-    );
-
-    /* Version originale avec vraie API - à réactiver quand le backend fonctionne
-    return this.http.get<SubscriptionStats>(`${this.apiUrl}/dashboard-subscriptions/stats`).pipe(
-      catchError((error) => {
-        console.error("Erreur lors de la récupération des statistiques d'abonnements:", error);
-        // Retourner des données par défaut en cas d'erreur
-        return of({
-          activeSubscriptions: 0,
-          monthlyRevenue: 0,
-          pendingSubscriptions: 0,
-          newClients: 0,
-          totalSubscriptions: 0,
-          cancelledSubscriptions: 0,
-        });
-      }),
-    );
-    */
+    // Appel réel à l'API pour récupérer les statistiques d'abonnements
+    return this.http
+      .get<{ success: boolean; data: SubscriptionStats }>(
+        `${this.apiUrl}/dashboard-subscriptions/stats`,
+      )
+      .pipe(
+        map((resp: { success: boolean; data: SubscriptionStats }) => resp.data),
+        catchError((error) => {
+          console.error("Erreur lors de la récupération des statistiques d'abonnements:", error);
+          // Retourner des données par défaut en cas d'erreur
+          return of({
+            activeSubscriptions: 0,
+            monthlyRevenue: 0,
+            pendingSubscriptions: 0,
+            newClients: 0,
+            totalSubscriptions: 0,
+            cancelledSubscriptions: 0,
+          });
+        }),
+      );
   }
 
   // Obtenir tous les abonnements

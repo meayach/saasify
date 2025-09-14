@@ -15,16 +15,10 @@
 }
 
 .plan-title {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 400; /* regular */
   color: #1a202c;
   margin-bottom: 0.5rem;
-}
-
-.plan-subtitle {
-  font-size: 1.1rem;
-  color: #718096;
-  margin: 0;
 }
 
 /* Billing Toggle */
@@ -163,6 +157,12 @@
   box-shadow: 0 30px 80px rgba(76, 47, 177, 0.12);
   background: linear-gradient(180deg, #f7f6ff, #faf9ff);
   border-color: rgba(76, 47, 177, 0.08);
+}
+
+/* Apply Business gradient to specific plan names (Essentiel / Pro / Plus / Business) */
+.plan-card.business-style {
+  background: linear-gradient(180deg, #f7f6ff, #faf9ff);
+  border-color: rgba(76, 47, 177, 0.06);
 }
 
 .plan-card:hover {

@@ -1,135 +1,37 @@
 <div class="subscription-dashboard-container">
   <!-- Global header (logo + user dropdown) -->
-  <div
-    style="
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 16px 24px;
-    ">
-    <div style="display: flex; justify-content: space-between; align-items: center">
-      <div style="display: flex; align-items: center; gap: 16px">
-        <a (click)="router.navigate(['/dashboard'])" style="display: inline-block; cursor: pointer">
-          <img src="assets/logo-saasify.svg" alt="Saasify Logo" style="height: 40px" />
+  <div class="sticky-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <a (click)="router.navigate(['/dashboard'])" class="logo-link">
+          <img src="assets/logo-saasify.svg" alt="Saasify Logo" class="logo-img" />
         </a>
       </div>
-      <div style="position: relative">
-        <button
-          (click)="toggleDropdown()"
-          style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-          ">
-          <div
-            style="
-              width: 32px;
-              height: 32px;
-              background: rgba(255, 255, 255, 0.2);
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              position: relative;
-            ">
-            <span style="color: white; font-weight: bold; font-size: 18px">{{
-              (userName || 'U').charAt(0).toUpperCase()
-            }}</span>
+      <div class="user-dropdown-container">
+        <button (click)="toggleDropdown()" class="user-dropdown-button">
+          <div class="user-avatar">
+            <span class="user-avatar-text">{{ (userName || 'U').charAt(0).toUpperCase() }}</span>
           </div>
-          <div>
-            <div style="font-size: 13px; line-height: 1.2">{{ userName || 'Utilisateur' }}</div>
-            <div style="font-size: 11px; opacity: 0.8">{{ userRole }}</div>
+          <div class="user-info">
+            <div class="user-name">{{ userName || 'Utilisateur' }}</div>
+            <div class="user-role">{{ userRole }}</div>
           </div>
-          <span
-            style="margin-left: 8px; transition: transform 0.3s ease"
-            [style.transform]="isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'">
-            ▼
-          </span>
+          <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
         </button>
 
-        <div
-          *ngIf="isDropdownOpen"
-          style="
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            padding: 8px 0;
-            min-width: 200px;
-            margin-top: 8px;
-            z-index: 1000;
-            border: 1px solid #e2e8f0;
-          ">
-          <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9">
-            <div style="font-weight: 600; color: #1a202c; font-size: 14px">
-              {{ userName || 'Utilisateur' }}
-            </div>
-            <div style="color: #64748b; font-size: 12px">{{ userEmail }}</div>
+        <div *ngIf="isDropdownOpen" class="dropdown-menu">
+          <div class="dropdown-user-info">
+            <div class="dropdown-user-name">{{ userName || 'Utilisateur' }}</div>
+            <div class="dropdown-user-email">{{ userEmail }}</div>
           </div>
-          <button
-            (click)="setActiveProfileSection('edit')"
-            style="
-              display: block;
-              width: 100%;
-              padding: 12px 16px;
-              color: #374151;
-              background: transparent;
-              border: none;
-              text-align: left;
-              cursor: pointer;
-              transition: background-color 0.2s;
-            "
-            onmouseover="this.style.backgroundColor='#f8fafc'"
-            onmouseout="this.style.backgroundColor='transparent'">
+          <button (click)="setActiveProfileSection('edit')" class="dropdown-menu-item">
             Modifier le profil
           </button>
-          <button
-            (click)="setActiveProfileSection('password')"
-            style="
-              display: block;
-              width: 100%;
-              padding: 12px 16px;
-              color: #374151;
-              background: transparent;
-              border: none;
-              text-align: left;
-              cursor: pointer;
-              transition: background-color 0.2s;
-            "
-            onmouseover="this.style.backgroundColor='#f8fafc'"
-            onmouseout="this.style.backgroundColor='transparent'">
+          <button (click)="setActiveProfileSection('password')" class="dropdown-menu-item">
             Changer le mot de passe
           </button>
-          <div style="border-top: 1px solid #f1f5f9; margin-top: 8px"></div>
-          <button
-            (click)="logout()"
-            style="
-              display: block;
-              width: 100%;
-              padding: 12px 16px;
-              color: #ef4444;
-              background: transparent;
-              border: none;
-              text-align: left;
-              cursor: pointer;
-              transition: background-color 0.2s;
-            "
-            onmouseover="this.style.backgroundColor='#fef2f2'"
-            onmouseout="this.style.backgroundColor='transparent'">
-            Déconnexion
-          </button>
+          <div class="dropdown-separator"></div>
+          <button (click)="logout()" class="dropdown-menu-item danger">Déconnexion</button>
         </div>
       </div>
     </div>

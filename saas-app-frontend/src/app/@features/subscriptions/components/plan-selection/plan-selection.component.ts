@@ -77,7 +77,7 @@ export class PlanSelectionComponent implements OnInit {
           this.userEmail = profile.email || this.userEmail;
           this.userRole =
             profile.role === 'admin'
-              ? 'Customer Admin'
+              ? 'Admin'
               : profile.role === 'manager'
               ? 'Customer Manager'
               : profile.role || 'Customer User';
@@ -111,7 +111,7 @@ export class PlanSelectionComponent implements OnInit {
             this.userEmail = currentUser.email || currentUser.username || this.userEmail;
             this.userRole =
               currentUser.role === 'admin'
-                ? 'Customer Admin'
+                ? 'Admin'
                 : currentUser.role === 'manager'
                 ? 'Customer Manager'
                 : currentUser.role || currentUser.userRole || 'Customer User';
@@ -426,6 +426,22 @@ export class PlanSelectionComponent implements OnInit {
       return true;
 
     return false;
+  }
+
+  // Return true for plan names that should use the Business gradient
+  isBusinessLike(plan: Plan): boolean {
+    const name = ((plan as any).name || '').toString().toLowerCase();
+    const display = this.displayPlanName(plan).toString().toLowerCase();
+    return (
+      name.includes('business') ||
+      name.includes('essentiel') ||
+      name.includes('pro') ||
+      name.includes('plus') ||
+      display.includes('business') ||
+      display.includes('essentiel') ||
+      display.includes('pro') ||
+      display.includes('plus')
+    );
   }
 
   debugAlert(message: string): void {

@@ -28,7 +28,7 @@ export class UserTeamEditComponent implements OnInit {
   memberData: TeamMember | null = null;
 
   roles: Role[] = [
-    { value: 'admin', label: 'Administrateur' },
+    { value: 'admin', label: 'Admin' },
     { value: 'manager', label: 'Manager' },
     { value: 'developer', label: 'Développeur' },
     { value: 'analyst', label: 'Analyste' },

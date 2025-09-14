@@ -48,7 +48,7 @@ export class SubscriptionDashboardComponent implements OnInit {
           // Map role like in dashboard component
           this.userRole =
             profile.role === 'admin'
-              ? 'Customer Admin'
+              ? 'Admin'
               : profile.role === 'manager'
               ? 'Customer Manager'
               : profile.role || 'Customer User';
@@ -76,7 +76,7 @@ export class SubscriptionDashboardComponent implements OnInit {
             // Map role like in dashboard component
             this.userRole =
               currentUser.role === 'admin'
-                ? 'Customer Admin'
+                ? 'Admin'
                 : currentUser.role === 'manager'
                 ? 'Customer Manager'
                 : currentUser.role || currentUser.userRole || 'Customer User';

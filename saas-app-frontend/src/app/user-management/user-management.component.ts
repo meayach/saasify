@@ -43,7 +43,7 @@ export class UserManagementComponent implements OnInit {
   // Options pour les selects
   roles = [
     { value: 'customer', label: 'Client' },
-    { value: 'admin', label: 'Administrateur' },
+    { value: 'admin', label: 'Admin' },
     { value: 'manager', label: 'Manager' },
   ];
 

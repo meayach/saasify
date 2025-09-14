@@ -60,7 +60,12 @@
 
   <!-- Liste des plans -->
   <div class="plans-grid" *ngIf="!loading">
-    <div class="plan-card" *ngFor="let plan of plans" [class.popular]="plan.isPopular">
+    <div
+      class="plan-card"
+      *ngFor="let plan of plans"
+      [class.popular]="plan.isPopular"
+      [class.annual]="billingCycle === 'yearly'"
+      [class.business-style]="isBusinessLike(plan)">
       <!-- Badge populaire -->
       <div class="popular-badge" *ngIf="plan.isPopular">
         <i class="pi pi-star"></i>

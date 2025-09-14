@@ -21,7 +21,7 @@ import { ApplicationRefreshService } from '../../../../@shared/services/applicat
 })
 export class ApplicationListComponent implements OnInit, OnDestroy {
   // User / header state (for shared header)
-  userRole = 'Customer Admin';
+  userRole = 'Admin';
   userName = '';
   userEmail = '';
   isDropdownOpen = false;
@@ -135,7 +135,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
       this.userEmail = user.email || '';
       this.userRole =
         user.role === 'admin'
-          ? 'Customer Admin'
+          ? 'Admin'
           : user.role === 'manager'
           ? 'Customer Manager'
           : 'Customer User';

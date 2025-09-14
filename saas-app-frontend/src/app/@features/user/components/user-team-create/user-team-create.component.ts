@@ -14,7 +14,7 @@ export class UserTeamCreateComponent implements OnInit {
   roles = [
     { value: 'manager', label: 'Manager' },
     { value: 'developer', label: 'Développeur' },
-    { value: 'admin', label: 'Administrateur' },
+    { value: 'admin', label: 'Admin' },
   ];
 
   constructor(private fb: FormBuilder, private router: Router) {

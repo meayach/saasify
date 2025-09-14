@@ -24,6 +24,8 @@ interface Plan {
 export class PlanListComponent implements OnInit {
   plans: Plan[] = [];
   loading = false;
+  // billingCycle controls pricing display and annual styling. Keep default as monthly so monthly cards stay white.
+  billingCycle: 'monthly' | 'yearly' = 'monthly';
 
   // Statistiques
   stats = {
@@ -163,5 +165,14 @@ export class PlanListComponent implements OnInit {
 
   getMaxAppsDisplay(maxApps: number): string {
     return maxApps === -1 ? 'Illimité' : maxApps.toString();
+  }
+
+  // Return true for plans that should use the Business visual style
+  isBusinessLike(plan: Plan): boolean {
+    if (!plan || !plan.name) {
+      return false;
+    }
+    const name = plan.name.toLowerCase();
+    return ['business', 'essentiel', 'pro', 'plus'].includes(name);
   }
 }
