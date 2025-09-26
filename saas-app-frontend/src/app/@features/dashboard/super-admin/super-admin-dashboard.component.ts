@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { DashboardStatsService } from '../../../@shared/services/dashboard-stats.service';
 import {
   OrganizationService,
   OrganizationSettings,
 } from '../../../@shared/services/organization.service';
+import { BillingStateService } from '../../../@shared/services/billing-state.service';
 
 @Component({
   selector: 'app-super-admin-dashboard',
@@ -27,7 +29,9 @@ import {
             <span class="stat-label">Active Users</span>
           </div>
           <div class="stat-item">
-            <span class="stat-number">€{{ monthlyRevenue }}</span>
+            <span class="stat-number">{{
+              dashboardStatsService.formatCurrency(monthlyRevenue, currentCurrency)
+            }}</span>
             <span class="stat-label">Monthly Revenue</span>
           </div>
         </div>
@@ -70,7 +74,9 @@ import {
               <span class="stat-label">Abonnements Actifs</span>
             </div>
             <div class="stat-item">
-              <span class="stat-number">€{{ subscriptionStats.revenue }}</span>
+              <span class="stat-number">{{
+                dashboardStatsService.formatCurrency(subscriptionStats.revenue, currentCurrency)
+              }}</span>
               <span class="stat-label">Revenus Mensuels</span>
             </div>
             <div class="stat-item">
@@ -198,7 +204,9 @@ import {
             <div class="plan-item" *ngFor="let plan of billingPlans">
               <div class="plan-info">
                 <h4>{{ plan.name }}</h4>
-                <span class="plan-price">{{ plan.price }}€/mois</span>
+                <span class="plan-price"
+                  >{{ currentCurrency | currencySymbol }}{{ plan.price }} /mois</span
+                >
               </div>
               <div class="plan-actions">
                 <button class="btn btn-sm">Modifier</button>
@@ -414,6 +422,11 @@ export class SuperAdminDashboardComponent implements OnInit {
     { name: 'Analytics Dashboard', status: 'Inactive' },
   ];
 
+  currentCurrency = 'EUR';
+  private billingSub: any;
+  // expose dashboard service to template for formatting
+  // constructor removed; using constructor below with injected DashboardStatsService
+
   subscriptionStats = {
     active: 45,
     revenue: 2450,
@@ -437,10 +450,30 @@ export class SuperAdminDashboardComponent implements OnInit {
     language: 'Français',
   };
 
-  constructor(private router: Router, private organizationService: OrganizationService) {}
+  constructor(
+    private router: Router,
+    private organizationService: OrganizationService,
+    private billingState: BillingStateService,
+    public dashboardStatsService: DashboardStatsService,
+  ) {}
 
   ngOnInit(): void {
     this.loadOrganizationSettings();
+    // subscribe to billing settings for currency
+    this.billingSub = this.billingState.settings$.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level too
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.billingSub) this.billingSub.unsubscribe();
   }
 
   loadOrganizationSettings(): void {

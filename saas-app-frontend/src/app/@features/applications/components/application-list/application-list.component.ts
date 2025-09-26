@@ -13,6 +13,7 @@ import { NotificationService } from '../../../../@shared/services/notification.s
 import { UserService } from '../../../../@shared/services/user.service';
 import { ConfirmationModalService } from '../../../../@shared/services/confirmation-modal.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
+import { ThemeService } from '../../../../@core/services/theme.service';
 
 @Component({
   selector: 'app-application-list',
@@ -35,6 +36,8 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
   };
   loading = true;
   private refreshSubscription: Subscription = new Subscription();
+  isDarkMode = false;
+  private themeSubscription: Subscription = new Subscription();
 
   constructor(
     public router: Router,
@@ -45,6 +48,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
     private configurationService: ApplicationConfigurationService,
     private cdr: ChangeDetectorRef,
     private userService: UserService,
+    private themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
@@ -75,11 +79,18 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
         }, 100);
       }
     }, 500); // Vérifier plus fréquemment (500ms)
+    // Subscribe to theme changes so fallbacks can use the correct logo
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark) => {
+      this.isDarkMode = isDark;
+    });
   }
 
   ngOnDestroy(): void {
     if (this.refreshSubscription) {
       this.refreshSubscription.unsubscribe();
+    }
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 
@@ -683,7 +694,7 @@ export class ApplicationListComponent implements OnInit, OnDestroy {
   onLogoError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (img) {
-      img.src = 'assets/logo-saasify.svg';
+      img.src = this.isDarkMode ? 'assets/logo-saasify-dark.png' : 'assets/logo-saasify.svg';
     }
   }
 }

@@ -1,6 +1,9 @@
 <div class="form_wrapper">
   <form [formGroup]="loginForm" class="form_main" (ngSubmit)="onSubmit()">
-    <img src="assets/logo-saasify.svg" alt="Saasify logo" class="app-logo" />
+    <img
+      [src]="isDarkMode ? 'assets/logo-saasify-dark.png' : 'assets/logo-saasify.svg'"
+      alt="Saasify logo"
+      class="app-logo" />
     <p class="heading">Login</p>
     <div class="inputContainer">
       <svg

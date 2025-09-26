@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { AppState } from '../../../@store/app.reducer';
+import { BillingStateService } from '../../../@shared/services/billing-state.service';
 
 @Component({
   selector: 'app-customer-manager-dashboard',
@@ -23,7 +24,7 @@ import { AppState } from '../../../@store/app.reducer';
               <span class="metric-change positive">+15%</span>
             </div>
             <div class="metric">
-              <span class="metric-value">€8,742</span>
+              <span class="metric-value">{{ currentCurrency | currencySymbol }}8,742</span>
               <span class="metric-label">Monthly Revenue</span>
               <span class="metric-change positive">+8%</span>
             </div>
@@ -83,7 +84,7 @@ import { AppState } from '../../../@store/app.reducer';
               </div>
               <div class="campaign-metrics">
                 <span>CTR: 3.2%</span>
-                <span>Budget: €2,500</span>
+                <span>Budget: {{ currentCurrency | currencySymbol }}2,500</span>
               </div>
             </div>
           </div>
@@ -231,10 +232,27 @@ import { AppState } from '../../../@store/app.reducer';
   ],
 })
 export class CustomerManagerDashboardComponent implements OnInit {
-  constructor(private store: Store<AppState>) {}
+  currentCurrency = 'EUR';
+  private billingSub: any;
+
+  constructor(private store: Store<AppState>, private billingState: BillingStateService) {}
 
   ngOnInit(): void {
     // Load analytics and campaign data
+    this.billingSub = this.billingState.settings$.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.billingSub) this.billingSub.unsubscribe();
   }
 
   createABTest(): void {

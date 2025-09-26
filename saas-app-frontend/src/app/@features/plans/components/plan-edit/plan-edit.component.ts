@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { BillingService } from '../../../../@shared/services/billing.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
+import { ThemeService } from '../../../../@core/services/theme.service';
+import { UserService } from '../../../../@shared/services/user.service';
 
 interface Plan {
   id: string;
@@ -27,13 +30,21 @@ interface PlanFeature {
   templateUrl: './plan-edit.component.html',
   styleUrls: ['./plan-edit.component.css'],
 })
-export class PlanEditComponent implements OnInit {
+export class PlanEditComponent implements OnInit, OnDestroy {
   planForm: FormGroup;
   loading = false;
   planData: Plan | null = null;
   planId: string | null = null;
   lastResponse: any = null;
   lastError: any = null;
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
+  private formSubscriptions: Subscription[] = [];
+
+  // Header properties
+  userName = '';
+  userEmail = '';
+  isDropdownOpen = false;
 
   predefinedFeatures: PlanFeature[] = [
     { name: 'Support par email', included: false },
@@ -54,12 +65,17 @@ export class PlanEditComponent implements OnInit {
     private route: ActivatedRoute,
     private billingService: BillingService,
     private notificationService: NotificationService,
+    private themeService: ThemeService,
+    private userService: UserService,
   ) {
     this.planForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: [0, [Validators.required, Validators.min(0)]],
       currency: ['EUR', Validators.required],
+      // Savings feature: enabled toggle and percent value (0-100)
+      savingsEnabled: [false],
+      savingsPercent: [0, [Validators.min(0), Validators.max(100)]],
       maxUsers: [100, [Validators.required, Validators.min(-1)]],
       isPopular: [false],
       status: ['active', Validators.required],
@@ -70,6 +86,39 @@ export class PlanEditComponent implements OnInit {
   ngOnInit(): void {
     this.planId = this.route.snapshot.paramMap.get('id');
     this.loadPlanData();
+    this.loadUserInfo();
+
+    // Subscribe to theme changes
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark) => {
+      this.isDarkMode = isDark;
+    });
+
+    // Watch savingsEnabled to toggle validators on savingsPercent
+    const savingsEnabledControl = this.planForm.get('savingsEnabled');
+    const savingsPercentControl = this.planForm.get('savingsPercent');
+    if (savingsEnabledControl && savingsPercentControl) {
+      const sub = savingsEnabledControl.valueChanges.subscribe((enabled: boolean) => {
+        if (enabled) {
+          savingsPercentControl.setValidators([
+            Validators.required,
+            Validators.min(0),
+            Validators.max(100),
+          ]);
+        } else {
+          savingsPercentControl.clearValidators();
+        }
+        savingsPercentControl.updateValueAndValidity({ onlySelf: true });
+      });
+      this.formSubscriptions.push(sub);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    // cleanup form subscriptions
+    this.formSubscriptions.forEach((s) => s.unsubscribe());
   }
 
   get featuresArray(): FormArray {
@@ -148,10 +197,25 @@ export class PlanEditComponent implements OnInit {
       name: this.planData.name,
       description: this.planData.description,
       price: this.planData.price,
-      currency: this.planData.currency,
+      // Prefer currency passed via navigation state (from plan list) then fallback to planData
+      currency: ((): string => {
+        const navCurrency = (history && (history.state as any)?.currency) || null;
+        const raw = (navCurrency || this.planData!.currency || 'EUR')
+          .toString()
+          .toUpperCase()
+          .trim();
+        if (raw === 'GB' || raw === 'GBR') return 'GBP';
+        if (raw === 'US' || raw === 'USA') return 'USD';
+        if (raw === 'EU' || raw === 'EURS') return 'EUR';
+        if (['EUR', 'GBP', 'USD'].includes(raw)) return raw;
+        return 'EUR';
+      })(),
       maxUsers: this.planData.maxUsers,
       isPopular: this.planData.isPopular,
       status: this.planData.status,
+      // If planData contains savings info, populate it; otherwise defaults are kept
+      savingsEnabled: (this.planData as any).savingsEnabled ? true : false,
+      savingsPercent: (this.planData as any).savingsPercent || 0,
     });
 
     // Initialiser les fonctionnalités
@@ -292,5 +356,83 @@ export class PlanEditComponent implements OnInit {
   getPlanCreatedDate(): string {
     if (!this.planData) return '';
     return this.planData.createdDate.toLocaleDateString('fr-FR');
+  }
+
+  // User info management
+  loadUserInfo(): void {
+    const currentUser = localStorage.getItem('currentUser');
+
+    if (currentUser) {
+      const user = JSON.parse(currentUser);
+
+      if (user.firstName && user.lastName) {
+        this.userName = `${user.firstName} ${user.lastName}`;
+      } else if (user.firstname && user.lastname) {
+        this.userName = `${user.firstname} ${user.lastname}`;
+      } else if (user.name) {
+        this.userName = user.name;
+      } else if (user.fullName) {
+        this.userName = user.fullName;
+      } else if (user.email) {
+        this.userName = user.email.split('@')[0];
+      } else {
+        this.userName = 'Utilisateur';
+      }
+
+      this.userEmail = user.email || '';
+    } else {
+      this.userName = 'Utilisateur';
+      this.userEmail = '';
+    }
+  }
+
+  // Header methods
+  toggleDropdown(): void {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  setActiveProfileSection(section: string) {
+    // Avant de naviguer, récupérer le profil complet depuis le serveur
+    if (section === 'edit') {
+      this.userService.getCurrentUserProfile().subscribe({
+        next: (profile) => {
+          console.log('PlanEdit: profile received', profile);
+          // Normaliser et stocker les données utilisateur dans localStorage
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          const updated = {
+            ...currentUser,
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
+            email: profile.email || '',
+            phoneNumber: profile.phoneNumber || '',
+            streetAddress: profile.streetAddress || '',
+            city: profile.city || '',
+            zipCode: profile.zipCode || '',
+          };
+          localStorage.setItem('currentUser', JSON.stringify(updated));
+
+          localStorage.setItem('activeProfileSection', section);
+          this.isDropdownOpen = false;
+          this.router.navigate(['/settings'], { queryParams: { section: 'profile' } });
+        },
+        error: (err) => {
+          console.warn('PlanEdit: impossible de récupérer le profil, navigation malgré tout', err);
+          localStorage.setItem('activeProfileSection', section);
+          this.isDropdownOpen = false;
+          this.router.navigate(['/settings'], { queryParams: { section: 'profile' } });
+        },
+      });
+      return;
+    }
+
+    // store a lightweight flag so other components can react if needed
+    localStorage.setItem('activeProfileSection', section);
+    this.isDropdownOpen = false;
+  }
+
+  logout(): void {
+    // Implementation for logout
+    console.log('Logout clicked');
+    this.isDropdownOpen = false;
   }
 }

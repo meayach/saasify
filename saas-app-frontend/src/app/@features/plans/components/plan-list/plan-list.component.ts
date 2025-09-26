@@ -26,6 +26,7 @@ export class PlanListComponent implements OnInit {
   loading = false;
   // billingCycle controls pricing display and annual styling. Keep default as monthly so monthly cards stay white.
   billingCycle: 'monthly' | 'yearly' = 'monthly';
+  currentCurrency = 'EUR'; // Default currency for plan displays
 
   // Statistiques
   stats = {
@@ -126,7 +127,10 @@ export class PlanListComponent implements OnInit {
   onEditPlan(plan: Plan): void {
     // some plans come from API with `_id` while others use `id` (mock data).
     const planId = (plan as any)._id || plan.id;
-    this.router.navigate(['/subscriptions', 'plans', 'edit', planId]);
+    // Pass currentCurrency so the edit form can default to the same currency as the list
+    this.router.navigate(['/subscriptions', 'plans', 'edit', planId], {
+      state: { currency: this.currentCurrency },
+    });
   }
 
   onToggleStatus(plan: Plan): void {

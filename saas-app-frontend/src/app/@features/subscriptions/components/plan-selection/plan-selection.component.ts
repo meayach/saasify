@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../../@core/services/theme.service';
+import { Subscription } from 'rxjs';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PlanService } from '../../services/plan.service';
 import { SubscriptionService } from '../../services/subscription.service';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { BillingService, Plan } from '../../../../@shared/services/billing.service';
+import { BillingStateService } from '../../../../@shared/services/billing-state.service';
 import { LoggerService } from '../../../../@core/services/logger.service';
 
 @Component({
@@ -30,6 +33,10 @@ export class PlanSelectionComponent implements OnInit {
   isDropdownOpen = false;
   activeProfileSection = '';
   returnTo = ''; // Pour savoir d'où vient l'utilisateur
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
+  currentCurrency = 'EUR';
+  private billingSubscription: Subscription | null = null;
 
   // Variables de cache pour éviter les appels répétés
   private _cachedFilteredPlans: Plan[] = [];
@@ -44,7 +51,9 @@ export class PlanSelectionComponent implements OnInit {
     private userService: UserService,
     private notificationService: NotificationService,
     private billingService: BillingService,
+    private billingState: BillingStateService,
     private logger: LoggerService,
+    private themeService: ThemeService,
   ) {}
 
   // Public helper to navigate to dashboard (used from template)
@@ -125,6 +134,31 @@ export class PlanSelectionComponent implements OnInit {
 
     // Utiliser la même logique que dans dashboard.component.ts pour charger les plans
     this.loadPlans();
+
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark: boolean) => {
+      this.isDarkMode = isDark;
+    });
+
+    // Subscribe to billing settings so currency is reactive
+    this.billingSubscription = this.billingState.settings$?.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    if (this.billingSubscription) {
+      this.billingSubscription.unsubscribe();
+    }
   }
 
   // Même méthode que dans dashboard.component.ts pour charger les plans
@@ -270,7 +304,23 @@ export class PlanSelectionComponent implements OnInit {
 
   formatPrice(plan: Plan): string {
     const price = typeof plan.price === 'number' ? plan.price.toFixed(0) : '0';
-    return `$${price}`;
+    // Use currentCurrency but fallback to EUR
+    const c = (this.currentCurrency || 'EUR').toString().toUpperCase();
+    let normalized = c === 'GB' || c === 'GBR' ? 'GBP' : c;
+    if (normalized === 'US' || normalized === 'USA') normalized = 'USD';
+    const symbol =
+      normalized === 'USD'
+        ? '$'
+        : normalized === 'GBP'
+        ? '£'
+        : normalized === 'JPY'
+        ? '¥'
+        : normalized === 'CHF'
+        ? 'CHF'
+        : normalized === 'EUR'
+        ? '€'
+        : normalized;
+    return `${symbol}${price}`;
   }
 
   selectPlan(plan: Plan): void {

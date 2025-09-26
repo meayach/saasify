@@ -132,6 +132,136 @@ body.dark-mode [_ngcontent-vtv-c62] * {
   color: #e6eef8 !important;
 }
 
+/* Plans page specific dark mode styles */
+body.dark-mode .plans-container {
+  background: transparent !important;
+}
+
+body.dark-mode .plan-card {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .plan-card.annual,
+body.dark-mode .plan-card.business-style {
+  background: linear-gradient(180deg, #0f1724, #1a1d29) !important;
+}
+
+body.dark-mode .plan-header {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .plan-name {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .plan-price {
+  color: #60a5fa !important;
+}
+
+body.dark-mode .plan-description {
+  color: #c2c7ca !important;
+}
+
+body.dark-mode .plan-features {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode .feature-item {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode .feature-item i {
+  color: #10b981 !important;
+}
+
+body.dark-mode .plan-limits {
+  background: rgba(15, 23, 36, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .limit-label {
+  color: #c2c7ca !important;
+}
+
+body.dark-mode .limit-value {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .plan-status {
+  color: #e6eef8 !important;
+}
+
+body.dark-mode .status-active {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+body.dark-mode .status-inactive {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+}
+
+body.dark-mode .plan-date {
+  color: #64748b !important;
+}
+
+body.dark-mode .plan-actions {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .btn-action {
+  background: rgba(15, 23, 36, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #e6eef8 !important;
+}
+
+body.dark-mode .popular-badge {
+  background: #f59e0b !important;
+  color: white !important;
+}
+
+body.dark-mode .stat-card {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .stat-number {
+  color: #f8fafc !important;
+}
+
+body.dark-mode .stat-label {
+  color: #c2c7ca !important;
+}
+
+/* Billing toggle (Mensuel/Annuel) dark mode */
+body.dark-mode .toggle-container {
+  background: #0f1724 !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dark-mode .billing-toggle {
+  background: transparent !important;
+}
+
+body.dark-mode .toggle-button {
+  background: transparent !important;
+  color: #c2c7ca !important;
+  border: none !important;
+}
+
+body.dark-mode .toggle-button.active {
+  background: #2563eb !important;
+  color: white !important;
+}
+
+body.dark-mode .discount-badge {
+  background: #10b981 !important;
+  color: white !important;
+}
+
 /* Target specific containers in settings */
 body.dark-mode div[style*='background: white'][style*='padding: 24px'] {
   background: #0f1724 !important;
@@ -237,35 +367,44 @@ body.dark-mode div[style*='background: white'][style*='position: absolute'] {
 }
 
 /* Login/User dropdown dark mode styles */
-body.dark-mode div[style*="background: white"][style*="border-radius: 12px"][style*="position: absolute"] {
+body.dark-mode
+  div[style*='background: white'][style*='border-radius: 12px'][style*='position: absolute'] {
   background: #0f1724 !important;
-  border: 1px solid rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
 }
 
-body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] div[style*="color: #1a202c"] {
+body.dark-mode
+  div[style*='background: white'][style*='border-radius: 12px']
+  div[style*='color: #1a202c'] {
   color: #f8fafc !important;
 }
 
-body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] div[style*="color: #64748b"] {
+body.dark-mode
+  div[style*='background: white'][style*='border-radius: 12px']
+  div[style*='color: #64748b'] {
   color: #c2c7ca !important;
 }
 
-body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] a[style*="color: #374151"] {
+body.dark-mode
+  div[style*='background: white'][style*='border-radius: 12px']
+  a[style*='color: #374151'] {
   color: #e6eef8 !important;
 }
 
-body.dark-mode div[style*="background: white"][style*="border-radius: 12px"] a[style*="color: #ef4444"] {
+body.dark-mode
+  div[style*='background: white'][style*='border-radius: 12px']
+  a[style*='color: #ef4444'] {
   color: #ff6b6b !important;
 }
 
 /* Dropdown borders and dividers in dark mode */
-body.dark-mode div[style*="border-bottom: 1px solid #f1f5f9"] {
-  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+body.dark-mode div[style*='border-bottom: 1px solid #f1f5f9'] {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
-body.dark-mode div[style*="border-top: 1px solid #f1f5f9"] {
-  border-top: 1px solid rgba(255,255,255,0.06) !important;
+body.dark-mode div[style*='border-top: 1px solid #f1f5f9'] {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Override hover effects for dropdown items */

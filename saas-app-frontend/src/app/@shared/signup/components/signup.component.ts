@@ -1,4 +1,6 @@
-import { Component, ElementRef, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../@core/services/theme.service';
+import { Subscription } from 'rxjs';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SignupService } from 'src/app/@api/services/signup/signup.service';
@@ -10,6 +12,8 @@ import { UserSignUPDTO } from '../dto/user-signup.dto';
   styleUrls: ['./signup.component.css'],
 })
 export class SignupComponent implements OnInit {
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
   myForm!: FormGroup;
   invalidFields: { [key: string]: boolean } = {};
   loading = false;
@@ -51,6 +55,28 @@ export class SignupComponent implements OnInit {
         Validators.pattern('[0-9]{5}'),
       ]),
     });
+  }
+
+  ngAfterViewInit(): void {
+    // subscribe to theme if available
+    try {
+      // @ts-ignore - themeService injected only in some setups; guard for safety
+      if ((this as any).themeService) {
+        this.themeSubscription = (this as any).themeService.isDarkMode$.subscribe(
+          (isDark: boolean) => {
+            this.isDarkMode = isDark;
+          },
+        );
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   onFormSubmit(form: FormGroup) {

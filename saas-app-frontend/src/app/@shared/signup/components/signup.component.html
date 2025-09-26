@@ -4,7 +4,10 @@
     class="form_main"
     (ngSubmit)="onFormSubmit(myForm)"
     *ngIf="!showSuccessMessage">
-    <img src="assets/logo-saasify.svg" alt="Saasify logo" class="app-logo" />
+    <img
+      [src]="isDarkMode ? 'assets/logo-saasify-dark.png' : 'assets/logo-saasify.svg'"
+      alt="Saasify logo"
+      class="app-logo" />
     <p class="heading">Créer un compte</p>
 
     <div class="inputContainer">

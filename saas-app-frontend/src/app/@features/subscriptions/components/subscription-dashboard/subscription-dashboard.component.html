@@ -1,37 +1,125 @@
 <div class="subscription-dashboard-container">
-  <!-- Global header (logo + user dropdown) -->
-  <div class="sticky-header">
-    <div class="header-content">
-      <div class="logo-section">
-        <a (click)="router.navigate(['/dashboard'])" class="logo-link">
-          <img src="assets/logo-saasify.svg" alt="Saasify Logo" class="logo-img" />
+  <div
+    style="
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 16px 24px;
+    ">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; align-items: center; gap: 16px">
+        <a (click)="router.navigate(['/dashboard'])" style="display: inline-block; cursor: pointer">
+          <img
+            [src]="isDarkMode ? 'assets/logo-saasify-dark.png' : 'assets/logo-saasify.svg'"
+            alt="Saasify Logo"
+            style="height: 40px" />
         </a>
       </div>
-      <div class="user-dropdown-container">
-        <button (click)="toggleDropdown()" class="user-dropdown-button">
-          <div class="user-avatar">
-            <span class="user-avatar-text">{{ (userName || 'U').charAt(0).toUpperCase() }}</span>
-          </div>
-          <div class="user-info">
-            <div class="user-name">{{ userName || 'Utilisateur' }}</div>
-            <div class="user-role">{{ userRole }}</div>
-          </div>
-          <span class="dropdown-arrow" [class.open]="isDropdownOpen">▼</span>
-        </button>
+      <div style="display: flex; align-items: center; gap: 16px">
+        <div style="position: relative">
+          <button
+            (click)="toggleDropdown()"
+            class="user-avatar-btn"
+            style="
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border: none;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-weight: 700;
+              font-size: 16px;
+              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              position: relative;
+            "
+            [style.transform]="isDropdownOpen ? 'scale(0.95)' : 'scale(1)'">
+            {{ (userName || 'U').charAt(0).toUpperCase() }}
+            <div
+              style="
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 12px;
+                height: 12px;
+                background: #10b981;
+                border-radius: 50%;
+                border: 2px solid white;
+                animation: pulse 2s infinite;
+              "></div>
+          </button>
 
-        <div *ngIf="isDropdownOpen" class="dropdown-menu">
-          <div class="dropdown-user-info">
-            <div class="dropdown-user-name">{{ userName || 'Utilisateur' }}</div>
-            <div class="dropdown-user-email">{{ userEmail }}</div>
+          <div
+            *ngIf="isDropdownOpen"
+            style="
+              position: absolute;
+              top: 100%;
+              right: 0;
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+              padding: 8px 0;
+              min-width: 200px;
+              margin-top: 8px;
+              z-index: 1000;
+              border: 1px solid #e2e8f0;
+            ">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #f1f5f9">
+              <div style="font-weight: 600; color: #1a202c; font-size: 14px">
+                {{ userName || 'Utilisateur' }}
+              </div>
+              <div style="color: #64748b; font-size: 12px">{{ userEmail }}</div>
+            </div>
+            <a
+              (click)="setActiveProfileSection('edit')"
+              style="
+                display: block;
+                padding: 12px 16px;
+                color: #374151;
+                text-decoration: none;
+                cursor: pointer;
+                transition: background-color 0.2s;
+              "
+              onmouseover="this.style.backgroundColor='#f8fafc'"
+              onmouseout="this.style.backgroundColor='transparent'">
+              Modifier le profil
+            </a>
+            <a
+              (click)="setActiveProfileSection('password')"
+              style="
+                display: block;
+                padding: 12px 16px;
+                color: #374151;
+                text-decoration: none;
+                cursor: pointer;
+                transition: background-color 0.2s;
+              "
+              onmouseover="this.style.backgroundColor='#f8fafc'"
+              onmouseout="this.style.backgroundColor='transparent'">
+              Changer le mot de passe
+            </a>
+            <div style="border-top: 1px solid #f1f5f9; margin-top: 8px"></div>
+            <a
+              (click)="logout()"
+              style="
+                display: block;
+                padding: 12px 16px;
+                color: #ef4444;
+                text-decoration: none;
+                cursor: pointer;
+                transition: background-color 0.2s;
+              "
+              onmouseover="this.style.backgroundColor='#fef2f2'"
+              onmouseout="this.style.backgroundColor='transparent'">
+              Déconnexion
+            </a>
           </div>
-          <button (click)="setActiveProfileSection('edit')" class="dropdown-menu-item">
-            Modifier le profil
-          </button>
-          <button (click)="setActiveProfileSection('password')" class="dropdown-menu-item">
-            Changer le mot de passe
-          </button>
-          <div class="dropdown-separator"></div>
-          <button (click)="logout()" class="dropdown-menu-item danger">Déconnexion</button>
         </div>
       </div>
     </div>
@@ -71,7 +159,9 @@
           <h3 class="plan-name">{{ currentSubscription.planId.name }}</h3>
           <p class="plan-description">{{ currentSubscription.planId.description }}</p>
           <div class="plan-price">
-            <span class="price">${{ currentSubscription.price }}</span>
+            <span class="price"
+              >{{ currentCurrency | currencySymbol }}{{ currentSubscription.price }}</span
+            >
             <span class="billing-cycle"
               >/ {{ currentSubscription.billingCycle.toLowerCase() }}</span
             >
@@ -134,7 +224,7 @@
             <div class="plan-header">
               <h4>{{ plan.name }}</h4>
               <div class="plan-price-quick">
-                <span class="price">${{ plan.price }}</span>
+                <span class="price">{{ currentCurrency | currencySymbol }}{{ plan.price }}</span>
                 <span class="period">/mois</span>
               </div>
             </div>

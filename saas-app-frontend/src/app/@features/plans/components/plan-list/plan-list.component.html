@@ -52,7 +52,7 @@
         <i class="pi pi-euro"></i>
       </div>
       <div class="stat-content">
-        <div class="stat-number">{{ stats.revenue }}€</div>
+        <div class="stat-number">{{ currentCurrency | currencySymbol }}{{ stats.revenue }}</div>
         <div class="stat-label">Revenus mensuels</div>
       </div>
     </div>

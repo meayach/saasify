@@ -450,7 +450,7 @@
 /* Statistics Cards */
 :host-context(body.dark-mode) .stat-card {
   background: #0f1724;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -490,7 +490,7 @@
 /* Plan Cards */
 :host-context(body.dark-mode) .plan-card {
   background: #0f1724;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -530,7 +530,7 @@
 
 :host-context(body.dark-mode) .plan-limits {
   background: rgba(15, 23, 36, 0.5);
-  border-color: rgba(255,255,255,0.06);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 :host-context(body.dark-mode) .limit-label {
@@ -556,12 +556,12 @@
 }
 
 :host-context(body.dark-mode) .plan-actions {
-  border-color: rgba(255,255,255,0.06);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 :host-context(body.dark-mode) .btn-action {
   background: rgba(15, 23, 36, 0.8);
-  border-color: rgba(255,255,255,0.06);
+  border-color: rgba(255, 255, 255, 0.06);
   color: #e6eef8;
 }
 

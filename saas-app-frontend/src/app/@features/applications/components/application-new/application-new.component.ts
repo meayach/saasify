@@ -9,6 +9,8 @@ import {
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { ApplicationRefreshService } from '../../../../@shared/services/application-refresh.service';
 import { LoggerService } from '../../../../@core/services/logger.service';
+import { BillingStateService } from '../../../../@shared/services/billing-state.service';
+import { Subscription } from 'rxjs';
 
 export interface NewApplicationConfiguration {
   applicationName: string;
@@ -44,6 +46,8 @@ export class ApplicationNewComponent implements OnInit {
   selectedLogo: File | null = null;
   logoPreview: string | null = null;
   selectedPlan: any = null; // Plan présélectionné
+  currentCurrency = 'EUR';
+  private billingSub: Subscription | null = null;
 
   constructor(
     public router: Router,
@@ -53,6 +57,7 @@ export class ApplicationNewComponent implements OnInit {
     private notificationService: NotificationService,
     private applicationRefreshService: ApplicationRefreshService,
     private logger: LoggerService,
+    private billingState: BillingStateService,
   ) {}
 
   ngOnInit(): void {
@@ -100,6 +105,21 @@ export class ApplicationNewComponent implements OnInit {
         );
       }
     }, 1000);
+
+    this.billingSub = this.billingState.settings$.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.billingSub) this.billingSub.unsubscribe();
   }
 
   // Méthode pour changer de plan

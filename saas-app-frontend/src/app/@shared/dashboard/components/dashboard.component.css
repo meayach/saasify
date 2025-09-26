@@ -29,6 +29,45 @@
   z-index: 1000;
 }
 
+/* Nouveau bouton avatar simple et créatif */
+.user-avatar-btn {
+  position: relative;
+}
+
+.user-avatar-btn::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-avatar-btn:hover::before {
+  opacity: 1;
+}
+
+/* Animation pulse pour l'indicateur de notification */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .profile-btn {
   display: flex;
   align-items: center;
@@ -516,6 +555,12 @@
 
 /* Dark mode overrides for settings sections */
 :host-context(body.dark-mode) .settings-section {
+  background: #0b1220;
+  color: #e6eef8;
+}
+
+:host-context(body.dark-mode) .settings-section.dark-mode {
+  background: #0b1220;
   color: #e6eef8;
 }
 
@@ -527,22 +572,66 @@
   color: #e6eef8 !important;
 }
 
+/* Dark mode for white background containers */
 :host-context(body.dark-mode) .settings-section div[style*='background: white'] {
-  background: #0f1724 !important;
+  background: #071028 !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Dark mode for form elements */
 :host-context(body.dark-mode) .settings-section input,
 :host-context(body.dark-mode) .settings-section select,
 :host-context(body.dark-mode) .settings-section textarea {
-  background: #0b1220 !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   color: #e6eef8 !important;
   border: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
+:host-context(body.dark-mode) .settings-section input:focus,
+:host-context(body.dark-mode) .settings-section select:focus,
+:host-context(body.dark-mode) .settings-section textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.6) !important;
+}
+
+/* Dark mode for buttons */
 :host-context(body.dark-mode) .settings-section button {
-  background: linear-gradient(135deg, #334155 0%, #1f2937 100%) !important;
-  color: #e6eef8 !important;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  color: white !important;
+  border: none !important;
+}
+
+:host-context(body.dark-mode) .settings-section button:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9) !important;
+}
+
+/* Dark mode for specific billing form styles */
+:host-context(body.dark-mode) .settings-section div[style*='background: #f9fafb'] {
+  background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Dark mode for plan cards */
+:host-context(body.dark-mode) .settings-section div[style*='border: 1px solid #e5e7eb'] {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Dark mode for plan delete buttons */
+:host-context(body.dark-mode) .settings-section button[style*='background: #ef4444'] {
+  background: #dc2626 !important;
+}
+
+:host-context(body.dark-mode) .settings-section button[style*='background: #f59e0b'] {
+  background: #d97706 !important;
+}
+
+:host-context(body.dark-mode) .settings-section button[style*='background: #3b82f6'] {
+  background: #2563eb !important;
+}
+
+/* Dark mode for price display */
+:host-context(body.dark-mode) .settings-section span[style*='color: #059669'] {
+  color: #10b981 !important;
 }

@@ -12,8 +12,10 @@ import {
   PaymentMethod,
   Invoice,
 } from '../../services/billing.service';
+import { BillingStateService } from '../../services/billing-state.service';
 import { UserService, UserProfile, PasswordChangeRequest } from '../../services/user.service';
 import { DashboardStatsService, DashboardMetrics } from '../../services/dashboard-stats.service';
+import { ThemeService } from '../../../@core/services/theme.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -136,12 +138,16 @@ export class DashboardComponent implements OnInit {
   dashboardMetrics: DashboardMetrics = {
     activeApplications: 3,
     totalUsers: 20,
-    monthlyRevenue: 2847,
-    annualRevenue: 2847 * 12,
+    monthlyRevenue: 765,
+    annualRevenue: 765 * 12,
   };
+  isDarkMode = false;
+  private themeSubscription: any;
+  currentCurrency = 'EUR';
+  private billingStateSub: any;
 
   // Données pour les statistiques (seront mises à jour dynamiquement)
-  stats = [
+  stats: any[] = [
     { title: 'Applications Actives', value: '3', icon: 'pi pi-desktop' },
     { title: 'Utilisateurs', value: '20', icon: 'pi pi-users' },
     { title: 'Revenus Mensuels', value: '€2,847', icon: 'pi pi-euro' },
@@ -165,8 +171,10 @@ export class DashboardComponent implements OnInit {
     private organizationService: OrganizationService,
     private securityService: SecurityService,
     private billingService: BillingService,
+    private billingState: BillingStateService,
     private userService: UserService,
-    private dashboardStatsService: DashboardStatsService,
+    public dashboardStatsService: DashboardStatsService,
+    private themeService: ThemeService,
   ) {}
 
   // Ouvrir l'éditeur de plan (naviguer vers une route d'édition)
@@ -199,9 +207,43 @@ export class DashboardComponent implements OnInit {
 
     // Charger les paramètres de facturation
     this.loadBillingSettings();
+    // Also populate shared billing state so other components can react
+    this.billingState.load().subscribe({
+      next: (s) => {
+        // already handled in loadBillingSettings, but ensure state is set
+        this.billingState.set(s);
+      },
+      error: () => {
+        // ignore
+      },
+    });
+
+    // Subscribe to billing state to get current currency
+    this.billingStateSub = this.billingState.settings$.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
 
     // Initialiser les données
     this.refreshStats();
+
+    // Subscribe to theme changes so child templates can bind to isDarkMode
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark: boolean) => {
+      this.isDarkMode = isDark;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    if (this.billingStateSub) this.billingStateSub.unsubscribe();
   }
 
   loadUserInfo(): void {
@@ -713,8 +755,7 @@ Détails par Plan:
 
     // Nettoyer les données en supprimant les champs MongoDB
     const cleanSettings = {
-      defaultCurrency: this.billingSettings.defaultCurrency,
-      taxRate: this.billingSettings.taxRate,
+      // defaultCurrency and taxRate removed from UI per request; keep other settings intact
       companyAddress: this.billingSettings.companyAddress,
       paymentMethods: this.billingSettings.paymentMethods,
       companyName: this.billingSettings.companyName,
@@ -934,6 +975,7 @@ Détails par Plan:
         this.stats = [
           {
             title: 'Applications Actives',
+            // keep as formatted string
             value: metrics.activeApplications.toString(),
             icon: 'pi pi-desktop',
           },
@@ -944,12 +986,15 @@ Détails par Plan:
           },
           {
             title: 'Revenus Mensuels',
-            value: this.dashboardStatsService.formatCurrency(metrics.monthlyRevenue),
+            // store numeric value separately and render number + symbol in template
+            value: this.dashboardStatsService.formatNumber(metrics.monthlyRevenue),
+            currency: this.currentCurrency,
             icon: 'pi pi-euro',
           },
           {
-            title: 'Revenus Annuels',
-            value: this.dashboardStatsService.formatCurrency(metrics.annualRevenue),
+            title: 'ARR (Revenu Récurrent Annuel)',
+            value: this.dashboardStatsService.formatNumber(metrics.annualRevenue),
+            currency: this.currentCurrency,
             icon: 'pi pi-chart-line',
           },
         ];

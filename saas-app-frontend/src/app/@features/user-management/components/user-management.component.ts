@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../@core/services/theme.service';
+import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
@@ -16,6 +18,8 @@ import { UserService, UserProfile } from '../../../@shared/services/user.service
   styleUrls: ['./user-management.component.css'],
 })
 export class UserManagementComponent implements OnInit {
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
   users: User[] = [];
   filteredUsers: User[] = [];
   selectedUser: User | null = null;
@@ -56,6 +60,7 @@ export class UserManagementComponent implements OnInit {
     private fb: FormBuilder,
     private notificationService: NotificationService,
     private userService: UserService,
+    private themeService: ThemeService,
   ) {
     this.userForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -73,6 +78,15 @@ export class UserManagementComponent implements OnInit {
   ngOnInit(): void {
     this.loadUsers();
     this.loadCurrentUserProfile();
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark: boolean) => {
+      this.isDarkMode = isDark;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   // Charger le profil de l'utilisateur connecté

@@ -114,8 +114,8 @@ export class DashboardStatsService {
         return of({
           activeApplications: 3,
           totalUsers: 20,
-          monthlyRevenue: 2847,
-          annualRevenue: 2847 * 12,
+          monthlyRevenue: 765,
+          annualRevenue: 765 * 12,
         });
       }),
     );
@@ -261,13 +261,45 @@ export class DashboardStatsService {
   /**
    * Formate le montant en euros avec séparateur de milliers
    */
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  formatCurrency(amount: number, currency: string = 'EUR'): string {
+    // Normalize currency code first
+    const c = (currency || 'EUR').toString().toUpperCase().trim();
+    let normalized = c;
+    if (c === 'GB' || c === 'GBR') normalized = 'GBP';
+    if (c === 'US' || c === 'USA') normalized = 'USD';
+    if (c === 'EU' || c === 'EURS') normalized = 'EUR';
+
+    try {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: normalized,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (e) {
+      // Fallback: simple formatting with symbol
+      const symbol =
+        normalized === 'USD'
+          ? '$'
+          : normalized === 'GBP'
+          ? '£'
+          : '€';
+      return symbol + String(Math.round(amount));
+    }
+  }
+
+  /**
+   * Format a plain number (no currency) according to locale (thousand separators)
+   */
+  formatNumber(amount: number): string {
+    try {
+      return new Intl.NumberFormat('fr-FR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (e) {
+      return String(Math.round(amount));
+    }
   }
 
   /**

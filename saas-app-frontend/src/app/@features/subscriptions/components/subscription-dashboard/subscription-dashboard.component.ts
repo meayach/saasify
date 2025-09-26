@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../../@core/services/theme.service';
+import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { UserService, UserProfile } from '../../../../@shared/services/user.service';
+import { BillingStateService } from '../../../../@shared/services/billing-state.service';
 import { NotificationService } from '../../../../@shared/services/notification.service';
 import { SubscriptionService } from '../../services/subscription.service';
 import { PlanService } from '../../services/plan.service';
@@ -24,6 +27,10 @@ export class SubscriptionDashboardComponent implements OnInit {
   userRole = '';
   isDropdownOpen = false;
   activeProfileSection = ''; // 'edit' | 'password'
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
+  currentCurrency = 'EUR';
+  private billingSubscription: Subscription | null = null;
 
   constructor(
     public router: Router,
@@ -32,6 +39,8 @@ export class SubscriptionDashboardComponent implements OnInit {
     private subscriptionService: SubscriptionService,
     private planService: PlanService,
     private datePipe: DatePipe,
+    private billingState: BillingStateService,
+    private themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +95,31 @@ export class SubscriptionDashboardComponent implements OnInit {
         }
       },
     });
+
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark: boolean) => {
+      this.isDarkMode = isDark;
+    });
+
+    // Subscribe to billing settings for currency
+    this.billingSubscription = this.billingState.settings$.subscribe((s) => {
+      if (s && s.defaultCurrency) {
+        // Normalize currency code at component level
+        const c = (s.defaultCurrency || 'EUR').toString().toUpperCase().trim();
+        if (c === 'GB' || c === 'GBR') this.currentCurrency = 'GBP';
+        else if (c === 'US' || c === 'USA') this.currentCurrency = 'USD';
+        else if (c === 'EU' || c === 'EURS') this.currentCurrency = 'EUR';
+        else this.currentCurrency = c;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
+    if (this.billingSubscription) {
+      this.billingSubscription.unsubscribe();
+    }
   }
 
   // Créer des abonnements de test

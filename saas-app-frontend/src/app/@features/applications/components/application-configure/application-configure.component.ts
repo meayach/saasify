@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ThemeService } from '../../../../@core/services/theme.service';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApplicationService, Application } from '../../../../@shared/services/application.service';
 import {
@@ -28,6 +30,8 @@ export interface ApplicationConfiguration {
   styleUrls: ['./application-configure.component.css'],
 })
 export class ApplicationConfigureComponent implements OnInit {
+  isDarkMode = false;
+  private themeSubscription: Subscription | null = null;
   // User / header state (copied from dashboard for consistent header behavior)
   userRole = 'Admin';
   userName = '';
@@ -86,6 +90,7 @@ export class ApplicationConfigureComponent implements OnInit {
     private applicationRefreshService: ApplicationRefreshService,
     private apiService: ApiService,
     private userService: UserService,
+    private themeService: ThemeService,
   ) {}
 
   ngOnInit(): void {
@@ -114,6 +119,16 @@ export class ApplicationConfigureComponent implements OnInit {
         'Configuration prête',
       );
     }, 1000);
+
+    this.themeSubscription = this.themeService.isDarkMode$.subscribe((isDark: boolean) => {
+      this.isDarkMode = isDark;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   loadUserInfo(): void {
