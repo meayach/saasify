@@ -415,7 +415,14 @@ export class PlanSelectionComponent implements OnInit {
       this.logger.warn('onEditPlan: plan id missing', plan);
       return;
     }
-    this.router.navigate(['/subscriptions', 'plans', 'edit', planId]);
+
+    // Préserver le paramètre returnTo lors de la navigation vers l'édition
+    const queryParams: any = {};
+    if (this.returnTo) {
+      queryParams.returnTo = this.returnTo;
+    }
+
+    this.router.navigate(['/subscriptions', 'plans', 'edit', planId], { queryParams });
   }
 
   isRecommended(plan: Plan): boolean {

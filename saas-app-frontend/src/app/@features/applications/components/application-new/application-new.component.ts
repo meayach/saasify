@@ -152,7 +152,7 @@ export class ApplicationNewComponent implements OnInit {
           .toLowerCase()
           .replace(/[^a-z0-9]/g, '-')
           .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '') + '.saasify.com';
+          .replace(/^-|-$/g, '') + '.com'; // Remplace .saasify.com par .com
     }
   }
 

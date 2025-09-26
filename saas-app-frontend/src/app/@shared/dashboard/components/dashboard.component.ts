@@ -305,7 +305,7 @@ export class DashboardComponent implements OnInit {
         } else if (this.activeSettingsSection === 'security') {
           return 'Paramètres de Sécurité';
         } else if (this.activeSettingsSection === 'billing') {
-          return 'Paramètres de Facturation';
+          return 'Facturation';
         }
         return 'Paramètres';
       default:

@@ -46,6 +46,9 @@ export class PlanEditComponent implements OnInit, OnDestroy {
   userEmail = '';
   isDropdownOpen = false;
 
+  // Navigation properties
+  returnTo = ''; // Pour préserver la redirection
+
   predefinedFeatures: PlanFeature[] = [
     { name: 'Support par email', included: false },
     { name: 'Tableau de bord basique', included: false },
@@ -85,6 +88,12 @@ export class PlanEditComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.planId = this.route.snapshot.paramMap.get('id');
+
+    // Récupérer le paramètre returnTo des query params
+    this.route.queryParams.subscribe((params) => {
+      this.returnTo = params['returnTo'] || '';
+    });
+
     this.loadPlanData();
     this.loadUserInfo();
 
@@ -313,10 +322,16 @@ export class PlanEditComponent implements OnInit, OnDestroy {
           console.log('Navigation vers /subscriptions/plans (déclenchement)');
           // utiliser setTimeout pour s'assurer que la navigation se produit après la mise à jour UI
           setTimeout(() => {
+            // Préserver le paramètre returnTo lors de la navigation de retour
+            const queryParams: any = {};
+            if (this.returnTo) {
+              queryParams.returnTo = this.returnTo;
+            }
+
             this.router
-              .navigateByUrl('/subscriptions/plans')
-              .then((ok) => console.log('router.navigateByUrl result=', ok))
-              .catch((err) => console.error('router.navigateByUrl error=', err));
+              .navigate(['/subscriptions/plans'], { queryParams })
+              .then((ok) => console.log('router.navigate result=', ok))
+              .catch((err) => console.error('router.navigate error=', err));
           }, 0);
         },
         error: (err) => {
@@ -334,7 +349,13 @@ export class PlanEditComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.router.navigate(['/subscriptions', 'plans']);
+    // Préserver le paramètre returnTo lors de l'annulation
+    const queryParams: any = {};
+    if (this.returnTo) {
+      queryParams.returnTo = this.returnTo;
+    }
+
+    this.router.navigate(['/subscriptions', 'plans'], { queryParams });
   }
 
   isPredefinedFeature(index: number): boolean {
